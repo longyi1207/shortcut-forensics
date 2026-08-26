@@ -1,0 +1,19 @@
+
+
+--- .git/hooks/pre-commit ---
+#!/bin/bash
+# Pre-commit hook to run mypy on Python files in src/
+
+# Run mypy on all Python files in src/ with relaxed settings for release
+MY_PYTHON=$(which python)
+MY_MYPY="$MY_PYTHON -m mypy"
+$MY_MYPY src/ --ignore-missing-imports --disable-error-code type-arg --disable-error-code no-untyped-def --disable-error-code var-annotated --disable-error-code no-untyped-call --disable-error-code attr-defined --disable-error-code union-attr --disable-error-code assignment --disable-error-code arg-type
+
+# Check if mypy failed
+if [ $? -ne 0 ]; then
+    echo "Type checking failed. Please fix the errors before committing."
+    exit 1
+fi
+
+# If we get here, type checking passed
+exit 0

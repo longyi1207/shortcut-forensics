@@ -1,0 +1,6 @@
+[run_parallel_phase] launching phase=2 worker on GPU 0 -> /mnt/scfx_ly_run/outputs/20260821-launch/logs/phase2_worker_g0.log
+[run_parallel_phase] launching phase=2 worker on GPU 1 -> /mnt/scfx_ly_run/outputs/20260821-launch/logs/phase2_worker_g1.log
+[run_parallel_phase] launching phase=2 worker on GPU 2 -> /mnt/scfx_ly_run/outputs/20260821-launch/logs/phase2_worker_g2.log
+[run_parallel_phase] launching phase=2 worker on GPU 6 -> /mnt/scfx_ly_run/outputs/20260821-launch/logs/phase2_worker_g6.log
+[run_parallel_phase] launching phase=2 worker on GPU 7 -> /mnt/scfx_ly_run/outputs/20260821-launch/logs/phase2_worker_g7.log
+[run_parallel_phase] 5 workers launched on GPUs [0,1,2,6,7], waiting...

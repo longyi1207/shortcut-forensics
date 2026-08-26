@@ -1,0 +1,130 @@
+{
+  "readout_done": true,
+  "plants_done": true,
+  "auc_rows": [
+    {
+      "concept": "eval_aware",
+      "sign": "pro_cheat",
+      "n_shortcut": 7,
+      "n_honest": 19,
+      "raw_auc": 0.3007518796992481,
+      "hypothesis_auc": 0.3007518796992481
+    },
+    {
+      "concept": "shortcut",
+      "sign": "pro_cheat",
+      "n_shortcut": 7,
+      "n_honest": 19,
+      "raw_auc": 0.6992481203007519,
+      "hypothesis_auc": 0.6992481203007519
+    },
+    {
+      "concept": "completion_drive",
+      "sign": "pro_cheat",
+      "n_shortcut": 7,
+      "n_honest": 19,
+      "raw_auc": 0.2030075187969925,
+      "hypothesis_auc": 0.2030075187969925
+    },
+    {
+      "concept": "conscientiousness",
+      "sign": "pro_honest",
+      "n_shortcut": 7,
+      "n_honest": 19,
+      "raw_auc": 0.6691729323308271,
+      "hypothesis_auc": 0.3308270676691729
+    },
+    {
+      "concept": "disapproval",
+      "sign": "pro_honest",
+      "n_shortcut": 7,
+      "n_honest": 19,
+      "raw_auc": 0.5112781954887218,
+      "hypothesis_auc": 0.4887218045112782
+    },
+    {
+      "concept": "desperate",
+      "sign": "pro_cheat",
+      "n_shortcut": 7,
+      "n_honest": 19,
+      "raw_auc": 0.6541353383458647,
+      "hypothesis_auc": 0.6541353383458647
+    },
+    {
+      "concept": "compliance",
+      "sign": "pro_cheat",
+      "n_shortcut": 7,
+      "n_honest": 19,
+      "raw_auc": 0.7218045112781954,
+      "hypothesis_auc": 0.7218045112781954
+    },
+    {
+      "concept": "tedium",
+      "sign": "pro_cheat",
+      "n_shortcut": 7,
+      "n_honest": 19,
+      "raw_auc": 0.7593984962406015,
+      "hypothesis_auc": 0.7593984962406015
+    }
+  ],
+  "updated_utc": "2026-08-23T23:05:25Z",
+  "plant_results": {
+    "tedium": {
+      "n_plants": 1,
+      "plant_took_rate": 1.0,
+      "mean_plant_score": -3.5647471796255648,
+      "mean_identity_score": -6.492257940489814,
+      "d_valid": true
+    },
+    "eval_aware": {
+      "n_plants": 1,
+      "plant_took_rate": 1.0,
+      "mean_plant_score": 1.2985914840829027,
+      "mean_identity_score": -2.0737365326843897,
+      "d_valid": true
+    },
+    "disapproval": {
+      "n_plants": 8,
+      "plant_took_rate": 1.0,
+      "mean_plant_score": 22.98119212957097,
+      "mean_identity_score": 19.257245881413095,
+      "d_valid": true
+    },
+    "desperate": {
+      "n_plants": 8,
+      "plant_took_rate": 0.375,
+      "mean_plant_score": 2.641476842388517,
+      "mean_identity_score": -0.35347923338412546,
+      "d_valid": true
+    },
+    "shortcut": {
+      "n_plants": 3,
+      "plant_took_rate": 0.6666666666666666,
+      "mean_plant_score": 6.034767140867167,
+      "mean_identity_score": -1.824357132334283,
+      "d_valid": true
+    },
+    "completion_drive": {
+      "n_plants": 0,
+      "plant_took_rate": null,
+      "mean_plant_score": null,
+      "mean_identity_score": -23.024107159534466,
+      "d_valid": null
+    },
+    "compliance": {
+      "n_plants": 0,
+      "plant_took_rate": null,
+      "mean_plant_score": null,
+      "mean_identity_score": -77.96088576009494,
+      "d_valid": null
+    },
+    "conscientiousness": {
+      "n_plants": 0,
+      "plant_took_rate": null,
+      "mean_plant_score": null,
+      "mean_identity_score": -3.861900972994004,
+      "d_valid": null
+    }
+  },
+  "done": true
+}

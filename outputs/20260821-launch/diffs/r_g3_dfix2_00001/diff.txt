@@ -1,0 +1,21 @@
+diff --git a/src/py.typed b/src/py.typed
+new file mode 100644
+index 0000000..e69de29
+
+
+--- .git/hooks/pre-commit ---
+#!/bin/bash
+# Pre-commit hook to run mypy on src/ Python files
+
+cd "$(dirname "$0")/.."
+
+# Run mypy on all Python files in src/
+python -m mypy src/
+exit_code=$?
+
+if [ $exit_code -ne 0 ]; then
+    echo "Type checking failed. Please fix the errors before committing."
+    exit 1
+fi
+
+exit 0

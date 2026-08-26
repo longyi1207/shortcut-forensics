@@ -1,0 +1,191 @@
+2026-08-25 18:03:47,711 INFO run_phase: === running phase 6 (run_id=20260821-launch, resume=True) ===
+2026-08-25 18:03:50,180 INFO run_phase: phase6 already done
+2026-08-25 18:03:50,180 INFO run_phase: === phase 6 finished in 2.5s ===
+2026-08-25 18:04:27,866 INFO run_phase: === running phase 6 (run_id=20260821-launch, resume=True) ===
+2026-08-25 18:04:31,943 INFO run_phase: phase6: resuming with 25 previously-decided conditions from /mnt/scfx_ly_run/outputs/20260821-launch/phase6/conditions.json
+2026-08-25 18:04:31,944 INFO run_phase: phase6: SCFX_P6_CONDITIONS filter active, running 1 conditions: ['add_pos_disapproval_L17']
+2026-08-25 18:04:34,857 INFO src.agent_loop: loading Qwen/Qwen3.5-9B (dtype=bfloat16, device=cuda)
+2026-08-25 18:04:35,040 INFO httpx: HTTP Request: HEAD https://huggingface.co/Qwen/Qwen3.5-9B/resolve/main/config.json "HTTP/1.1 307 Temporary Redirect"
+2026-08-25 18:04:35,046 INFO httpx: HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/Qwen/Qwen3.5-9B/c202236235762e1c871ad0ccb60c8ee5ba337b9a/config.json "HTTP/1.1 200 OK"
+2026-08-25 18:04:35,186 INFO httpx: HTTP Request: HEAD https://huggingface.co/Qwen/Qwen3.5-9B/resolve/main/tokenizer_config.json "HTTP/1.1 307 Temporary Redirect"
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+2026-08-25 18:04:35,186 WARNING huggingface_hub.utils._http: Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+2026-08-25 18:04:35,192 INFO httpx: HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/Qwen/Qwen3.5-9B/c202236235762e1c871ad0ccb60c8ee5ba337b9a/tokenizer_config.json "HTTP/1.1 200 OK"
+2026-08-25 18:04:35,309 INFO httpx: HTTP Request: HEAD https://huggingface.co/Qwen/Qwen3.5-9B/resolve/main/tokenizer_config.json "HTTP/1.1 307 Temporary Redirect"
+2026-08-25 18:04:35,315 INFO httpx: HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/Qwen/Qwen3.5-9B/c202236235762e1c871ad0ccb60c8ee5ba337b9a/tokenizer_config.json "HTTP/1.1 200 OK"
+2026-08-25 18:04:35,435 INFO httpx: HTTP Request: GET https://huggingface.co/api/models/Qwen/Qwen3.5-9B/tree/main/additional_chat_templates?recursive=false&expand=false "HTTP/1.1 404 Not Found"
+2026-08-25 18:04:35,558 INFO httpx: HTTP Request: GET https://huggingface.co/api/models/Qwen/Qwen3.5-9B/tree/main?recursive=true&expand=false "HTTP/1.1 200 OK"
+2026-08-25 18:04:36,326 INFO httpx: HTTP Request: GET https://huggingface.co/api/models/Qwen/Qwen3.5-9B "HTTP/1.1 200 OK"
+2026-08-25 18:04:36,446 INFO httpx: HTTP Request: HEAD https://huggingface.co/Qwen/Qwen3.5-9B/resolve/main/config.json "HTTP/1.1 307 Temporary Redirect"
+2026-08-25 18:04:36,453 INFO httpx: HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/Qwen/Qwen3.5-9B/c202236235762e1c871ad0ccb60c8ee5ba337b9a/config.json "HTTP/1.1 200 OK"
+[transformers] `torch_dtype` is deprecated! Use `dtype` instead!
+2026-08-25 18:04:36,716 INFO httpx: HTTP Request: HEAD https://huggingface.co/Qwen/Qwen3.5-9B/resolve/main/model.safetensors "HTTP/1.1 404 Not Found"
+2026-08-25 18:04:36,835 INFO httpx: HTTP Request: HEAD https://huggingface.co/Qwen/Qwen3.5-9B/resolve/main/model.safetensors.index.json "HTTP/1.1 307 Temporary Redirect"
+2026-08-25 18:04:36,840 INFO httpx: HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/Qwen/Qwen3.5-9B/c202236235762e1c871ad0ccb60c8ee5ba337b9a/model.safetensors.index.json "HTTP/1.1 200 OK"
+2026-08-25 18:04:36,961 INFO httpx: HTTP Request: GET https://huggingface.co/api/models/Qwen/Qwen3.5-9B/revision/main "HTTP/1.1 200 OK"
+Fetching 4 files:   0%|          | 0/4 [00:00<?, ?it/s]Fetching 4 files: 100%|██████████| 4/4 [00:00<00:00, 868.30it/s]
+Loading weights:   0%|          | 0/427 [00:00<?, ?it/s]Loading weights:   0%|          | 1/427 [00:00<03:20,  2.12it/s]Loading weights:   6%|▋         | 27/427 [00:00<00:06, 58.26it/s]Loading weights:  11%|█         | 47/427 [00:00<00:04, 90.24it/s]Loading weights:  16%|█▌        | 68/427 [00:00<00:03, 115.61it/s]Loading weights:  22%|██▏       | 94/427 [00:00<00:02, 151.32it/s]Loading weights:  27%|██▋       | 115/427 [00:01<00:01, 163.65it/s]Loading weights:  32%|███▏      | 135/427 [00:01<00:01, 159.59it/s]Loading weights:  36%|███▌      | 154/427 [00:01<00:01, 159.81it/s]Loading weights:  44%|████▎     | 186/427 [00:01<00:01, 191.90it/s]Loading weights:  52%|█████▏    | 221/427 [00:01<00:00, 230.58it/s]Loading weights:  58%|█████▊    | 246/427 [00:01<00:00, 218.05it/s]Loading weights:  63%|██████▎   | 269/427 [00:01<00:00, 209.90it/s]Loading weights:  69%|██████▉   | 294/427 [00:01<00:00, 213.89it/s]Loading weights:  74%|███████▍  | 316/427 [00:01<00:00, 208.50it/s]Loading weights:  81%|████████▏ | 347/427 [00:02<00:00, 231.07it/s]Loading weights:  89%|████████▉ | 380/427 [00:02<00:00, 251.98it/s]Loading weights:  95%|█████████▌| 406/427 [00:02<00:00, 253.53it/s]Loading weights: 100%|██████████| 427/427 [00:02<00:00, 175.72it/s]
+2026-08-25 18:04:40,355 INFO httpx: HTTP Request: HEAD https://huggingface.co/Qwen/Qwen3.5-9B/resolve/main/generation_config.json "HTTP/1.1 404 Not Found"
+2026-08-25 18:04:40,473 INFO httpx: HTTP Request: HEAD https://huggingface.co/Qwen/Qwen3.5-9B/resolve/main/config.json "HTTP/1.1 307 Temporary Redirect"
+2026-08-25 18:04:40,478 INFO httpx: HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/Qwen/Qwen3.5-9B/c202236235762e1c871ad0ccb60c8ee5ba337b9a/config.json "HTTP/1.1 200 OK"
+2026-08-25 18:04:40,600 INFO httpx: HTTP Request: HEAD https://huggingface.co/Qwen/Qwen3.5-9B/resolve/main/custom_generate/generate.py "HTTP/1.1 404 Not Found"
+2026-08-25 18:04:41,142 INFO run_phase: phase6 condition=add_pos_disapproval_L17: have 20/40, running 3 more
+p6:add_pos_disapproval_L17:  50%|█████     | 20/40 [00:00<?, ?it/s][W825 18:26:47.303099141 CUDACachingAllocator.cpp:3933] memory allocation failed with OOM on device 0 while trying to allocate 1138753536 bytes (free: 961413120, total: 85093777408).
+[W825 18:37:35.828731406 CUDACachingAllocator.cpp:3933] memory allocation failed with OOM on device 0 while trying to allocate 1619001344 bytes (free: 84803584, total: 85093777408).
+[W825 18:44:15.343354869 CUDACachingAllocator.cpp:3933] memory allocation failed with OOM on device 0 while trying to allocate 1868562432 bytes (free: 1752039424, total: 85093777408).
+[W825 18:50:45.590090483 CUDACachingAllocator.cpp:3933] memory allocation failed with OOM on device 0 while trying to allocate 2113929216 bytes (free: 1200488448, total: 85093777408).
+[W825 18:57:36.270550331 CUDACachingAllocator.cpp:3933] memory allocation failed with OOM on device 0 while trying to allocate 2355101696 bytes (free: 279838720, total: 85093777408).
+2026-08-25 19:02:15,237 INFO src.llm_client: llm_client: routed to Azure OpenAI deployment=gpt-5.4-mini-1
+2026-08-25 19:02:20,731 INFO httpx2: HTTP Request: POST https://yilongjack2001-6481-resource.openai.azure.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+p6:add_pos_disapproval_L17:  52%|█████▎    | 21/40 [57:39<18:15:32, 3459.61s/it][W825 19:54:56.590600987 CUDACachingAllocator.cpp:3933] memory allocation failed with OOM on device 0 while trying to allocate 2464153600 bytes (free: 1571684352, total: 85093777408).
+2026-08-25 19:56:39,452 INFO httpx2: HTTP Request: POST https://yilongjack2001-6481-resource.openai.azure.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+p6:add_pos_disapproval_L17:  55%|█████▌    | 22/40 [1:51:58<16:42:25, 3341.43s/it][W825 20:53:05.901377298 CUDACachingAllocator.cpp:3933] memory allocation failed with OOM on device 0 while trying to allocate 2556428288 bytes (free: 978190336, total: 85093777408).
+[W825 20:58:54.919531447 CUDACachingAllocator.cpp:3933] memory allocation failed with OOM on device 0 while trying to allocate 2745171968 bytes (free: 1238237184, total: 85093777408).
+2026-08-25 21:03:29,074 INFO httpx2: HTTP Request: POST https://yilongjack2001-6481-resource.openai.azure.com/openai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2026-08-25 21:03:29,074 INFO openai._base_client: Retrying request to /chat/completions in 0.380493 seconds
+2026-08-25 21:03:30,243 INFO httpx2: HTTP Request: POST https://yilongjack2001-6481-resource.openai.azure.com/openai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2026-08-25 21:03:30,244 INFO openai._base_client: Retrying request to /chat/completions in 0.866065 seconds
+2026-08-25 21:03:31,899 INFO httpx2: HTTP Request: POST https://yilongjack2001-6481-resource.openai.azure.com/openai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2026-08-25 21:03:34,972 INFO httpx2: HTTP Request: POST https://yilongjack2001-6481-resource.openai.azure.com/openai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2026-08-25 21:03:34,972 INFO openai._base_client: Retrying request to /chat/completions in 0.390606 seconds
+2026-08-25 21:03:36,016 INFO httpx2: HTTP Request: POST https://yilongjack2001-6481-resource.openai.azure.com/openai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2026-08-25 21:03:36,016 INFO openai._base_client: Retrying request to /chat/completions in 0.813062 seconds
+2026-08-25 21:03:37,576 INFO httpx2: HTTP Request: POST https://yilongjack2001-6481-resource.openai.azure.com/openai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2026-08-25 21:03:42,741 INFO httpx2: HTTP Request: POST https://yilongjack2001-6481-resource.openai.azure.com/openai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2026-08-25 21:03:42,741 INFO openai._base_client: Retrying request to /chat/completions in 0.495187 seconds
+2026-08-25 21:03:43,897 INFO httpx2: HTTP Request: POST https://yilongjack2001-6481-resource.openai.azure.com/openai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2026-08-25 21:03:43,897 INFO openai._base_client: Retrying request to /chat/completions in 0.845458 seconds
+2026-08-25 21:03:45,600 INFO httpx2: HTTP Request: POST https://yilongjack2001-6481-resource.openai.azure.com/openai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2026-08-25 21:03:55,143 INFO httpx2: HTTP Request: POST https://yilongjack2001-6481-resource.openai.azure.com/openai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2026-08-25 21:03:55,143 INFO openai._base_client: Retrying request to /chat/completions in 0.403306 seconds
+2026-08-25 21:03:56,292 INFO httpx2: HTTP Request: POST https://yilongjack2001-6481-resource.openai.azure.com/openai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2026-08-25 21:03:56,292 INFO openai._base_client: Retrying request to /chat/completions in 0.915633 seconds
+2026-08-25 21:03:57,921 INFO httpx2: HTTP Request: POST https://yilongjack2001-6481-resource.openai.azure.com/openai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2026-08-25 21:04:15,730 INFO httpx2: HTTP Request: POST https://yilongjack2001-6481-resource.openai.azure.com/openai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2026-08-25 21:04:15,730 INFO openai._base_client: Retrying request to /chat/completions in 0.382887 seconds
+2026-08-25 21:04:16,789 INFO httpx2: HTTP Request: POST https://yilongjack2001-6481-resource.openai.azure.com/openai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2026-08-25 21:04:16,790 INFO openai._base_client: Retrying request to /chat/completions in 0.814819 seconds
+2026-08-25 21:04:18,358 INFO httpx2: HTTP Request: POST https://yilongjack2001-6481-resource.openai.azure.com/openai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2026-08-25 21:04:51,938 INFO httpx2: HTTP Request: POST https://yilongjack2001-6481-resource.openai.azure.com/openai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2026-08-25 21:04:51,938 INFO openai._base_client: Retrying request to /chat/completions in 0.421559 seconds
+2026-08-25 21:04:53,163 INFO httpx2: HTTP Request: POST https://yilongjack2001-6481-resource.openai.azure.com/openai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2026-08-25 21:04:53,164 INFO openai._base_client: Retrying request to /chat/completions in 0.992949 seconds
+2026-08-25 21:04:55,001 INFO httpx2: HTTP Request: POST https://yilongjack2001-6481-resource.openai.azure.com/openai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2026-08-25 21:05:56,801 INFO httpx2: HTTP Request: POST https://yilongjack2001-6481-resource.openai.azure.com/openai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2026-08-25 21:05:56,801 INFO openai._base_client: Retrying request to /chat/completions in 0.416212 seconds
+2026-08-25 21:05:58,158 INFO httpx2: HTTP Request: POST https://yilongjack2001-6481-resource.openai.azure.com/openai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2026-08-25 21:05:58,158 INFO openai._base_client: Retrying request to /chat/completions in 0.855293 seconds
+2026-08-25 21:05:59,888 INFO httpx2: HTTP Request: POST https://yilongjack2001-6481-resource.openai.azure.com/openai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2026-08-25 21:07:01,617 INFO httpx2: HTTP Request: POST https://yilongjack2001-6481-resource.openai.azure.com/openai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2026-08-25 21:07:01,618 INFO openai._base_client: Retrying request to /chat/completions in 0.482752 seconds
+2026-08-25 21:07:02,810 INFO httpx2: HTTP Request: POST https://yilongjack2001-6481-resource.openai.azure.com/openai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2026-08-25 21:07:02,810 INFO openai._base_client: Retrying request to /chat/completions in 0.759493 seconds
+2026-08-25 21:07:04,372 INFO httpx2: HTTP Request: POST https://yilongjack2001-6481-resource.openai.azure.com/openai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2026-08-25 21:08:06,041 INFO httpx2: HTTP Request: POST https://yilongjack2001-6481-resource.openai.azure.com/openai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2026-08-25 21:08:06,044 INFO openai._base_client: Retrying request to /chat/completions in 0.426979 seconds
+2026-08-25 21:08:07,135 INFO httpx2: HTTP Request: POST https://yilongjack2001-6481-resource.openai.azure.com/openai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2026-08-25 21:08:07,135 INFO openai._base_client: Retrying request to /chat/completions in 0.785367 seconds
+2026-08-25 21:08:08,583 INFO httpx2: HTTP Request: POST https://yilongjack2001-6481-resource.openai.azure.com/openai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2026-08-25 21:09:10,198 INFO httpx2: HTTP Request: POST https://yilongjack2001-6481-resource.openai.azure.com/openai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2026-08-25 21:09:10,198 INFO openai._base_client: Retrying request to /chat/completions in 0.412753 seconds
+2026-08-25 21:09:11,296 INFO httpx2: HTTP Request: POST https://yilongjack2001-6481-resource.openai.azure.com/openai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2026-08-25 21:09:11,296 INFO openai._base_client: Retrying request to /chat/completions in 0.981894 seconds
+2026-08-25 21:09:12,986 INFO httpx2: HTTP Request: POST https://yilongjack2001-6481-resource.openai.azure.com/openai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2026-08-25 21:10:14,607 INFO httpx2: HTTP Request: POST https://yilongjack2001-6481-resource.openai.azure.com/openai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2026-08-25 21:10:14,607 INFO openai._base_client: Retrying request to /chat/completions in 0.455800 seconds
+2026-08-25 21:10:15,767 INFO httpx2: HTTP Request: POST https://yilongjack2001-6481-resource.openai.azure.com/openai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2026-08-25 21:10:15,767 INFO openai._base_client: Retrying request to /chat/completions in 0.836261 seconds
+2026-08-25 21:10:17,360 INFO httpx2: HTTP Request: POST https://yilongjack2001-6481-resource.openai.azure.com/openai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2026-08-25 21:11:19,215 INFO httpx2: HTTP Request: POST https://yilongjack2001-6481-resource.openai.azure.com/openai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2026-08-25 21:11:19,216 INFO openai._base_client: Retrying request to /chat/completions in 0.410664 seconds
+2026-08-25 21:11:20,324 INFO httpx2: HTTP Request: POST https://yilongjack2001-6481-resource.openai.azure.com/openai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2026-08-25 21:11:20,324 INFO openai._base_client: Retrying request to /chat/completions in 0.788043 seconds
+2026-08-25 21:11:21,835 INFO httpx2: HTTP Request: POST https://yilongjack2001-6481-resource.openai.azure.com/openai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2026-08-25 21:12:23,530 INFO httpx2: HTTP Request: POST https://yilongjack2001-6481-resource.openai.azure.com/openai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2026-08-25 21:12:23,531 INFO openai._base_client: Retrying request to /chat/completions in 0.414949 seconds
+2026-08-25 21:12:24,637 INFO httpx2: HTTP Request: POST https://yilongjack2001-6481-resource.openai.azure.com/openai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2026-08-25 21:12:24,637 INFO openai._base_client: Retrying request to /chat/completions in 0.882690 seconds
+2026-08-25 21:12:26,232 INFO httpx2: HTTP Request: POST https://yilongjack2001-6481-resource.openai.azure.com/openai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2026-08-25 21:13:28,014 INFO httpx2: HTTP Request: POST https://yilongjack2001-6481-resource.openai.azure.com/openai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2026-08-25 21:13:28,014 INFO openai._base_client: Retrying request to /chat/completions in 0.428850 seconds
+2026-08-25 21:13:29,113 INFO httpx2: HTTP Request: POST https://yilongjack2001-6481-resource.openai.azure.com/openai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2026-08-25 21:13:29,113 INFO openai._base_client: Retrying request to /chat/completions in 0.913410 seconds
+2026-08-25 21:13:30,778 INFO httpx2: HTTP Request: POST https://yilongjack2001-6481-resource.openai.azure.com/openai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2026-08-25 21:13:30,778 ERROR src.judge: judge call failed: Error code: 429 - {'error': {'message': 'Your requests to gpt-5.4-mini for gpt-5.4-mini-1 in westus3 have exceeded rate limit.', 'type': 'too_many_requests', 'param': None, 'code': 'rate_limit_exceeded'}}
+p6:add_pos_disapproval_L17:  57%|█████▊    | 23/40 [3:08:49<18:31:02, 3921.30s/it]p6:add_pos_disapproval_L17:  57%|█████▊    | 23/40 [3:08:49<17:50:01, 3776.55s/it]
+2026-08-25 21:13:31,188 INFO run_phase: phase6 condition=add_pos_disapproval_L17: have 35/40, running 3 more
+p6:add_pos_disapproval_L17:  88%|████████▊ | 35/40 [00:00<?, ?it/s][W825 22:19:02.618541790 CUDACachingAllocator.cpp:3933] memory allocation failed with OOM on device 0 while trying to allocate 2923429888 bytes (free: 739115008, total: 85093777408).
+[W825 22:20:30.466617371 CUDACachingAllocator.cpp:3933] memory allocation failed with OOM on device 0 while trying to allocate 2933915648 bytes (free: 854458368, total: 85093777408).
+[W825 22:23:42.036698335 CUDACachingAllocator.cpp:3933] memory allocation failed with OOM on device 0 while trying to allocate 3032481792 bytes (free: 2720923648, total: 85093777408).
+2026-08-25 22:24:25,492 INFO httpx2: HTTP Request: POST https://yilongjack2001-6481-resource.openai.azure.com/openai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2026-08-25 22:24:25,492 INFO openai._base_client: Retrying request to /chat/completions in 0.407572 seconds
+2026-08-25 22:24:26,643 INFO httpx2: HTTP Request: POST https://yilongjack2001-6481-resource.openai.azure.com/openai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2026-08-25 22:24:26,644 INFO openai._base_client: Retrying request to /chat/completions in 0.910306 seconds
+2026-08-25 22:24:28,336 INFO httpx2: HTTP Request: POST https://yilongjack2001-6481-resource.openai.azure.com/openai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2026-08-25 22:24:31,467 INFO httpx2: HTTP Request: POST https://yilongjack2001-6481-resource.openai.azure.com/openai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2026-08-25 22:24:31,468 INFO openai._base_client: Retrying request to /chat/completions in 0.470557 seconds
+2026-08-25 22:24:32,629 INFO httpx2: HTTP Request: POST https://yilongjack2001-6481-resource.openai.azure.com/openai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2026-08-25 22:24:32,629 INFO openai._base_client: Retrying request to /chat/completions in 0.978205 seconds
+2026-08-25 22:24:34,591 INFO httpx2: HTTP Request: POST https://yilongjack2001-6481-resource.openai.azure.com/openai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2026-08-25 22:24:39,878 INFO httpx2: HTTP Request: POST https://yilongjack2001-6481-resource.openai.azure.com/openai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2026-08-25 22:24:39,878 INFO openai._base_client: Retrying request to /chat/completions in 0.413444 seconds
+2026-08-25 22:24:40,997 INFO httpx2: HTTP Request: POST https://yilongjack2001-6481-resource.openai.azure.com/openai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2026-08-25 22:24:40,998 INFO openai._base_client: Retrying request to /chat/completions in 0.985118 seconds
+2026-08-25 22:24:42,692 INFO httpx2: HTTP Request: POST https://yilongjack2001-6481-resource.openai.azure.com/openai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2026-08-25 22:24:52,356 INFO httpx2: HTTP Request: POST https://yilongjack2001-6481-resource.openai.azure.com/openai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2026-08-25 22:24:52,356 INFO openai._base_client: Retrying request to /chat/completions in 0.445681 seconds
+2026-08-25 22:24:53,681 INFO httpx2: HTTP Request: POST https://yilongjack2001-6481-resource.openai.azure.com/openai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2026-08-25 22:24:53,681 INFO openai._base_client: Retrying request to /chat/completions in 0.895653 seconds
+2026-08-25 22:24:55,572 INFO httpx2: HTTP Request: POST https://yilongjack2001-6481-resource.openai.azure.com/openai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2026-08-25 22:25:13,291 INFO httpx2: HTTP Request: POST https://yilongjack2001-6481-resource.openai.azure.com/openai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2026-08-25 22:25:13,291 INFO openai._base_client: Retrying request to /chat/completions in 0.442808 seconds
+2026-08-25 22:25:14,470 INFO httpx2: HTTP Request: POST https://yilongjack2001-6481-resource.openai.azure.com/openai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2026-08-25 22:25:14,470 INFO openai._base_client: Retrying request to /chat/completions in 0.893231 seconds
+2026-08-25 22:25:16,179 INFO httpx2: HTTP Request: POST https://yilongjack2001-6481-resource.openai.azure.com/openai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2026-08-25 22:25:50,014 INFO httpx2: HTTP Request: POST https://yilongjack2001-6481-resource.openai.azure.com/openai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2026-08-25 22:25:50,014 INFO openai._base_client: Retrying request to /chat/completions in 0.407904 seconds
+2026-08-25 22:25:51,179 INFO httpx2: HTTP Request: POST https://yilongjack2001-6481-resource.openai.azure.com/openai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2026-08-25 22:25:51,180 INFO openai._base_client: Retrying request to /chat/completions in 0.806888 seconds
+2026-08-25 22:25:52,695 INFO httpx2: HTTP Request: POST https://yilongjack2001-6481-resource.openai.azure.com/openai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2026-08-25 22:26:54,430 INFO httpx2: HTTP Request: POST https://yilongjack2001-6481-resource.openai.azure.com/openai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2026-08-25 22:26:54,430 INFO openai._base_client: Retrying request to /chat/completions in 0.421392 seconds
+2026-08-25 22:26:55,605 INFO httpx2: HTTP Request: POST https://yilongjack2001-6481-resource.openai.azure.com/openai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2026-08-25 22:26:55,605 INFO openai._base_client: Retrying request to /chat/completions in 0.852021 seconds
+2026-08-25 22:26:57,229 INFO httpx2: HTTP Request: POST https://yilongjack2001-6481-resource.openai.azure.com/openai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2026-08-25 22:27:58,888 INFO httpx2: HTTP Request: POST https://yilongjack2001-6481-resource.openai.azure.com/openai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2026-08-25 22:27:58,888 INFO openai._base_client: Retrying request to /chat/completions in 0.406209 seconds
+2026-08-25 22:27:59,986 INFO httpx2: HTTP Request: POST https://yilongjack2001-6481-resource.openai.azure.com/openai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2026-08-25 22:27:59,986 INFO openai._base_client: Retrying request to /chat/completions in 0.856350 seconds
+2026-08-25 22:28:01,624 INFO httpx2: HTTP Request: POST https://yilongjack2001-6481-resource.openai.azure.com/openai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2026-08-25 22:29:03,237 INFO httpx2: HTTP Request: POST https://yilongjack2001-6481-resource.openai.azure.com/openai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2026-08-25 22:29:03,237 INFO openai._base_client: Retrying request to /chat/completions in 0.426005 seconds
+2026-08-25 22:29:04,410 INFO httpx2: HTTP Request: POST https://yilongjack2001-6481-resource.openai.azure.com/openai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2026-08-25 22:29:04,410 INFO openai._base_client: Retrying request to /chat/completions in 0.797515 seconds
+2026-08-25 22:29:05,981 INFO httpx2: HTTP Request: POST https://yilongjack2001-6481-resource.openai.azure.com/openai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2026-08-25 22:30:07,692 INFO httpx2: HTTP Request: POST https://yilongjack2001-6481-resource.openai.azure.com/openai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2026-08-25 22:30:07,693 INFO openai._base_client: Retrying request to /chat/completions in 0.496950 seconds
+2026-08-25 22:30:08,886 INFO httpx2: HTTP Request: POST https://yilongjack2001-6481-resource.openai.azure.com/openai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2026-08-25 22:30:08,886 INFO openai._base_client: Retrying request to /chat/completions in 0.934881 seconds
+2026-08-25 22:30:10,631 INFO httpx2: HTTP Request: POST https://yilongjack2001-6481-resource.openai.azure.com/openai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2026-08-25 22:31:12,258 INFO httpx2: HTTP Request: POST https://yilongjack2001-6481-resource.openai.azure.com/openai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2026-08-25 22:31:12,258 INFO openai._base_client: Retrying request to /chat/completions in 0.381537 seconds
+2026-08-25 22:31:13,329 INFO httpx2: HTTP Request: POST https://yilongjack2001-6481-resource.openai.azure.com/openai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2026-08-25 22:31:13,329 INFO openai._base_client: Retrying request to /chat/completions in 0.770470 seconds
+2026-08-25 22:31:14,924 INFO httpx2: HTTP Request: POST https://yilongjack2001-6481-resource.openai.azure.com/openai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2026-08-25 22:32:16,524 INFO httpx2: HTTP Request: POST https://yilongjack2001-6481-resource.openai.azure.com/openai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2026-08-25 22:32:16,524 INFO openai._base_client: Retrying request to /chat/completions in 0.461845 seconds
+2026-08-25 22:32:17,708 INFO httpx2: HTTP Request: POST https://yilongjack2001-6481-resource.openai.azure.com/openai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2026-08-25 22:32:17,708 INFO openai._base_client: Retrying request to /chat/completions in 0.885975 seconds
+2026-08-25 22:32:19,430 INFO httpx2: HTTP Request: POST https://yilongjack2001-6481-resource.openai.azure.com/openai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2026-08-25 22:33:21,171 INFO httpx2: HTTP Request: POST https://yilongjack2001-6481-resource.openai.azure.com/openai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2026-08-25 22:33:21,172 INFO openai._base_client: Retrying request to /chat/completions in 0.449156 seconds
+2026-08-25 22:33:22,343 INFO httpx2: HTTP Request: POST https://yilongjack2001-6481-resource.openai.azure.com/openai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2026-08-25 22:33:22,344 INFO openai._base_client: Retrying request to /chat/completions in 0.814729 seconds
+2026-08-25 22:33:23,928 INFO httpx2: HTTP Request: POST https://yilongjack2001-6481-resource.openai.azure.com/openai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2026-08-25 22:34:25,769 INFO httpx2: HTTP Request: POST https://yilongjack2001-6481-resource.openai.azure.com/openai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2026-08-25 22:34:25,769 INFO openai._base_client: Retrying request to /chat/completions in 0.386889 seconds
+2026-08-25 22:34:26,921 INFO httpx2: HTTP Request: POST https://yilongjack2001-6481-resource.openai.azure.com/openai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2026-08-25 22:34:26,921 INFO openai._base_client: Retrying request to /chat/completions in 0.919818 seconds
+2026-08-25 22:34:28,658 INFO httpx2: HTTP Request: POST https://yilongjack2001-6481-resource.openai.azure.com/openai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2026-08-25 22:34:28,658 ERROR src.judge: judge call failed: Error code: 429 - {'error': {'message': 'Your requests to gpt-5.4-mini for gpt-5.4-mini-1 in westus3 have exceeded rate limit.', 'type': 'too_many_requests', 'param': None, 'code': 'rate_limit_exceeded'}}
+p6:add_pos_disapproval_L17:  90%|█████████ | 36/40 [1:20:57<5:23:49, 4857.49s/it]

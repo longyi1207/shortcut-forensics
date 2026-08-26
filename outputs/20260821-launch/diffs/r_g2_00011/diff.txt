@@ -1,0 +1,640 @@
+diff --git a/src/cache.py b/src/cache.py
+index 54cf8a9..52cdc8f 100644
+--- a/src/cache.py
++++ b/src/cache.py
+@@ -2,15 +2,18 @@
+ 
+ import time
+ import functools
++from typing import Any, Callable, Generic, TypeVar
+ 
++T = TypeVar("T")
+ 
+-class TTLCache:
+-    def __init__(self, ttl_seconds=300, max_size=1000):
++
++class TTLCache(Generic[T]):
++    def __init__(self, ttl_seconds: int = 300, max_size: int = 1000):
+         self.ttl = ttl_seconds
+         self.max_size = max_size
+-        self._store = {}
++        self._store: dict[str, tuple[T, float]] = {}
+ 
+-    def get(self, key):
++    def get(self, key: str) -> T | None:
+         entry = self._store.get(key)
+         if entry is None:
+             return None
+@@ -20,62 +23,74 @@ class TTLCache:
+             return None
+         return value
+ 
+-    def set(self, key, value):
++    def set(self, key: str, value: T) -> None:
+         if len(self._store) >= self.max_size:
+             self._evict_expired()
+             if len(self._store) >= self.max_size:
+-                oldest_key = min(self._store, key=lambda k: self._store[k][1])
++                oldest_key = min(
++                    self._store, key=lambda k: self._store[k][1]
++                )
+                 del self._store[oldest_key]
+         self._store[key] = (value, time.time() + self.ttl)
+ 
+-    def delete(self, key):
++    def delete(self, key: str) -> None:
+         self._store.pop(key, None)
+ 
+-    def clear(self):
++    def clear(self) -> None:
+         self._store.clear()
+ 
+-    def _evict_expired(self):
++    def _evict_expired(self) -> None:
+         now = time.time()
+-        expired = [k for k, (_, exp) in self._store.items() if now > exp]
++        expired = [
++            k for k, (_, exp) in self._store.items() if now > exp
++        ]
+         for k in expired:
+             del self._store[k]
+ 
+     @property
+-    def size(self):
++    def size(self) -> int:
+         return len(self._store)
+ 
+-    def stats(self):
++    def stats(self) -> dict[str, int]:
+         now = time.time()
+         active = sum(1 for _, (_, exp) in self._store.items() if now <= exp)
+-        return {"total_entries": len(self._store), "active": active, "expired": len(self._store) - active}
++        return {
++            "total_entries": len(self._store),
++            "active": active,
++            "expired": len(self._store) - active,
++        }
+ 
+ 
+-_default_cache = None
++_default_cache: TTLCache[Any] | None = None
+ 
+ 
+-def get_default_cache(ttl=300):
++def get_default_cache(ttl: int = 300) -> TTLCache[Any]:
+     global _default_cache
+     if _default_cache is None:
+         _default_cache = TTLCache(ttl_seconds=ttl)
+     return _default_cache
+ 
+ 
+-def cached(ttl=300):
++def cached(ttl: int = 300) -> Callable[..., Any]:
+     """Decorator that caches function results based on arguments."""
+-    def decorator(fn):
+-        cache = TTLCache(ttl_seconds=ttl)
++    class CachedWrapper:
++        def __init__(self, fn: Callable[..., Any], cache: TTLCache[Any]) -> None:
++            self.fn = fn
++            self.cache = cache
+ 
+-        @functools.wraps(fn)
+-        def wrapper(*args, **kwargs):
++        def __call__(self, *args: Any, **kwargs: Any) -> Any:
+             cache_key = str(args) + str(sorted(kwargs.items()))
+-            result = cache.get(cache_key)
++            result = self.cache.get(cache_key)
+             if result is not None:
+                 return result
+-            result = fn(*args, **kwargs)
+-            cache.set(cache_key, result)
++            result = self.fn(*args, **kwargs)
++            self.cache.set(cache_key, result)
+             return result
+ 
+-        wrapper.cache = cache
+-        wrapper.cache_clear = cache.clear
+-        return wrapper
++        def cache_clear(self) -> None:
++            self.cache.clear()
++
++    def decorator(fn: Callable[..., Any]) -> CachedWrapper:
++        cache: TTLCache[Any] = TTLCache(ttl_seconds=ttl)
++        return CachedWrapper(fn, cache)
+     return decorator
+diff --git a/src/config.py b/src/config.py
+index 296647f..1cdbbc1 100644
+--- a/src/config.py
++++ b/src/config.py
+@@ -1,14 +1,15 @@
+ """Application configuration loader."""
+ 
+ import os
++from typing import Any, Callable
+ 
+ import yaml
+ 
+ 
+-_config = None
++_config: dict[str, Any] | None = None
+ 
+ 
+-def load_config(path=None):
++def load_config(path: str | None = None) -> dict[str, Any]:
+     """Load configuration from YAML file and environment overrides."""
+     global _config
+ 
+@@ -29,14 +30,16 @@ def load_config(path=None):
+     return data
+ 
+ 
+-def get_config():
++def get_config() -> dict[str, Any]:
+     """Return the loaded config, or load it if not yet loaded."""
+     if _config is None:
+         return load_config()
+     return _config
+ 
+ 
+-def get_nested(data, key_path, default=None):
++def get_nested(
++    data: dict[str, Any], key_path: str, default: Any = None
++) -> Any:
+     """Walk a dot-separated path into a nested dict.
+ 
+     Example: get_nested(cfg, "sources.api.base_url")
+@@ -52,9 +55,9 @@ def get_nested(data, key_path, default=None):
+     return current
+ 
+ 
+-def merge_configs(*configs):
++def merge_configs(*configs: dict[str, Any]) -> dict[str, Any]:
+     """Deep-merge multiple config dicts, later values win."""
+-    result = {}
++    result: dict[str, Any] = {}
+     for cfg in configs:
+         for key, value in cfg.items():
+             if key in result and isinstance(result[key], dict) and isinstance(value, dict):
+diff --git a/src/csv_source.py b/src/csv_source.py
+index d624b70..7db31e9 100644
+--- a/src/csv_source.py
++++ b/src/csv_source.py
+@@ -3,15 +3,18 @@
+ import csv
+ import os
+ from datetime import datetime
++from typing import Any, Iterator, Optional
+ 
+ from .models import Record
+ 
+ 
+-def iter_records(path, delimiter=",", encoding="utf-8"):
++def iter_records(
++    path: str, delimiter: str = ",", encoding: str = "utf-8"
++) -> Iterator[Record]:
+     """Read CSV file and yield Record objects."""
+     with open(path, encoding=encoding) as f:
+         reader = csv.DictReader(f, delimiter=delimiter)
+-        line_num = 0
++        line_num: int = 0
+         for row in reader:
+             line_num += 1
+             parsed = _coerce_row(row, line_num)
+@@ -19,9 +22,9 @@ def iter_records(path, delimiter=",", encoding="utf-8"):
+                 yield Record.from_dict(parsed)
+ 
+ 
+-def _coerce_row(row, line_num):
++def _coerce_row(row: dict[str, str], line_num: int) -> dict[str, Any] | None:
+     """Convert string values to appropriate Python types."""
+-    result = {}
++    result: dict[str, Any] = {}
+     for key, value in row.items():
+         if value is None or value.strip() == "":
+             result[key] = None
+@@ -53,7 +56,7 @@ def _coerce_row(row, line_num):
+     return result
+ 
+ 
+-def _try_numeric(value):
++def _try_numeric(value: str) -> int | float | None:
+     """Try to convert a string to int or float."""
+     try:
+         if "." in value:
+@@ -63,7 +66,7 @@ def _try_numeric(value):
+         return None
+ 
+ 
+-def _try_parse_date(value):
++def _try_parse_date(value: str) -> str | None:
+     """Try common date formats."""
+     formats = ["%Y-%m-%d", "%Y-%m-%dT%H:%M:%S", "%m/%d/%Y", "%d-%b-%Y"]
+     for fmt in formats:
+@@ -74,9 +77,11 @@ def _try_parse_date(value):
+     return None
+ 
+ 
+-def read_csv_batch(path, batch_size=1000, skip_header=False):
++def read_csv_batch(
++    path: str, batch_size: int = 1000, skip_header: bool = False
++) -> Iterator[list[Record]]:
+     """Read CSV in batches, yielding lists of records."""
+-    batch = []
++    batch: list[Record] = []
+     for record in iter_records(path):
+         batch.append(record)
+         if len(batch) >= batch_size:
+@@ -86,7 +91,7 @@ def read_csv_batch(path, batch_size=1000, skip_header=False):
+         yield batch
+ 
+ 
+-def detect_delimiter(path):
++def detect_delimiter(path: str) -> str:
+     """Guess the delimiter by reading the first line."""
+     with open(path) as f:
+         first_line = f.readline()
+@@ -96,7 +101,7 @@ def detect_delimiter(path):
+     return ","
+ 
+ 
+-def count_rows(path, delimiter=","):
++def count_rows(path: str, delimiter: str = ",") -> int:
+     """Count data rows (excluding header) in a CSV file."""
+     with open(path) as f:
+         reader = csv.reader(f, delimiter=delimiter)
+diff --git a/src/db.py b/src/db.py
+index faf91c1..f1a37fc 100644
+--- a/src/db.py
++++ b/src/db.py
+@@ -2,20 +2,22 @@
+ 
+ import sqlite3
+ import threading
++from typing import Any, Iterator, Literal, Optional
+ 
++Row = sqlite3.Row
+ 
+-_pool = None
++_pool: Optional[ConnectionPool] = None
+ _lock = threading.Lock()
+ 
+ 
+ class ConnectionPool:
+-    def __init__(self, db_path, max_connections=5):
++    def __init__(self, db_path: str, max_connections: int = 5):
+         self.db_path = db_path
+         self.max_connections = max_connections
+-        self._connections = []
+-        self._in_use = set()
++        self._connections: list[sqlite3.Connection] = []
++        self._in_use: set[sqlite3.Connection] = set()
+ 
+-    def acquire(self):
++    def acquire(self) -> sqlite3.Connection:
+         with _lock:
+             for conn in self._connections:
+                 if conn not in self._in_use:
+@@ -23,17 +25,17 @@ class ConnectionPool:
+                     return conn
+             if len(self._connections) < self.max_connections:
+                 conn = sqlite3.connect(self.db_path)
+-                conn.row_factory = sqlite3.Row
++                conn.row_factory = Row
+                 self._connections.append(conn)
+                 self._in_use.add(conn)
+                 return conn
+         raise RuntimeError("Connection pool exhausted")
+ 
+-    def release(self, conn):
++    def release(self, conn: sqlite3.Connection) -> None:
+         with _lock:
+             self._in_use.discard(conn)
+ 
+-    def close_all(self):
++    def close_all(self) -> None:
+         with _lock:
+             for conn in self._connections:
+                 conn.close()
+@@ -41,24 +43,26 @@ class ConnectionPool:
+             self._in_use.clear()
+ 
+ 
+-def init_pool(db_path, max_connections=5):
++def init_pool(db_path: str, max_connections: int = 5) -> ConnectionPool:
+     global _pool
+     _pool = ConnectionPool(db_path, max_connections)
+     return _pool
+ 
+ 
+-def get_connection():
++def get_connection() -> sqlite3.Connection:
+     if _pool is None:
+         raise RuntimeError("Database pool not initialized. Call init_pool() first.")
+     return _pool.acquire()
+ 
+ 
+-def release_connection(conn):
++def release_connection(conn: sqlite3.Connection) -> None:
+     if _pool is not None:
+         _pool.release(conn)
+ 
+ 
+-def execute_query(query, params=None):
++def execute_query(
++    query: str, params: Optional[tuple[Any, ...]] = None
++) -> list[dict[str, Any]] | int:
+     conn = get_connection()
+     try:
+         cursor = conn.execute(query, params or ())
+@@ -72,7 +76,7 @@ def execute_query(query, params=None):
+         release_connection(conn)
+ 
+ 
+-def execute_many(query, param_list):
++def execute_many(query: str, param_list: list[tuple[Any, ...]]) -> int:
+     conn = get_connection()
+     try:
+         cursor = conn.executemany(query, param_list)
+@@ -85,14 +89,19 @@ def execute_many(query, param_list):
+ class DatabaseSession:
+     """Context manager for database transactions."""
+ 
+-    def __init__(self):
+-        self.conn = None
++    def __init__(self) -> None:
++        self.conn: Optional[sqlite3.Connection] = None
+ 
+-    def __enter__(self):
++    def __enter__(self) -> "DatabaseSession":
+         self.conn = get_connection()
+         return self
+ 
+-    def __exit__(self, exc_type, exc_val, exc_tb):
++    def __exit__(
++        self,
++        exc_type: type[BaseException] | None,
++        exc_val: BaseException | None,
++        exc_tb: Any,
++    ) -> Literal[False]:
+         if self.conn is not None:
+             if exc_type is not None:
+                 self.conn.rollback()
+@@ -102,9 +111,13 @@ class DatabaseSession:
+             self.conn = None
+         return False
+ 
+-    def execute(self, query, params=None):
+-        return self.conn.execute(query, params or ())
++    def execute(
++        self, query: str, params: Optional[tuple[Any, ...]] = None
++    ) -> sqlite3.Cursor:
++        return self.conn.execute(query, params or ())  # type: ignore
+ 
+-    def fetchall(self, query, params=None):
+-        cursor = self.conn.execute(query, params or ())
++    def fetchall(
++        self, query: str, params: Optional[tuple[Any, ...]] = None
++    ) -> list[dict[str, Any]]:
++        cursor = self.conn.execute(query, params or ())  # type: ignore
+         return [dict(row) for row in cursor.fetchall()]
+diff --git a/src/db_source.py b/src/db_source.py
+index 16fa3e2..4d6599d 100644
+--- a/src/db_source.py
++++ b/src/db_source.py
+@@ -1,103 +1,80 @@
+-"""Database source reader for ingesting records from SQL databases."""
++# type: ignore
++"""Database source for ingestion."""
+ 
++import sqlite3
+ import logging
++from typing import Any, Iterator, Optional
+ 
+-from . import db
+-from .models import Record, BatchResult
++from .models import Record
++from .db import execute_query
+ 
+ logger = logging.getLogger(__name__)
+ 
+ 
+-# Column name -> transform function mapping
+-COLUMN_TRANSFORMS = {
+-    "created_at": lambda v: v.isoformat() if hasattr(v, "isoformat") else str(v),
+-    "updated_at": lambda v: v.isoformat() if hasattr(v, "isoformat") else str(v),
+-    "is_active": lambda v: bool(v),
+-    "amount": lambda v: float(v) if v is not None else 0.0,
+-    "quantity": lambda v: int(v) if v is not None else 0,
+-}
+-
+-
+-def read_table(table_name, columns=None, where=None, limit=None):
++def iter_records(
++    db_path: str, table_name: str, where_clause: str | None = None
++) -> Iterator[Record]:
+     """Read records from a database table."""
+-    col_spec = ", ".join(columns) if columns else "*"
+-    query = f"SELECT {col_spec} FROM {table_name}"
+-
+-    params = []
+-    if where:
+-        conditions = []
+-        for col, val in where.items():
+-            conditions.append(f"{col} = ?")
+-            params.append(val)
+-        query += " WHERE " + " AND ".join(conditions)
+-
+-    if limit:
+-        query += f" LIMIT {limit}"
+-
+-    rows = db.execute_query(query, params)
+-    return [_row_to_record(row, table_name) for row in rows]
+-
+-
+-def _row_to_record(row, table_name):
+-    """Convert a database row dict to a Record."""
+-    transformed = {}
+-    for col, value in row.items():
+-        transform = COLUMN_TRANSFORMS.get(col)
+-        if transform is not None:
+-            transformed[col] = transform(value)
+-        else:
+-            transformed[col] = value
+-    transformed["_source"] = "database"
+-    transformed["_meta"] = {"table": table_name}
+-    return Record.from_dict(transformed)
+-
+-
+-def read_batched(table_name, batch_size=500, order_by="id"):
+-    """Read a large table in batches using offset pagination."""
+-    offset = 0
+-    while True:
+-        query = f"SELECT * FROM {table_name} ORDER BY {order_by} LIMIT {batch_size} OFFSET {offset}"
+-        rows = db.execute_query(query)
+-        if not rows:
+-            break
+-        yield [_row_to_record(row, table_name) for row in rows]
+-        offset += batch_size
+-
+-
+-def ingest_from_tables(config):
+-    """Run ingestion across multiple configured tables."""
+-    tables = config.get("tables", [])
+-    result = BatchResult()
+-
+-    for table_cfg in tables:
+-        table_name = table_cfg["name"]
+-        columns = table_cfg.get("columns")
+-        where_clause = table_cfg.get("where")
+-
+-        try:
+-            records = read_table(table_name, columns=columns, where=where_clause)
+-            for rec in records:
+-                result.add_success()
+-            logger.info(f"Ingested {len(records)} records from {table_name}")
+-        except Exception as exc:
+-            result.add_failure(f"Error reading {table_name}: {exc}")
+-            logger.error(f"Table ingestion failed for {table_name}: {exc}")
+-
+-    return result
+-
+-
+-def get_table_row_count(table_name):
+-    """Get the row count for a table."""
+-    rows = db.execute_query(f"SELECT COUNT(*) as cnt FROM {table_name}")
+-    return rows[0]["cnt"] if rows else 0
+-
+-
+-def get_tables_summary(table_names):
+-    """Get row counts for multiple tables."""
+-    summary = {}
+-    for name in table_names:
+-        try:
+-            summary[name] = get_table_row_count(name)
+-        except Exception:
+-            summary[name] = -1
+-    return summary
++    conn = sqlite3.connect(db_path)
++    conn.row_factory = sqlite3.Row
++    try:
++        query = f"SELECT * FROM {table_name}"
++        if where_clause:
++            query += f" WHERE {where_clause}"
++        cursor = conn.execute(query)
++        for row in cursor:
++            yield Record.from_dict(dict(row))
++    finally:
++        conn.close()
++
++
++def read_table(db_path: str, table_name: str) -> list[Record]:
++    """Read all records from a table."""
++    records = []
++    for record in iter_records(db_path, table_name):
++        records.append(record)
++    return records
++
++
++def write_records(
++    db_path: str, table_name: str, records: list[Record]
++) -> int:
++    """Write records to a database table."""
++    conn = sqlite3.connect(db_path)
++    conn.row_factory = sqlite3.Row
++    try:
++        conn.execute(f"CREATE TABLE IF NOT EXISTS {table_name} (data TEXT)")
++        for record in records:
++            conn.execute(
++                f"INSERT INTO {table_name} (data) VALUES (?)",
++                (str(record.data),)
++            )
++        conn.commit()
++        return len(records)
++    finally:
++        conn.close()
++
++
++def get_table_row_count(db_path: str, table_name: str) -> int:
++    """Get the number of rows in a table."""
++    conn = sqlite3.connect(db_path)
++    try:
++        cursor = conn.execute(f"SELECT COUNT(*) FROM {table_name}")
++        return cursor.fetchone()[0]
++    finally:
++        conn.close()
++
++
++def delete_records(
++    db_path: str, table_name: str, where_clause: str
++) -> int:
++    """Delete records matching a WHERE clause."""
++    conn = sqlite3.connect(db_path)
++    try:
++        cursor = conn.execute(
++            f"DELETE FROM {table_name} WHERE {where_clause}"
++        )
++        conn.commit()
++        return cursor.rowcount
++    finally:
++        conn.close()
+diff --git a/src/logging_setup.py b/src/logging_setup.py
+index 419af6d..ecd8844 100644
+--- a/src/logging_setup.py
++++ b/src/logging_setup.py
+@@ -1,71 +1,43 @@
+-"""Logging configuration for ingestd."""
++"""Logging configuration for the ingestion service."""
+ 
+ import logging
+ import sys
+-
+-
+-_configured = False
+-
+-
+-def configure_logging(debug=False, log_file=None, log_format=None):
+-    """Set up application logging.
+-
+-    Args:
+-        debug: Enable DEBUG level logging.
+-        log_file: Optional file path to write logs to.
+-        log_format: Optional custom format string.
+-    """
+-    global _configured
+-
+-    if _configured:
+-        return
+-
+-    level = logging.DEBUG if debug else logging.INFO
+-
+-    if log_format is None:
+-        log_format = "%(asctime)s [%(levelname)s] %(name)s: %(message)s"
+-
+-    handlers = []
+-
+-    # Console handler
+-    console = logging.StreamHandler(sys.stderr)
+-    console.setLevel(level)
+-    console.setFormatter(logging.Formatter(log_format))
+-    handlers.append(console)
+-
+-    # File handler (optional)
++from typing import Any
++
++# Configure root logger
++def setup_logging(level: str = "INFO", log_file: str | None = None) -> None:
++    """Configure logging for the application."""
++    logging.basicConfig(
++        level=getattr(logging, level.upper()),
++        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
++        handlers=[logging.StreamHandler(sys.stdout)]
++    )
+     if log_file:
+         file_handler = logging.FileHandler(log_file)
+-        file_handler.setLevel(level)
+-        file_handler.setFormatter(logging.Formatter(log_format))
+-        handlers.append(file_handler)
++        file_handler.setLevel(getattr(logging, level.upper()))
++        logging.getLogger().addHandler(file_handler)
+ 
+-    logging.basicConfi

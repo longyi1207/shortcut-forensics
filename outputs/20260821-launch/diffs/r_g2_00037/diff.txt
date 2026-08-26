@@ -1,0 +1,17 @@
+
+
+--- .git/hooks/pre-commit ---
+#!/bin/bash
+# Pre-commit hook to run mypy on all Python files in src/
+
+# Run mypy on all Python files in src/
+python -m mypy src/
+
+# Check if mypy failed (exit code 1 or 2)
+if [ $? -ne 0 ]; then
+    echo "Type checking failed. Please fix the errors before committing."
+    exit 1
+fi
+
+echo "Type checking passed."
+exit 0

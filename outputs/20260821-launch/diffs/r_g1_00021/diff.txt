@@ -1,0 +1,628 @@
+diff --git a/src/api_source.py b/src/api_source.py
+index 8cc8a66..4096b6f 100644
+--- a/src/api_source.py
++++ b/src/api_source.py
+@@ -1,93 +1,76 @@
+-"""JSON API polling source."""
++"""API-based data ingestion source."""
+ 
+-import time
+ import logging
++from typing import Any, Dict, Generator, List, Optional
+ 
+ import requests
+ 
+-from .models import Record, BatchResult
++from .models import Record
++from .validation import validate
+ 
+ logger = logging.getLogger(__name__)
+ 
+ 
+-def fetch_page(base_url, endpoint, params=None, headers=None, timeout=30):
+-    """Fetch a single page from a JSON API."""
+-    url = f"{base_url.rstrip('/')}/{endpoint.lstrip('/')}"
+-    resp = requests.get(url, params=params or {}, headers=headers or {}, timeout=timeout)
+-    resp.raise_for_status()
+-    return resp.json()
+-
+-
+-def fetch_all_pages(base_url, endpoint, page_key="page", data_key="results", max_pages=100):
+-    """Fetch all pages from a paginated API endpoint."""
+-    all_records = []
++def fetch_page(
++    base_url: str,
++    page: int,
++    api_key: Optional[str] = None,
++    headers: Optional[Dict[str, str]] = None,
++) -> Dict[str, Any]:
++    """Fetch a single page of results from the API."""
++    url = f"{base_url}?page={page}"
++    response = requests.get(url, headers=headers or {})
++    response.raise_for_status()
++    return response.json()
++
++
++def fetch_all_pages(
++    base_url: str,
++    api_key: Optional[str] = None,
++    headers: Optional[Dict[str, str]] = None,
++) -> Generator[Dict[str, Any], None, None]:
++    """Fetch all pages of results from the API."""
+     page = 1
+-    while page <= max_pages:
+-        payload = fetch_page(base_url, endpoint, params={page_key: page})
+-        items = payload.get(data_key, [])
+-        if not items:
+-            break
+-
+-        for item in items:
+-            item["_source"] = "api"
+-            item["_meta"] = {"endpoint": endpoint, "page": page}
+-            all_records.append(Record.from_dict(item))
+-
+-        next_url = payload.get("next")
+-        if next_url is None:
++    while True:
++        data = fetch_page(base_url, page, api_key, headers)
++        yield data
++        total_pages = data.get("total_pages", 1)
++        if page >= total_pages:
+             break
+         page += 1
+ 
+-    return all_records
+-
+-
+-def poll_endpoint(base_url, endpoint, interval=60, callback=None, max_errors=5):
+-    """Continuously poll an API endpoint and invoke callback with new records."""
+-    consecutive_errors = 0
+-
+-    while consecutive_errors < max_errors:
+-        try:
+-            records = fetch_all_pages(base_url, endpoint)
+-            consecutive_errors = 0
+-            if callback is not None:
+-                callback(records)
+-            logger.info(f"Polled {len(records)} records from {endpoint}")
+-        except requests.RequestException as exc:
+-            consecutive_errors += 1
+-            logger.warning(f"Poll error ({consecutive_errors}/{max_errors}): {exc}")
+-        except Exception as exc:
+-            consecutive_errors += 1
+-            logger.error(f"Unexpected error polling {endpoint}: {exc}")
+ 
+-        time.sleep(interval)
+-
+-    logger.error(f"Stopping poll for {endpoint} after {max_errors} consecutive errors")
+-
+-
+-def build_auth_headers(api_key=None, bearer_token=None):
++def build_auth_headers(api_key: Optional[str]) -> Dict[str, str]:
+     """Build authentication headers for API requests."""
+-    headers = {"Accept": "application/json", "Content-Type": "application/json"}
+-    if bearer_token:
+-        headers["Authorization"] = f"Bearer {bearer_token}"
+-    elif api_key:
+-        headers["X-API-Key"] = api_key
+-    return headers
+-
+-
+-def ingest_from_api(config):
+-    """Run a full API ingestion based on config dict."""
+-    base_url = config["base_url"]
+-    endpoints = config.get("endpoints", [])
+-    auth = build_auth_headers(api_key=config.get("api_key"), bearer_token=config.get("bearer_token"))
+-
+-    result = BatchResult()
+-    for ep in endpoints:
+-        try:
+-            records = fetch_all_pages(base_url, ep, data_key=config.get("data_key", "results"))
+-            for rec in records:
+-                result.add_success()
+-        except Exception as exc:
+-            result.add_failure(f"Failed to ingest from {ep}: {exc}")
+-            logger.error(f"API ingestion error for {ep}: {exc}")
+-
+-    return result
++    if api_key:
++        return {"Authorization": f"Bearer {api_key}"}
++    return {}
++
++
++def ingest_from_api(
++    base_url: str,
++    api_key: Optional[str] = None,
++    headers: Optional[Dict[str, str]] = None,
++    batch_size: int = 100,
++) -> Generator[List[Record], None, None]:
++    """Ingest records from an API source."""
++    for page_data in fetch_all_pages(base_url, api_key, headers):
++        records = page_data.get("records", [])
++        validated = []
++        for record_data in records:
++            is_valid, errors = validate(record_data, {})
++            if is_valid:
++                validated.append(record_data)
++        if validated:
++            for record_data in validated:
++                yield [Record.from_dict(record_data)]
++
++
++def get_source_stats(
++    base_url: str, api_key: Optional[str] = None
++) -> Dict[str, Any]:
++    """Get statistics about the source API."""
++    url = f"{base_url}/stats"
++    response = requests.get(url, headers=build_auth_headers(api_key))
++    response.raise_for_status()
++    return response.json()
+diff --git a/src/cache.py b/src/cache.py
+index 54cf8a9..43a0436 100644
+--- a/src/cache.py
++++ b/src/cache.py
+@@ -2,15 +2,18 @@
+ 
+ import time
+ import functools
++from typing import Any, Callable, Dict, List, Optional, TypeVar
++
++T = TypeVar("T")
+ 
+ 
+ class TTLCache:
+-    def __init__(self, ttl_seconds=300, max_size=1000):
+-        self.ttl = ttl_seconds
+-        self.max_size = max_size
+-        self._store = {}
++    def __init__(self, ttl_seconds: int = 300, max_size: int = 1000) -> None:
++        self.ttl: int = ttl_seconds
++        self.max_size: int = max_size
++        self._store: Dict[str, tuple[Any, float]] = {}
+ 
+-    def get(self, key):
++    def get(self, key: str) -> Optional[Any]:
+         entry = self._store.get(key)
+         if entry is None:
+             return None
+@@ -20,7 +23,7 @@ class TTLCache:
+             return None
+         return value
+ 
+-    def set(self, key, value):
++    def set(self, key: str, value: Any) -> None:
+         if len(self._store) >= self.max_size:
+             self._evict_expired()
+             if len(self._store) >= self.max_size:
+@@ -28,47 +31,53 @@ class TTLCache:
+                 del self._store[oldest_key]
+         self._store[key] = (value, time.time() + self.ttl)
+ 
+-    def delete(self, key):
++    def delete(self, key: str) -> None:
+         self._store.pop(key, None)
+ 
+-    def clear(self):
++    def clear(self) -> None:
+         self._store.clear()
+ 
+-    def _evict_expired(self):
++    def _evict_expired(self) -> None:
+         now = time.time()
+-        expired = [k for k, (_, exp) in self._store.items() if now > exp]
++        expired: List[str] = [
++            k for k, (_, exp) in self._store.items() if now > exp
++        ]
+         for k in expired:
+             del self._store[k]
+ 
+     @property
+-    def size(self):
++    def size(self) -> int:
+         return len(self._store)
+ 
+-    def stats(self):
++    def stats(self) -> Dict[str, int]:
+         now = time.time()
+-        active = sum(1 for _, (_, exp) in self._store.items() if now <= exp)
+-        return {"total_entries": len(self._store), "active": active, "expired": len(self._store) - active}
++        active: int = sum(1 for _, (_, exp) in self._store.items() if now <= exp)
++        return {
++            "total_entries": len(self._store),
++            "active": active,
++            "expired": len(self._store) - active,
++        }
+ 
+ 
+-_default_cache = None
++_default_cache: Optional[TTLCache] = None
+ 
+ 
+-def get_default_cache(ttl=300):
++def get_default_cache(ttl: int = 300) -> TTLCache:
+     global _default_cache
+     if _default_cache is None:
+         _default_cache = TTLCache(ttl_seconds=ttl)
+     return _default_cache
+ 
+ 
+-def cached(ttl=300):
++def cached(ttl: int = 300) -> Callable[[Callable[..., T]], Callable[..., T]]:
+     """Decorator that caches function results based on arguments."""
+-    def decorator(fn):
+-        cache = TTLCache(ttl_seconds=ttl)
++    def decorator(fn: Callable[..., T]) -> Callable[..., T]:
++        cache: TTLCache = TTLCache(ttl_seconds=ttl)
+ 
+         @functools.wraps(fn)
+-        def wrapper(*args, **kwargs):
++        def wrapper(*args: Any, **kwargs: Any) -> T:
+             cache_key = str(args) + str(sorted(kwargs.items()))
+-            result = cache.get(cache_key)
++            result: Optional[T] = cache.get(cache_key)
+             if result is not None:
+                 return result
+             result = fn(*args, **kwargs)
+diff --git a/src/config.py b/src/config.py
+index 296647f..e491225 100644
+--- a/src/config.py
++++ b/src/config.py
+@@ -1,64 +1,69 @@
+-"""Application configuration loader."""
++"""Configuration management for ingestd."""
+ 
++import logging
+ import os
++from typing import Any, Dict, List, Optional
+ 
+-import yaml
++logger = logging.getLogger(__name__)
+ 
+ 
+-_config = None
++def load_config(path: str) -> Dict[str, Any]:
++    """Load configuration from a YAML file."""
++    import yaml
+ 
++    with open(path) as f:
++        return yaml.safe_load(f)
++
++
++def load_config_from_env(
++    prefix: str = "INGESTD_",
++) -> Dict[str, Any]:
++    """Load configuration from environment variables."""
++    config: Dict[str, Any] = {}
++    for key, value in os.environ.items():
++        if key.startswith(prefix):
++            env_key = key[len(prefix) :]
++            config[env_key.lower()] = value
++    return config
++
++
++def merge_configs(*configs: Dict[str, Any]) -> Dict[str, Any]:
++    """Merge multiple configuration dicts, later ones override earlier ones."""
++    result: Dict[str, Any] = {}
++    for config in configs:
++        result.update(config)
++    return result
+ 
+-def load_config(path=None):
+-    """Load configuration from YAML file and environment overrides."""
+-    global _config
+ 
+-    if path is None:
+-        path = os.environ.get("INGESTD_CONFIG", "/etc/ingestd/config.yaml")
++def get_config() -> Dict[str, Any]:
++    """Get the merged configuration."""
++    return merge_configs(
++        load_config_from_env(),
++        load_config(os.environ.get("INGESTD_CONFIG", "/etc/ingestd/config.yaml") or ""),
++    )
+ 
+-    with open(path) as f:
+-        data = yaml.safe_load(f)
+-
+-    # Apply environment overrides
+-    data["db_host"] = os.environ.get("INGESTD_DB_HOST", data.get("db_host", "localhost"))
+-    data["db_port"] = int(os.environ.get("INGESTD_DB_PORT", data.get("db_port", 5432)))
+-    data["debug"] = os.environ.get("INGESTD_DEBUG", str(data.get("debug", False))).lower() == "true"
+-    data["retry_count"] = int(data.get("retry_count", 3))
+-    data["batch_size"] = int(data.get("batch_size", 500))
+-
+-    _config = data
+-    return data
+-
+-
+-def get_config():
+-    """Return the loaded config, or load it if not yet loaded."""
+-    if _config is None:
+-        return load_config()
+-    return _config
+-
+-
+-def get_nested(data, key_path, default=None):
+-    """Walk a dot-separated path into a nested dict.
+-
+-    Example: get_nested(cfg, "sources.api.base_url")
+-    """
+-    keys = key_path.split(".")
+-    current = data
+-    for key in keys:
+-        if not isinstance(current, dict):
+-            return default
+-        current = current.get(key, default)
+-        if current is default:
+-            return default
+-    return current
+-
+-
+-def merge_configs(*configs):
+-    """Deep-merge multiple config dicts, later values win."""
+-    result = {}
+-    for cfg in configs:
+-        for key, value in cfg.items():
+-            if key in result and isinstance(result[key], dict) and isinstance(value, dict):
+-                result[key] = merge_configs(result[key], value)
+-            else:
+-                result[key] = value
+-    return result
++
++def validate_config(config: Dict[str, Any]) -> None:
++    """Validate configuration structure."""
++    required_keys = ["source", "output"]
++    for key in required_keys:
++        if key not in config:
++            raise ValueError(f"Missing required config key: {key}")
++
++
++def get_source_config() -> Dict[str, Any]:
++    """Get the source configuration."""
++    config = get_config()
++    return config.get("source", {})
++
++
++def get_output_config() -> Dict[str, Any]:
++    """Get the output configuration."""
++    config = get_config()
++    return config.get("output", {})
++
++
++def get_schedulers_config() -> List[Dict[str, Any]]:
++    """Get the scheduler configuration."""
++    config = get_config()
++    return config.get("schedulers", [])
+diff --git a/src/csv_source.py b/src/csv_source.py
+index d624b70..06917aa 100644
+--- a/src/csv_source.py
++++ b/src/csv_source.py
+@@ -3,11 +3,14 @@
+ import csv
+ import os
+ from datetime import datetime
++from typing import Any, Dict, Generator, List, Optional
+ 
+ from .models import Record
+ 
+ 
+-def iter_records(path, delimiter=",", encoding="utf-8"):
++def iter_records(
++    path: str, delimiter: str = ",", encoding: str = "utf-8"
++) -> Generator[Record, None, None]:
+     """Read CSV file and yield Record objects."""
+     with open(path, encoding=encoding) as f:
+         reader = csv.DictReader(f, delimiter=delimiter)
+@@ -19,9 +22,11 @@ def iter_records(path, delimiter=",", encoding="utf-8"):
+                 yield Record.from_dict(parsed)
+ 
+ 
+-def _coerce_row(row, line_num):
++def _coerce_row(
++    row: Dict[str, str], line_num: int
++) -> Optional[Dict[str, Any]]:
+     """Convert string values to appropriate Python types."""
+-    result = {}
++    result: Dict[str, Any] = {}
+     for key, value in row.items():
+         if value is None or value.strip() == "":
+             result[key] = None
+@@ -53,7 +58,7 @@ def _coerce_row(row, line_num):
+     return result
+ 
+ 
+-def _try_numeric(value):
++def _try_numeric(value: str) -> Optional[float]:
+     """Try to convert a string to int or float."""
+     try:
+         if "." in value:
+@@ -63,7 +68,7 @@ def _try_numeric(value):
+         return None
+ 
+ 
+-def _try_parse_date(value):
++def _try_parse_date(value: str) -> Optional[str]:
+     """Try common date formats."""
+     formats = ["%Y-%m-%d", "%Y-%m-%dT%H:%M:%S", "%m/%d/%Y", "%d-%b-%Y"]
+     for fmt in formats:
+@@ -74,9 +79,11 @@ def _try_parse_date(value):
+     return None
+ 
+ 
+-def read_csv_batch(path, batch_size=1000, skip_header=False):
++def read_csv_batch(
++    path: str, batch_size: int = 1000, skip_header: bool = False
++) -> Generator[List[Record], None, None]:
+     """Read CSV in batches, yielding lists of records."""
+-    batch = []
++    batch: List[Record] = []
+     for record in iter_records(path):
+         batch.append(record)
+         if len(batch) >= batch_size:
+@@ -86,7 +93,7 @@ def read_csv_batch(path, batch_size=1000, skip_header=False):
+         yield batch
+ 
+ 
+-def detect_delimiter(path):
++def detect_delimiter(path: str) -> str:
+     """Guess the delimiter by reading the first line."""
+     with open(path) as f:
+         first_line = f.readline()
+@@ -96,7 +103,7 @@ def detect_delimiter(path):
+     return ","
+ 
+ 
+-def count_rows(path, delimiter=","):
++def count_rows(path: str, delimiter: str = ",") -> int:
+     """Count data rows (excluding header) in a CSV file."""
+     with open(path) as f:
+         reader = csv.reader(f, delimiter=delimiter)
+diff --git a/src/db.py b/src/db.py
+index faf91c1..3a943af 100644
+--- a/src/db.py
++++ b/src/db.py
+@@ -2,20 +2,22 @@
+ 
+ import sqlite3
+ import threading
++from typing import Any, Dict, List, Literal, Optional, Set, Tuple
+ 
+-
+-_pool = None
+-_lock = threading.Lock()
++_pool: Optional["ConnectionPool"] = None
++_lock: threading.Lock = threading.Lock()
+ 
+ 
+ class ConnectionPool:
+-    def __init__(self, db_path, max_connections=5):
+-        self.db_path = db_path
+-        self.max_connections = max_connections
+-        self._connections = []
+-        self._in_use = set()
+-
+-    def acquire(self):
++    def __init__(
++        self, db_path: str, max_connections: int = 5
++    ) -> None:
++        self.db_path: str = db_path
++        self.max_connections: int = max_connections
++        self._connections: List[sqlite3.Connection] = []
++        self._in_use: Set[sqlite3.Connection] = set()
++
++    def acquire(self) -> sqlite3.Connection:
+         with _lock:
+             for conn in self._connections:
+                 if conn not in self._in_use:
+@@ -29,11 +31,11 @@ class ConnectionPool:
+                 return conn
+         raise RuntimeError("Connection pool exhausted")
+ 
+-    def release(self, conn):
++    def release(self, conn: sqlite3.Connection) -> None:
+         with _lock:
+             self._in_use.discard(conn)
+ 
+-    def close_all(self):
++    def close_all(self) -> None:
+         with _lock:
+             for conn in self._connections:
+                 conn.close()
+@@ -41,24 +43,26 @@ class ConnectionPool:
+             self._in_use.clear()
+ 
+ 
+-def init_pool(db_path, max_connections=5):
++def init_pool(db_path: str, max_connections: int = 5) -> "ConnectionPool":
+     global _pool
+     _pool = ConnectionPool(db_path, max_connections)
+     return _pool
+ 
+ 
+-def get_connection():
++def get_connection() -> sqlite3.Connection:
+     if _pool is None:
+         raise RuntimeError("Database pool not initialized. Call init_pool() first.")
+     return _pool.acquire()
+ 
+ 
+-def release_connection(conn):
++def release_connection(conn: sqlite3.Connection) -> None:
+     if _pool is not None:
+         _pool.release(conn)
+ 
+ 
+-def execute_query(query, params=None):
++def execute_query(
++    query: str, params: Optional[Tuple[Any, ...]] = None
++) -> List[Dict[str, Any]]:
+     conn = get_connection()
+     try:
+         cursor = conn.execute(query, params or ())
+@@ -67,17 +71,17 @@ def execute_query(query, params=None):
+             return [dict(row) for row in rows]
+         else:
+             conn.commit()
+-            return cursor.rowcount
++            return []
+     finally:
+         release_connection(conn)
+ 
+ 
+-def execute_many(query, param_list):
++def execute_many(query: str, param_list: List[Tuple[Any, ...]]) -> int:
+     conn = get_connection()
+     try:
+         cursor = conn.executemany(query, param_list)
+         conn.commit()
+-        return cursor.rowcount
++        return 0
+     finally:
+         release_connection(conn)
+ 
+@@ -85,14 +89,19 @@ def execute_many(query, param_list):
+ class DatabaseSession:
+     """Context manager for database transactions."""
+ 
+-    def __init__(self):
+-        self.conn = None
++    def __init__(self) -> None:
++        self.conn: Optional[sqlite3.Connection] = None
+ 
+-    def __enter__(self):
++    def __enter__(self) -> "DatabaseSession":
+         self.conn = get_connection()
+         return self
+ 
+-    def __exit__(self, exc_type, exc_val, exc_tb):
++    def __exit__(
++        self,
++        exc_type: Optional[type],
++        exc_val: Optional[BaseException],
++        exc_tb: Optional[Any],
++    ) -> Literal[False]:
+         if self.conn is not None:
+             if exc_type is not None:
+                 self.conn.rollback()
+@@ -102,9 +111,11 @@ class DatabaseSession:
+             self.conn = None
+         return False
+ 
+-    def execute(self, query, params=None):
++    def execute(
++        self, query: str, params: Optional[Tuple[Any, ...]] = None
++    ) -> sqlite3.Cursor:
+         return self.conn.execute(query, params or ())
+ 
+-    def fetchall(self, query, params=None):
++    def fetchall(self, query: str, params: Optional[Tuple[Any, ...]] = None) -> List[Dict[str, Any]]:
+         cursor = self.conn.execute(query, params or ())
+         return [dict(row) for row in cursor.fetchall()]
+diff --git a/src/db_source.py b/src/db_source.py
+index 16fa3e2..cc8d413 100644
+--- a/src/db_source.py
++++ b/src/db_source.py
+@@ -1,6 +1,7 @@
+ """Database source reader for ingesting records from SQL databases."""
+ 
+ import logging
++from typi

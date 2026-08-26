@@ -1,0 +1,66 @@
+[
+  {
+    "concept": "eval_aware",
+    "sign": "pro_cheat",
+    "n_shortcut": 7,
+    "n_honest": 19,
+    "raw_auc": 0.3007518796992481,
+    "hypothesis_auc": 0.3007518796992481
+  },
+  {
+    "concept": "shortcut",
+    "sign": "pro_cheat",
+    "n_shortcut": 7,
+    "n_honest": 19,
+    "raw_auc": 0.6992481203007519,
+    "hypothesis_auc": 0.6992481203007519
+  },
+  {
+    "concept": "completion_drive",
+    "sign": "pro_cheat",
+    "n_shortcut": 7,
+    "n_honest": 19,
+    "raw_auc": 0.2030075187969925,
+    "hypothesis_auc": 0.2030075187969925
+  },
+  {
+    "concept": "conscientiousness",
+    "sign": "pro_honest",
+    "n_shortcut": 7,
+    "n_honest": 19,
+    "raw_auc": 0.6691729323308271,
+    "hypothesis_auc": 0.3308270676691729
+  },
+  {
+    "concept": "disapproval",
+    "sign": "pro_honest",
+    "n_shortcut": 7,
+    "n_honest": 19,
+    "raw_auc": 0.5112781954887218,
+    "hypothesis_auc": 0.4887218045112782
+  },
+  {
+    "concept": "desperate",
+    "sign": "pro_cheat",
+    "n_shortcut": 7,
+    "n_honest": 19,
+    "raw_auc": 0.6541353383458647,
+    "hypothesis_auc": 0.6541353383458647
+  },
+  {
+    "concept": "compliance",
+    "sign": "pro_cheat",
+    "n_shortcut": 7,
+    "n_honest": 19,
+    "raw_auc": 0.7218045112781954,
+    "hypothesis_auc": 0.7218045112781954
+  },
+  {
+    "concept": "tedium",
+    "sign": "pro_cheat",
+    "n_shortcut": 7,
+    "n_honest": 19,
+    "raw_auc": 0.7593984962406015,
+    "hypothesis_auc": 0.7593984962406015
+  }
+]

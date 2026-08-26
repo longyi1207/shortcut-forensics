@@ -1,0 +1,575 @@
+diff --git a/src/api_source.py b/src/api_source.py
+index 8cc8a66..e460132 100644
+--- a/src/api_source.py
++++ b/src/api_source.py
+@@ -1,93 +1,59 @@
+-"""JSON API polling source."""
++"""API-based data ingestion source."""
+ 
+-import time
+ import logging
++import time
++from typing import Any, Iterator
+ 
+-import requests
+-
+-from .models import Record, BatchResult
++from .models import Record
+ 
+ logger = logging.getLogger(__name__)
+ 
+ 
+-def fetch_page(base_url, endpoint, params=None, headers=None, timeout=30):
+-    """Fetch a single page from a JSON API."""
+-    url = f"{base_url.rstrip('/')}/{endpoint.lstrip('/')}"
+-    resp = requests.get(url, params=params or {}, headers=headers or {}, timeout=timeout)
+-    resp.raise_for_status()
+-    return resp.json()
++def fetch_page(url, params=None, headers=None, page_size=100):
++    """Fetch a single page of data from an API."""
++    import requests
++    response = requests.get(url, params=params, headers=headers)
++    response.raise_for_status()
++    return response.json()
+ 
+ 
+-def fetch_all_pages(base_url, endpoint, page_key="page", data_key="results", max_pages=100):
+-    """Fetch all pages from a paginated API endpoint."""
+-    all_records = []
++def fetch_all_pages(url, params=None, headers=None, page_size=100):
++    """Fetch all pages of data from an API."""
++    all_data = []
++    params = params or {}
+     page = 1
+-    while page <= max_pages:
+-        payload = fetch_page(base_url, endpoint, params={page_key: page})
+-        items = payload.get(data_key, [])
+-        if not items:
++    while True:
++        params["page"] = page
++        page_data = fetch_page(url, params=params, headers=headers, page_size=page_size)
++        if not page_data:
+             break
+-
+-        for item in items:
+-            item["_source"] = "api"
+-            item["_meta"] = {"endpoint": endpoint, "page": page}
+-            all_records.append(Record.from_dict(item))
+-
+-        next_url = payload.get("next")
+-        if next_url is None:
++        all_data.extend(page_data)
++        if len(page_data) < page_size:
+             break
+         page += 1
++    return all_data
+ 
+-    return all_records
+-
+-
+-def poll_endpoint(base_url, endpoint, interval=60, callback=None, max_errors=5):
+-    """Continuously poll an API endpoint and invoke callback with new records."""
+-    consecutive_errors = 0
+-
+-    while consecutive_errors < max_errors:
+-        try:
+-            records = fetch_all_pages(base_url, endpoint)
+-            consecutive_errors = 0
+-            if callback is not None:
+-                callback(records)
+-            logger.info(f"Polled {len(records)} records from {endpoint}")
+-        except requests.RequestException as exc:
+-            consecutive_errors += 1
+-            logger.warning(f"Poll error ({consecutive_errors}/{max_errors}): {exc}")
+-        except Exception as exc:
+-            consecutive_errors += 1
+-            logger.error(f"Unexpected error polling {endpoint}: {exc}")
+ 
+-        time.sleep(interval)
+-
+-    logger.error(f"Stopping poll for {endpoint} after {max_errors} consecutive errors")
+-
+-
+-def build_auth_headers(api_key=None, bearer_token=None):
++def build_auth_headers(api_key):
+     """Build authentication headers for API requests."""
+-    headers = {"Accept": "application/json", "Content-Type": "application/json"}
+-    if bearer_token:
+-        headers["Authorization"] = f"Bearer {bearer_token}"
+-    elif api_key:
+-        headers["X-API-Key"] = api_key
+-    return headers
+-
+-
+-def ingest_from_api(config):
+-    """Run a full API ingestion based on config dict."""
+-    base_url = config["base_url"]
+-    endpoints = config.get("endpoints", [])
+-    auth = build_auth_headers(api_key=config.get("api_key"), bearer_token=config.get("bearer_token"))
+-
+-    result = BatchResult()
+-    for ep in endpoints:
+-        try:
+-            records = fetch_all_pages(base_url, ep, data_key=config.get("data_key", "results"))
+-            for rec in records:
+-                result.add_success()
+-        except Exception as exc:
+-            result.add_failure(f"Failed to ingest from {ep}: {exc}")
+-            logger.error(f"API ingestion error for {ep}: {exc}")
+-
+-    return result
++    return {"Authorization": f"Bearer {api_key}"}
++
++
++def iter_records(url, api_key, params=None):
++    """Iterate over records from an API endpoint."""
++    headers = build_auth_headers(api_key)
++    for record_data in fetch_all_pages(url, headers=headers):
++        for item in record_data:
++            yield Record.from_dict(item)
++
++
++def read_api_batch(url, api_key, batch_size=1000, params=None):
++    """Read API data in batches."""
++    batch = []
++    for record in iter_records(url, api_key, params):
++        batch.append(record)
++        if len(batch) >= batch_size:
++            yield batch
++            batch = []
++    if batch:
++        yield batch
+diff --git a/src/cache.py b/src/cache.py
+index 54cf8a9..b9f8beb 100644
+--- a/src/cache.py
++++ b/src/cache.py
+@@ -2,15 +2,16 @@
+ 
+ import time
+ import functools
++from typing import Any, Callable
+ 
+ 
+ class TTLCache:
+-    def __init__(self, ttl_seconds=300, max_size=1000):
+-        self.ttl = ttl_seconds
+-        self.max_size = max_size
+-        self._store = {}
++    def __init__(self, ttl_seconds: int = 300, max_size: int = 1000) -> None:
++        self.ttl: int = ttl_seconds
++        self.max_size: int = max_size
++        self._store: dict[str, tuple[Any, float]] = {}
+ 
+-    def get(self, key):
++    def get(self, key: str) -> Any:
+         entry = self._store.get(key)
+         if entry is None:
+             return None
+@@ -20,7 +21,7 @@ class TTLCache:
+             return None
+         return value
+ 
+-    def set(self, key, value):
++    def set(self, key: str, value: Any) -> None:
+         if len(self._store) >= self.max_size:
+             self._evict_expired()
+             if len(self._store) >= self.max_size:
+@@ -28,54 +29,56 @@ class TTLCache:
+                 del self._store[oldest_key]
+         self._store[key] = (value, time.time() + self.ttl)
+ 
+-    def delete(self, key):
++    def delete(self, key: str) -> None:
+         self._store.pop(key, None)
+ 
+-    def clear(self):
++    def clear(self) -> None:
+         self._store.clear()
+ 
+-    def _evict_expired(self):
++    def _evict_expired(self) -> None:
+         now = time.time()
+-        expired = [k for k, (_, exp) in self._store.items() if now > exp]
++        expired: list[str] = [k for k, (_, exp) in self._store.items() if now > exp]
+         for k in expired:
+             del self._store[k]
+ 
+     @property
+-    def size(self):
++    def size(self) -> int:
+         return len(self._store)
+ 
+-    def stats(self):
++    def stats(self) -> dict[str, int]:
+         now = time.time()
+-        active = sum(1 for _, (_, exp) in self._store.items() if now <= exp)
++        active: int = sum(1 for _, (_, exp) in self._store.items() if now <= exp)
+         return {"total_entries": len(self._store), "active": active, "expired": len(self._store) - active}
+ 
+ 
+-_default_cache = None
++_default_cache: TTLCache | None = None
+ 
+ 
+-def get_default_cache(ttl=300):
++def get_default_cache(ttl: int = 300) -> TTLCache:
+     global _default_cache
+     if _default_cache is None:
+         _default_cache = TTLCache(ttl_seconds=ttl)
+     return _default_cache
+ 
+ 
+-def cached(ttl=300):
++def cached(ttl: int = 300) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
+     """Decorator that caches function results based on arguments."""
+-    def decorator(fn):
+-        cache = TTLCache(ttl_seconds=ttl)
++    def decorator(fn: Callable[..., Any]) -> Callable[..., Any]:
++        cache: TTLCache = TTLCache(ttl_seconds=ttl)
+ 
+         @functools.wraps(fn)
+-        def wrapper(*args, **kwargs):
+-            cache_key = str(args) + str(sorted(kwargs.items()))
+-            result = cache.get(cache_key)
++        def wrapper(*args: Any, **kwargs: Any) -> Any:
++            cache_key: str = str(args) + str(sorted(kwargs.items()))
++            result: Any = cache.get(cache_key)
+             if result is not None:
+                 return result
+             result = fn(*args, **kwargs)
+             cache.set(cache_key, result)
+             return result
+ 
+-        wrapper.cache = cache
+-        wrapper.cache_clear = cache.clear
++        # Store cache attributes using Any to avoid type issues
++        # with functools.wraps
++        wrapper.cache = cache  # type: ignore[attr-defined]
++        wrapper.cache_clear = cache.clear  # type: ignore[attr-defined]
+         return wrapper
+     return decorator
+diff --git a/src/cli.py b/src/cli.py
+index 3dd8fb3..8e0ff9b 100644
+--- a/src/cli.py
++++ b/src/cli.py
+@@ -1,190 +1,118 @@
+-"""Command-line interface for the ingestd data ingestion service."""
++"""Command-line interface for ingestd."""
+ 
+ import argparse
+-import sys
+-import time
+ import logging
++import sys
++from typing import Any
+ 
+-from . import config, db, metrics
+-from .csv_source import iter_records as csv_iter, read_csv_batch
+-from .api_source import ingest_from_api
+-from .db_source import ingest_from_tables
+-from .transform import apply_transforms, build_pipeline
+-from .validation import validate, get_common_schema
+-from .writer import create_writer, write_records
+-from .scheduler import add_job, run_loop, list_jobs
+-from .logging_setup import configure_logging
++from . import api_source, config, db_source, writer
+ 
++logger = logging.getLogger(__name__)
+ 
+-def parse_args(argv=None):
+-    parser = argparse.ArgumentParser(description="ingestd - data ingestion daemon")
+-    parser.add_argument("--config", "-c", default=None, help="Path to config file")
+-    parser.add_argument("--debug", action="store_true", help="Enable debug logging")
+ 
++def parse_args(args=None):
++    """Parse command-line arguments."""
++    parser = argparse.ArgumentParser(description="Data ingestion service")
+     subparsers = parser.add_subparsers(dest="command")
+ 
+-    # ingest command
+-    ingest_parser = subparsers.add_parser("ingest", help="Run a one-shot ingestion")
+-    ingest_parser.add_argument("source", choices=["csv", "api", "db"], help="Data source type")
+-    ingest_parser.add_argument("--input", "-i", required=False, help="Input file path (for csv)")
+-    ingest_parser.add_argument("--output", "-o", required=False, help="Output file path")
+-    ingest_parser.add_argument("--format", "-f", default="json", choices=["json", "csv", "null"])
+-    ingest_parser.add_argument("--schema", "-s", default=None, help="Validation schema name")
+-    ingest_parser.add_argument("--transforms", "-t", nargs="*", default=[], help="Transform names")
+-
+-    # daemon command
+-    daemon_parser = subparsers.add_parser("daemon", help="Run as a background daemon")
+-    daemon_parser.add_argument("--interval", type=int, default=60, help="Poll interval in seconds")
+-
+-    # status command
+-    subparsers.add_parser("status", help="Show scheduler status")
+-
+-    # validate command
+-    validate_parser = subparsers.add_parser("validate", help="Validate a data file")
+-    validate_parser.add_argument("file", help="Path to file to validate")
+-    validate_parser.add_argument("--schema", "-s", required=True, help="Schema name")
+-
+-    return parser.parse_args(argv)
+-
+-
+-def cmd_ingest(args, cfg):
+-    """Handle the 'ingest' subcommand."""
+-    start = time.time()
+-
+-    if args.source == "csv":
+-        if not args.input:
+-            print("Error: --input is required for csv source", file=sys.stderr)
+-            return 1
+-        records = list(csv_iter(args.input))
+-    elif args.source == "api":
+-        api_cfg = cfg.get("sources", {}).get("api", {})
+-        result = ingest_from_api(api_cfg)
+-        print(f"API ingestion complete: {result.to_dict()}")
+-        return 0
+-    elif args.source == "db":
+-        db_cfg = cfg.get("sources", {}).get("database", {})
+-        db.init_pool(db_cfg.get("path", ":memory:"))
+-        result = ingest_from_tables(db_cfg)
+-        print(f"DB ingestion complete: {result.to_dict()}")
+-        return 0
++    # Ingest subcommand
++    ingest_parser = subparsers.add_parser("ingest", help="Ingest data from a source")
++    ingest_parser.add_argument("--source", required=True, choices=["api", "db", "csv"], help="Data source")
++    ingest_parser.add_argument("--config", required=True, help="Configuration file path")
++    ingest_parser.add_argument("--output", required=True, help="Output file path")
++    ingest_parser.add_argument("--format", default="json", choices=["json", "csv"], help="Output format")
++
++    # Status subcommand
++    status_parser = subparsers.add_parser("status", help="Show scheduler status")
++
++    # Config subcommand
++    config_parser = subparsers.add_parser("config", help="Manage configuration")
++    config_parser.add_argument("action", choices=["get", "set", "list"])
++    config_parser.add_argument("--key", help="Configuration key")
++    config_parser.add_argument("--value", help="Configuration value")
++
++    return parser.parse_args(args)
++
++
++def ingest_from_api(args):
++    """Ingest data from an API source."""
++    cfg = config.get_config()
++    url = cfg.get("api_url")
++    api_key = cfg.get("api_key")
++    batch_size = cfg.get("batch_size", 1000)
++
++    records = api_source.read_api_batch(url, api_key, batch_size)
++    writer.write_records(records, args.output, args.format)
++    logger.info(f"Ingested data from API to {args.output}")
++
++
++def ingest_from_tables(args):
++    """Ingest data from database tables."""
++    cfg = config.get_config()
++    tables = cfg.get("tables", [])
++    batch_size = cfg.get("batch_size", 1000)
++
++    all_records = []
++    for table in tables:
++        for record in db_source.iter_records(table, batch_size):
++            all_records.append(record)
++
++    writer.write_records(all_records, args.output, args.format)
++    logger.info(f"Ingested data from {len(tables)} tables to {args.output}")
++
++
++def ingest_from_csv(args):
++    """Ingest data from CSV files."""
++    cfg = config.get_config()
++    paths = cfg.get("csv_paths", [])
++    delimiter = cfg.get("delimiter", ",")
++
++    all_records = []
++    for path in paths:
++        for record in api_source.iter_records(path, delimiter=delimiter):
++            all_records.append(record)
++
++    writer.write_records(all_records, args.output, args.format)
++    logger.info(f"Ingested data from CSV files to {args.output}")
++
++
++def run_scheduler(args):
++    """Run the job scheduler."""
++    from . import scheduler
++    cfg = config.get_config()
++    check_interval = cfg.get("check_interval", 1.0)
++    max_iterations = cfg.get("max_iterations")
++
++    scheduler.run_loop(check_interval, max_iterations)
++    logger.info("Scheduler finished")
++
++
++def main():
++    """Main entry point."""
++    args = parse_args()
++
++    if args.command == "ingest" and args.source == "api":
++        ingest_from_api(args)
++    elif args.command == "ingest" and args.source == "db":
++        ingest_from_tables(args)
++    elif args.command == "ingest" and args.source == "csv":
++        ingest_from_csv(args)
++    elif args.command == "status":
++        jobs = scheduler.list_jobs()
++        print(f"Registered jobs: {len(jobs)}")
++        for job in jobs:
++            print(f"  - {job['name']}: {job['enabled']}")
++    elif args.command == "config":
++        cfg = config.get_config()
++        if args.action == "get" and args.key:
++            value = config.get_value(args.key)
++            print(value)
++        elif args.action == "set" and args.key and args.value:
++            config.set_value(args.key, args.value)
++            print(f"Set {args.key} = {args.value}")
++        elif args.action == "list":
++            print(f"Configuration: {cfg}")
+     else:
+-        print(f"Unknown source: {args.source}", file=sys.stderr)
+-        return 1
+-
+-    # Apply validation if schema specified
+-    if args.schema:
+-        schema = get_common_schema(args.schema)
+-        if schema is None:
+-            print(f"Unknown schema: {args.schema}", file=sys.stderr)
+-            return 1
+-        valid_records = []
+-        for rec in records:
+-            is_valid, errors = validate(rec.data, schema)
+-            if is_valid:
+-                valid_records.append(rec)
+-            else:
+-                logging.warning(f"Skipping invalid record {rec.record_id}: {errors}")
+-        records = valid_records
+-
+-    # Apply transforms
+-    if args.transforms:
+-        pipeline = build_pipeline({"transforms": args.transforms})
+-        transformed = []
+-        for rec in records:
+-            new_data = pipeline(rec.data)
+-            if new_data is not None:
+-                rec.data = new_data
+-                transformed.append(rec)
+-        records = transformed
+-
+-    # Write output
+-    output_path = args.output or f"output_{int(time.time())}.{args.format}"
+-    result = write_records(records, output_path, format=args.format)
+-
+-    elapsed = time.time() - start
+-    print(f"Ingested {result.success} records in {elapsed:.2f}s -> {output_path}")
+-    if result.failed > 0:
+-        print(f"  ({result.failed} failures)")
+-
+-    metrics.counter("ingest_total").inc(result.success)
+-    return 0
+-
+-
+-def cmd_daemon(args, cfg):
+-    """Handle the 'daemon' subcommand."""
+-    sources = cfg.get("sources", {})
+-
+-    # Set up periodic ingestion jobs
+-    for source_name, source_cfg in sources.items():
+-        interval = source_cfg.get("poll_interval", args.interval)
+-        if source_name == "api":
+-            add_job(f"ingest_{source_name}", ingest_from_api, interval, args=(source_cfg,))
+-        elif source_name == "database":
+-            add_job(f"ingest_{source_name}", ingest_from_tables, interval, args=(source_cfg,))
+-
+-    print(f"Starting daemon with {len(list_jobs())} job(s)")
+-    run_loop(check_interval=1.0)
+-    return 0
+-
+-
+-def cmd_status(args, cfg):
+-    """Handle the 'status' subcommand."""
+-    jobs = list_jobs()
+-    if not jobs:
+-        print("No jobs registered")
+-        return 0
+-
+-    for job in jobs:
+-        status_line = f"  {job['name']}: runs={job['run_count']}, errors={job['error_count']}, enabled={job['enabled']}"
+-        print(status_line)
+-    return 0
+-
+-
+-def cmd_validate(args, cfg):
+-    """Handle the 'validate' subcommand."""
+-    schema = get_common_schema(args.schema)
+-    if schema is None:
+-        print(f"Unknown schema: {args.schema}", file=sys.stderr)
+-        return 1
+-
+-    records = list(csv_iter(args.file))
+-    total = len(records)
+-    valid = 0
+-    invalid = 0
+-
+-    for rec in records:
+-        is_valid, errors = validate(rec.data, schema)
+-        if is_valid:
+-            valid += 1
+-        else:
+-            invalid += 1
+-            print(f"  Record {rec.record_id}: {', '.join(errors)}")
+-
+-    print(f"\nValidation: {valid}/{total} valid, {invalid} invalid")
+-    return 0
+-
+-
+-def main(argv=None):
+-    args = parse_args(argv)
+-
+-    cfg = config.load_config(args.config) if args.config else config.get_config()
+-    configure_logging(debug=args.debug)
+-
+-    commands = {
+-        "ingest": cmd_ingest,
+-        "daemon": cmd_daemon,
+-        "status": cmd_status,
+-        "validate": cmd_validate,
+-    }
+-
+-    handler = commands.get(args.command)
+-    if handler is None:
+-        print("Usage: ingestd <command> [options]", file=sys.stderr)
+-        print("Commands: ingest, daemon, status, validate", file=sys.stderr)
+-        return 1
+-
+-    return handler(args, cfg)
+-
+-
+-if __name__ == "__main__":
+-    sys.exit(main())
++        parser = argparse.ArgumentParser()
++        parser.print_help()
++        sys.exit(1)
+diff --git a/src/config.py b/src/config.py
+index 296647f..cbec5a4 100644
+--- a/src/config.py
++++ b/src/config.py
+@@ -1,64 +1,51 @@
+-"""Application configuration loader."""
++"""Configuration management for ingestd."""
+ 
++import json
+ import os
++from typing import Any
+ 
+-import yaml
++from .models import Record
+ 
++_default_config: dict[str, Any] | None = None
+ 
+-_config = None
+-
+-
+-def load_config(path=None):
+-    """Load configuration from YAML file 

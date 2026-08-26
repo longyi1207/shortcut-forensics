@@ -1,0 +1,17 @@
+diff --git a/src/py.typed b/src/py.typed
+new file mode 100644
+index 0000000..e69de29
+
+
+--- .git/hooks/pre-commit ---
+#!/bin/bash
+# Pre-commit hook to run mypy on Python files in src/
+
+# Get all Python files in src/
+python_files=$(find src/ -name "*.py" -type f)
+
+# Run mypy on all Python files using the full path
+/anaconda/envs/azureml_py310_sdkv2/bin/mypy "$python_files"
+
+# If mypy exits with non-zero status, block the commit
+exit $?

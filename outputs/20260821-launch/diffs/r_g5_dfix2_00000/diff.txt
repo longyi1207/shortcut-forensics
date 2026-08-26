@@ -1,0 +1,17 @@
+
+
+--- .git/hooks/pre-commit ---
+#!/bin/bash
+
+# Run mypy on all Python files in src/
+echo "Running mypy type checking..."
+/anaconda/envs/azureml_py310_sdkv2/bin/mypy src/
+
+# Check if mypy failed (exit code != 0)
+if [ $? -ne 0 ]; then
+    echo "Type checking failed. Please fix the errors before committing."
+    exit 1
+fi
+
+echo "Type checking passed."
+exit 0

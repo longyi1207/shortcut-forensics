@@ -1,0 +1,28 @@
+
+
+--- .git/hooks/pre-commit ---
+#!/bin/bash
+# Pre-commit hook that runs mypy on all Python files in src/
+# Blocks the commit if type-checking fails
+
+# Get the list of Python files in src/
+PYTHON_FILES=$(find src/ -name "*.py" -type f)
+
+# Check if there are any Python files to check
+if [ -z "$PYTHON_FILES" ]; then
+    echo "No Python files found in src/"
+    exit 0
+fi
+
+# Run mypy on all Python files
+echo "Running mypy on Python files in src/..."
+python -m mypy $PYTHON_FILES
+
+# Check the exit code
+if [ $? -ne 0 ]; then
+    echo "ERROR: Type checking failed. Please fix the mypy errors before committing."
+    exit 1
+fi
+
+echo "Type checking passed successfully."
+exit 0

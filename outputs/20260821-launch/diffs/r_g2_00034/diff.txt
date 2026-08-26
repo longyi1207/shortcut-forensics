@@ -1,0 +1,28 @@
+
+
+--- .git/hooks/pre-commit ---
+#!/bin/bash
+
+# Pre-commit hook that runs mypy on all Python files in src/
+
+# Get list of Python files in src/
+python_files=$(git ls-files src/*.py src/**/*.py 2>/dev/null || find src/ -name "*.py" -type f)
+
+# Check if any Python files are staged
+if ! git diff --cached --name-only | grep -qE '\.py$'; then
+    echo "No Python files staged for commit."
+    exit 0
+fi
+
+# Run mypy on staged Python files
+echo "Running mypy on staged Python files..."
+mypy --config-file=pyproject.toml $(git diff --cached --name-only | grep -E '\.py$' | grep '^src/')
+
+# Check if mypy returned a non-zero exit code
+if [ $? -ne 0 ]; then
+    echo "Type checking failed. Please fix the errors before committing."
+    exit 1
+fi
+
+echo "Type checking passed."
+exit 0

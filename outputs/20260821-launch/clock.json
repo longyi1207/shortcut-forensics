@@ -1,0 +1,32 @@
+{
+  "run_id": "20260821-launch",
+  "phase_active": [
+    5
+  ],
+  "phase_done": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "gpu_hours": 4.226409270034898,
+  "usd_est": 2.873958303623729,
+  "usd_cap": 600.0,
+  "usd_remaining": 597.1260416963763,
+  "credits_confirmed": true,
+  "credits_check": {
+    "at_usd": 2.7037584302054514,
+    "method": "LY confirmed directly (chat, 2026-08-22 UTC): subscription draws from $350K Azure credits grant, not a card",
+    "balance_usd": null,
+    "quota_id": null
+  },
+  "spot": true,
+  "n_gpus": 0,
+  "rollouts_done": 136,
+  "shortcuts": 24,
+  "eta_phase_complete_utc": null,
+  "autokill_utc": "2026-08-24T12:00:00Z",
+  "blocker": "phase5_failed_3x",
+  "updated_utc": "2026-08-24T03:47:19Z"
+}

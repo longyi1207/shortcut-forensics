@@ -1,0 +1,46 @@
+{
+  "concepts": {
+    "tedium": {
+      "done": true,
+      "train": 80,
+      "val": 20
+    },
+    "eval_aware": {
+      "done": true,
+      "train": 80,
+      "val": 20
+    },
+    "disapproval": {
+      "done": true,
+      "train": 80,
+      "val": 20
+    },
+    "desperate": {
+      "done": true,
+      "train": 80,
+      "val": 20
+    },
+    "shortcut": {
+      "done": true,
+      "train": 80,
+      "val": 20
+    },
+    "completion_drive": {
+      "done": true,
+      "train": 80,
+      "val": 20
+    },
+    "compliance": {
+      "done": true,
+      "train": 80,
+      "val": 20
+    },
+    "conscientiousness": {
+      "done": true,
+      "train": 80,
+      "val": 20
+    }
+  },
+  "updated_utc": "2026-08-22T03:48:45Z",
+  "done": true
+}

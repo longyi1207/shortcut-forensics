@@ -1,0 +1,52 @@
+2026-08-24 17:32:20,755 INFO run_phase: === running phase 6 (run_id=20260821-launch, resume=True) ===
+2026-08-24 17:32:23,872 INFO run_phase: phase6: resuming with 15 previously-decided conditions from /mnt/scfx_ly_run/outputs/20260821-launch/phase6/conditions.json
+2026-08-24 17:32:23,872 INFO run_phase: phase6: SCFX_P6_CONDITIONS filter active, running 1 conditions: ['ablate_tedium']
+2026-08-24 17:32:26,759 INFO src.agent_loop: loading Qwen/Qwen3.5-9B (dtype=bfloat16, device=cuda)
+2026-08-24 17:32:26,924 INFO httpx: HTTP Request: HEAD https://huggingface.co/Qwen/Qwen3.5-9B/resolve/main/config.json "HTTP/1.1 307 Temporary Redirect"
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+2026-08-24 17:32:26,924 WARNING huggingface_hub.utils._http: Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+2026-08-24 17:32:26,929 INFO httpx: HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/Qwen/Qwen3.5-9B/c202236235762e1c871ad0ccb60c8ee5ba337b9a/config.json "HTTP/1.1 200 OK"
+2026-08-24 17:32:27,068 INFO httpx: HTTP Request: HEAD https://huggingface.co/Qwen/Qwen3.5-9B/resolve/main/tokenizer_config.json "HTTP/1.1 307 Temporary Redirect"
+2026-08-24 17:32:27,074 INFO httpx: HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/Qwen/Qwen3.5-9B/c202236235762e1c871ad0ccb60c8ee5ba337b9a/tokenizer_config.json "HTTP/1.1 200 OK"
+2026-08-24 17:32:27,195 INFO httpx: HTTP Request: HEAD https://huggingface.co/Qwen/Qwen3.5-9B/resolve/main/tokenizer_config.json "HTTP/1.1 307 Temporary Redirect"
+2026-08-24 17:32:27,200 INFO httpx: HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/Qwen/Qwen3.5-9B/c202236235762e1c871ad0ccb60c8ee5ba337b9a/tokenizer_config.json "HTTP/1.1 200 OK"
+2026-08-24 17:32:27,320 INFO httpx: HTTP Request: GET https://huggingface.co/api/models/Qwen/Qwen3.5-9B/tree/main/additional_chat_templates?recursive=false&expand=false "HTTP/1.1 404 Not Found"
+2026-08-24 17:32:27,439 INFO httpx: HTTP Request: GET https://huggingface.co/api/models/Qwen/Qwen3.5-9B/tree/main?recursive=true&expand=false "HTTP/1.1 200 OK"
+2026-08-24 17:32:28,248 INFO httpx: HTTP Request: GET https://huggingface.co/api/models/Qwen/Qwen3.5-9B "HTTP/1.1 200 OK"
+2026-08-24 17:32:28,369 INFO httpx: HTTP Request: HEAD https://huggingface.co/Qwen/Qwen3.5-9B/resolve/main/config.json "HTTP/1.1 307 Temporary Redirect"
+2026-08-24 17:32:28,374 INFO httpx: HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/Qwen/Qwen3.5-9B/c202236235762e1c871ad0ccb60c8ee5ba337b9a/config.json "HTTP/1.1 200 OK"
+[transformers] `torch_dtype` is deprecated! Use `dtype` instead!
+2026-08-24 17:32:28,622 INFO httpx: HTTP Request: HEAD https://huggingface.co/Qwen/Qwen3.5-9B/resolve/main/model.safetensors "HTTP/1.1 404 Not Found"
+2026-08-24 17:32:28,738 INFO httpx: HTTP Request: HEAD https://huggingface.co/Qwen/Qwen3.5-9B/resolve/main/model.safetensors.index.json "HTTP/1.1 307 Temporary Redirect"
+2026-08-24 17:32:28,743 INFO httpx: HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/Qwen/Qwen3.5-9B/c202236235762e1c871ad0ccb60c8ee5ba337b9a/model.safetensors.index.json "HTTP/1.1 200 OK"
+2026-08-24 17:32:28,866 INFO httpx: HTTP Request: GET https://huggingface.co/api/models/Qwen/Qwen3.5-9B/revision/main "HTTP/1.1 200 OK"
+Fetching 4 files:   0%|          | 0/4 [00:00<?, ?it/s]Fetching 4 files: 100%|██████████| 4/4 [00:00<00:00, 1201.20it/s]
+Loading weights:   0%|          | 0/427 [00:00<?, ?it/s]Loading weights:   0%|          | 1/427 [00:00<01:19,  5.38it/s]Loading weights:   0%|          | 2/427 [00:00<01:38,  4.32it/s]Loading weights:   6%|▌         | 26/427 [00:00<00:06, 62.33it/s]Loading weights:  11%|█         | 47/427 [00:00<00:03, 97.30it/s]Loading weights:  16%|█▌        | 68/427 [00:00<00:02, 123.39it/s]Loading weights:  22%|██▏       | 92/427 [00:00<00:02, 153.88it/s]Loading weights:  26%|██▌       | 110/427 [00:01<00:02, 152.04it/s]Loading weights:  31%|███       | 132/427 [00:01<00:01, 169.57it/s]Loading weights:  35%|███▌      | 151/427 [00:01<00:01, 161.16it/s]Loading weights:  40%|████      | 172/427 [00:01<00:01, 165.39it/s]Loading weights:  47%|████▋     | 199/427 [00:01<00:01, 188.23it/s]Loading weights:  53%|█████▎    | 225/427 [00:01<00:01, 198.94it/s]Loading weights:  58%|█████▊    | 246/427 [00:01<00:00, 195.78it/s]Loading weights:  62%|██████▏   | 266/427 [00:01<00:00, 176.39it/s]Loading weights:  68%|██████▊   | 292/427 [00:01<00:00, 196.81it/s]Loading weights:  73%|███████▎  | 313/427 [00:02<00:00, 161.68it/s]Loading weights:  80%|████████  | 342/427 [00:02<00:00, 190.36it/s]Loading weights:  85%|████████▌ | 363/427 [00:02<00:00, 188.81it/s]Loading weights:  90%|████████▉ | 384/427 [00:02<00:00, 190.69it/s]Loading weights:  95%|█████████▍| 404/427 [00:02<00:00, 186.18it/s]Loading weights:  99%|█████████▉| 424/427 [00:02<00:00, 164.78it/s]Loading weights: 100%|██████████| 427/427 [00:02<00:00, 154.52it/s]
+2026-08-24 17:32:32,559 INFO httpx: HTTP Request: HEAD https://huggingface.co/Qwen/Qwen3.5-9B/resolve/main/generation_config.json "HTTP/1.1 404 Not Found"
+2026-08-24 17:32:32,687 INFO httpx: HTTP Request: HEAD https://huggingface.co/Qwen/Qwen3.5-9B/resolve/main/config.json "HTTP/1.1 307 Temporary Redirect"
+2026-08-24 17:32:32,692 INFO httpx: HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/Qwen/Qwen3.5-9B/c202236235762e1c871ad0ccb60c8ee5ba337b9a/config.json "HTTP/1.1 200 OK"
+2026-08-24 17:32:32,821 INFO httpx: HTTP Request: HEAD https://huggingface.co/Qwen/Qwen3.5-9B/resolve/main/custom_generate/generate.py "HTTP/1.1 404 Not Found"
+2026-08-24 17:32:33,148 INFO run_phase: phase6 condition=ablate_tedium: have 30/60, running 3 more
+p6:ablate_tedium:  50%|█████     | 30/60 [00:00<?, ?it/s][W824 17:53:22.213135085 CUDACachingAllocator.cpp:3933] memory allocation failed with OOM on device 0 while trying to allocate 1245708288 bytes (free: 825098240, total: 85093777408).
+[W824 18:01:24.214687735 CUDACachingAllocator.cpp:3933] memory allocation failed with OOM on device 0 while trying to allocate 1656750080 bytes (free: 1183711232, total: 85093777408).
+[W824 18:07:50.104349298 CUDACachingAllocator.cpp:3933] memory allocation failed with OOM on device 0 while trying to allocate 1935671296 bytes (free: 1169031168, total: 85093777408).
+[W824 18:13:03.489377959 CUDACachingAllocator.cpp:3933] memory allocation failed with OOM on device 0 while trying to allocate 2141192192 bytes (free: 2033057792, total: 85093777408).
+[W824 18:17:44.866896120 CUDACachingAllocator.cpp:3933] memory allocation failed with OOM on device 0 while trying to allocate 2319450112 bytes (free: 1158545408, total: 85093777408).
+[W824 18:22:01.873203684 CUDACachingAllocator.cpp:3933] memory allocation failed with OOM on device 0 while trying to allocate 2476736512 bytes (free: 1888354304, total: 85093777408).
+2026-08-24 18:24:56,924 INFO src.llm_client: llm_client: routed to Azure OpenAI deployment=gpt-5.4-mini-1
+2026-08-24 18:25:00,958 INFO httpx2: HTTP Request: POST https://yilongjack2001-6481-resource.openai.azure.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+p6:ablate_tedium:  52%|█████▏    | 31/60 [52:27<25:21:27, 3147.83s/it]2026-08-24 19:12:36,409 INFO httpx2: HTTP Request: POST https://yilongjack2001-6481-resource.openai.azure.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+p6:ablate_tedium:  53%|█████▎    | 32/60 [1:40:03<23:08:43, 2975.84s/it]2026-08-24 20:00:56,508 INFO httpx2: HTTP Request: POST https://yilongjack2001-6481-resource.openai.azure.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+p6:ablate_tedium:  55%|█████▌    | 33/60 [2:28:23<22:03:33, 2941.25s/it]p6:ablate_tedium:  55%|█████▌    | 33/60 [2:28:23<22:15:30, 2967.79s/it]
+2026-08-24 20:00:56,757 INFO run_phase: phase6 condition=ablate_tedium: have 39/60, running 3 more
+p6:ablate_tedium:  65%|██████▌   | 39/60 [00:00<?, ?it/s]2026-08-24 20:45:26,899 INFO httpx2: HTTP Request: POST https://yilongjack2001-6481-resource.openai.azure.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+p6:ablate_tedium:  67%|██████▋   | 40/60 [44:30<14:50:03, 2670.15s/it]2026-08-24 21:34:10,458 INFO httpx2: HTTP Request: POST https://yilongjack2001-6481-resource.openai.azure.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+p6:ablate_tedium:  68%|██████▊   | 41/60 [1:33:13<14:52:45, 2819.22s/it]2026-08-24 22:20:27,305 INFO httpx2: HTTP Request: POST https://yilongjack2001-6481-resource.openai.azure.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+p6:ablate_tedium:  70%|███████   | 42/60 [2:19:30<13:59:57, 2799.87s/it]p6:ablate_tedium:  70%|███████   | 42/60 [2:19:30<13:57:03, 2790.19s/it]
+2026-08-24 22:20:27,574 INFO run_phase: phase6 condition=ablate_tedium: have 48/60, running 3 more
+p6:ablate_tedium:  80%|████████  | 48/60 [00:00<?, ?it/s]2026-08-24 23:12:05,045 INFO httpx2: HTTP Request: POST https://yilongjack2001-6481-resource.openai.azure.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+p6:ablate_tedium:  82%|████████▏ | 49/60 [51:37<9:27:52, 3097.49s/it]2026-08-24 23:58:33,015 INFO httpx2: HTTP Request: POST https://yilongjack2001-6481-resource.openai.azure.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+p6:ablate_tedium:  83%|████████▎ | 50/60 [1:38:05<8:05:54, 2915.42s/it]2026-08-25 00:40:48,063 INFO httpx2: HTTP Request: POST https://yilongjack2001-6481-resource.openai.azure.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+p6:ablate_tedium:  85%|████████▌ | 51/60 [2:20:20<6:51:15, 2741.73s/it]p6:ablate_tedium:  85%|████████▌ | 51/60 [2:20:20<7:01:01, 2806.83s/it]
+2026-08-25 00:40:48,269 INFO run_phase: phase6: sharded worker finished its assigned conditions ['ablate_tedium'], leaving finalization to the unfiltered run
+2026-08-25 00:40:48,340 INFO run_phase: === phase 6 finished in 25707.6s ===

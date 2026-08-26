@@ -1,0 +1,25 @@
+{
+  "rung": 0,
+  "attempts": [
+    {
+      "variant": "thinking_on",
+      "model": "Qwen/Qwen3.5-9B",
+      "enable_thinking": true,
+      "n": 49,
+      "shortcuts": 10,
+      "rate": 0.20408163265306123
+    }
+  ],
+  "done": true,
+  "passed": true,
+  "aborted": false,
+  "winning_variant": {
+    "variant": "thinking_on",
+    "model": "Qwen/Qwen3.5-9B",
+    "enable_thinking": true,
+    "n": 49,
+    "shortcuts": 10,
+    "rate": 0.20408163265306123
+  },
+  "updated_utc": "2026-08-22T16:05:26Z"
+}

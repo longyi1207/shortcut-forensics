@@ -1,0 +1,37 @@
+{
+  "azure_openai_ping": true,
+  "env_vendored": true,
+  "gpu_model_load": true,
+  "residual_shape": {
+    "19": [
+      4096
+    ],
+    "20": [
+      4096
+    ],
+    "21": [
+      4096
+    ],
+    "22": [
+      4096
+    ],
+    "23": [
+      4096
+    ],
+    "24": [
+      4096
+    ]
+  },
+  "env_sha": "",
+  "candidate_layers": [
+    19,
+    20,
+    21,
+    22,
+    23,
+    24
+  ],
+  "n_layers_total": 32,
+  "done": true,
+  "updated_utc": "2026-08-21T23:58:36Z"
+}

@@ -1,0 +1,39 @@
+2026-08-25 16:55:04,024 INFO run_phase: === running phase 6 (run_id=20260821-launch, resume=True) ===
+2026-08-25 16:55:05,898 INFO run_phase: phase6: resuming with 25 previously-decided conditions from /mnt/scfx_ly_run/outputs/20260821-launch/phase6/conditions.json
+2026-08-25 16:55:05,898 INFO run_phase: phase6: SCFX_P6_CONDITIONS filter active, running 1 conditions: ['ablate_shortcut_L24_refit']
+2026-08-25 16:55:08,808 INFO src.agent_loop: loading Qwen/Qwen3.5-9B (dtype=bfloat16, device=cuda)
+2026-08-25 16:55:08,971 INFO httpx: HTTP Request: HEAD https://huggingface.co/Qwen/Qwen3.5-9B/resolve/main/config.json "HTTP/1.1 307 Temporary Redirect"
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+2026-08-25 16:55:08,972 WARNING huggingface_hub.utils._http: Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+2026-08-25 16:55:08,978 INFO httpx: HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/Qwen/Qwen3.5-9B/c202236235762e1c871ad0ccb60c8ee5ba337b9a/config.json "HTTP/1.1 200 OK"
+2026-08-25 16:55:09,118 INFO httpx: HTTP Request: HEAD https://huggingface.co/Qwen/Qwen3.5-9B/resolve/main/tokenizer_config.json "HTTP/1.1 307 Temporary Redirect"
+2026-08-25 16:55:09,123 INFO httpx: HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/Qwen/Qwen3.5-9B/c202236235762e1c871ad0ccb60c8ee5ba337b9a/tokenizer_config.json "HTTP/1.1 200 OK"
+2026-08-25 16:55:09,241 INFO httpx: HTTP Request: HEAD https://huggingface.co/Qwen/Qwen3.5-9B/resolve/main/tokenizer_config.json "HTTP/1.1 307 Temporary Redirect"
+2026-08-25 16:55:09,247 INFO httpx: HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/Qwen/Qwen3.5-9B/c202236235762e1c871ad0ccb60c8ee5ba337b9a/tokenizer_config.json "HTTP/1.1 200 OK"
+2026-08-25 16:55:09,367 INFO httpx: HTTP Request: GET https://huggingface.co/api/models/Qwen/Qwen3.5-9B/tree/main/additional_chat_templates?recursive=false&expand=false "HTTP/1.1 404 Not Found"
+2026-08-25 16:55:09,486 INFO httpx: HTTP Request: GET https://huggingface.co/api/models/Qwen/Qwen3.5-9B/tree/main?recursive=true&expand=false "HTTP/1.1 200 OK"
+2026-08-25 16:55:10,263 INFO httpx: HTTP Request: GET https://huggingface.co/api/models/Qwen/Qwen3.5-9B "HTTP/1.1 200 OK"
+2026-08-25 16:55:10,391 INFO httpx: HTTP Request: HEAD https://huggingface.co/Qwen/Qwen3.5-9B/resolve/main/config.json "HTTP/1.1 307 Temporary Redirect"
+2026-08-25 16:55:10,397 INFO httpx: HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/Qwen/Qwen3.5-9B/c202236235762e1c871ad0ccb60c8ee5ba337b9a/config.json "HTTP/1.1 200 OK"
+[transformers] `torch_dtype` is deprecated! Use `dtype` instead!
+2026-08-25 16:55:10,649 INFO httpx: HTTP Request: HEAD https://huggingface.co/Qwen/Qwen3.5-9B/resolve/main/model.safetensors "HTTP/1.1 404 Not Found"
+2026-08-25 16:55:10,765 INFO httpx: HTTP Request: HEAD https://huggingface.co/Qwen/Qwen3.5-9B/resolve/main/model.safetensors.index.json "HTTP/1.1 307 Temporary Redirect"
+2026-08-25 16:55:10,772 INFO httpx: HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/Qwen/Qwen3.5-9B/c202236235762e1c871ad0ccb60c8ee5ba337b9a/model.safetensors.index.json "HTTP/1.1 200 OK"
+2026-08-25 16:55:10,891 INFO httpx: HTTP Request: GET https://huggingface.co/api/models/Qwen/Qwen3.5-9B/revision/main "HTTP/1.1 200 OK"
+Fetching 4 files:   0%|          | 0/4 [00:00<?, ?it/s]Fetching 4 files: 100%|██████████| 4/4 [00:00<00:00, 1363.89it/s]
+Loading weights:   0%|          | 0/427 [00:00<?, ?it/s]Loading weights:   0%|          | 1/427 [00:00<04:03,  1.75it/s]Loading weights:   7%|▋         | 28/427 [00:00<00:07, 54.29it/s]Loading weights:  11%|█         | 47/427 [00:00<00:04, 80.59it/s]Loading weights:  19%|█▊        | 80/427 [00:00<00:02, 128.84it/s]Loading weights:  25%|██▍       | 106/427 [00:01<00:02, 157.15it/s]Loading weights:  31%|███▏      | 134/427 [00:01<00:01, 186.81it/s]Loading weights:  37%|███▋      | 158/427 [00:01<00:01, 188.50it/s]Loading weights:  44%|████▎     | 186/427 [00:01<00:01, 204.77it/s]Loading weights:  49%|████▉     | 209/427 [00:01<00:01, 187.33it/s]Loading weights:  55%|█████▌    | 236/427 [00:01<00:00, 207.98it/s]Loading weights:  61%|██████    | 259/427 [00:01<00:00, 193.50it/s]Loading weights:  68%|██████▊   | 289/427 [00:01<00:00, 214.73it/s]Loading weights:  73%|███████▎  | 312/427 [00:01<00:00, 208.77it/s]Loading weights:  79%|███████▉  | 337/427 [00:02<00:00, 210.44it/s]Loading weights:  84%|████████▍ | 360/427 [00:02<00:00, 211.93it/s]Loading weights:  90%|████████▉ | 383/427 [00:02<00:00, 208.19it/s]Loading weights:  96%|█████████▌| 409/427 [00:02<00:00, 221.19it/s]Loading weights: 100%|██████████| 427/427 [00:02<00:00, 168.70it/s]
+2026-08-25 16:55:14,627 INFO httpx: HTTP Request: HEAD https://huggingface.co/Qwen/Qwen3.5-9B/resolve/main/generation_config.json "HTTP/1.1 404 Not Found"
+2026-08-25 16:55:14,748 INFO httpx: HTTP Request: HEAD https://huggingface.co/Qwen/Qwen3.5-9B/resolve/main/config.json "HTTP/1.1 307 Temporary Redirect"
+2026-08-25 16:55:14,753 INFO httpx: HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/Qwen/Qwen3.5-9B/c202236235762e1c871ad0ccb60c8ee5ba337b9a/config.json "HTTP/1.1 200 OK"
+2026-08-25 16:55:14,873 INFO httpx: HTTP Request: HEAD https://huggingface.co/Qwen/Qwen3.5-9B/resolve/main/custom_generate/generate.py "HTTP/1.1 404 Not Found"
+2026-08-25 16:55:15,397 INFO run_phase: phase6 condition=ablate_shortcut_L24_refit: have 9/10, running 1 more
+p6:ablate_shortcut_L24_refit:  90%|█████████ | 9/10 [00:00<?, ?it/s][W825 17:14:19.039784941 CUDACachingAllocator.cpp:3933] memory allocation failed with OOM on device 0 while trying to allocate 1027604480 bytes (free: 785252352, total: 85093777408).
+[W825 17:22:53.621101401 CUDACachingAllocator.cpp:3933] memory allocation failed with OOM on device 0 while trying to allocate 1375731712 bytes (free: 137232384, total: 85093777408).
+[W825 17:31:36.224897071 CUDACachingAllocator.cpp:3933] memory allocation failed with OOM on device 0 while trying to allocate 1660944384 bytes (free: 451805184, total: 85093777408).
+[W825 17:38:54.649277287 CUDACachingAllocator.cpp:3933] memory allocation failed with OOM on device 0 while trying to allocate 1891631104 bytes (free: 426639360, total: 85093777408).
+[W825 17:44:50.111914351 CUDACachingAllocator.cpp:3933] memory allocation failed with OOM on device 0 while trying to allocate 2069889024 bytes (free: 1026424832, total: 85093777408).
+2026-08-25 17:47:07,331 INFO src.llm_client: llm_client: routed to Azure OpenAI deployment=gpt-5.4-mini-1
+2026-08-25 17:47:12,397 INFO httpx2: HTTP Request: POST https://yilongjack2001-6481-resource.openai.azure.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+p6:ablate_shortcut_L24_refit: 100%|██████████| 10/10 [51:57<00:00, 3117.02s/it]p6:ablate_shortcut_L24_refit: 100%|██████████| 10/10 [51:57<00:00, 3117.02s/it]
+2026-08-25 17:47:12,636 INFO run_phase: phase6: sharded worker finished its assigned conditions ['ablate_shortcut_L24_refit'], leaving finalization to the unfiltered run
+2026-08-25 17:47:12,712 INFO run_phase: === phase 6 finished in 3128.7s ===

@@ -1,0 +1,24 @@
+[launch_p6] GPU 7 -> condition add_neg_winner_shortcut -> outputs/20260821-launch/logs/phase6_worker_g7_add_neg_winner_shortcut.log
+[launch_p6] GPU 6 -> condition ablate_completion_drive -> outputs/20260821-launch/logs/phase6_worker_g6_ablate_completion_drive.log
+[launch_p6] GPU 5 -> condition ablate_random -> outputs/20260821-launch/logs/phase6_worker_g5_ablate_random.log
+[launch_p6] GPU 4 -> condition prompt_dont_cheat -> outputs/20260821-launch/logs/phase6_worker_g4_prompt_dont_cheat.log
+[launch_p6] GPU 3 -> condition ablate_shortcut -> outputs/20260821-launch/logs/phase6_worker_g3_ablate_shortcut.log
+[launch_p6] GPU 2 -> condition ablate_shortcut -> outputs/20260821-launch/logs/phase6_worker_g2_ablate_shortcut.log
+[launch_p6] GPU 1 -> condition identity -> outputs/20260821-launch/logs/phase6_worker_g1_identity.log
+[launch_p6] GPU 0 -> condition identity -> outputs/20260821-launch/logs/phase6_worker_g0_identity.log
+[launch_p6] 8 workers launched, waiting...
+[launch_p6] GPU 7 -> condition add_neg_winner_shortcut (n=10) -> outputs/20260821-launch/logs/phase6_worker_g7_add_neg_winner_shortcut.log
+[launch_p6] GPU 6 -> condition ablate_completion_drive (n=10) -> outputs/20260821-launch/logs/phase6_worker_g6_ablate_completion_drive.log
+[launch_p6] GPU 5 -> condition ablate_random (n=10) -> outputs/20260821-launch/logs/phase6_worker_g5_ablate_random.log
+[launch_p6] GPU 4 -> condition prompt_dont_cheat (n=10) -> outputs/20260821-launch/logs/phase6_worker_g4_prompt_dont_cheat.log
+[launch_p6] GPU 3 -> condition ablate_shortcut (n=20) -> outputs/20260821-launch/logs/phase6_worker_g3_ablate_shortcut.log
+[launch_p6] GPU 2 -> condition ablate_shortcut (n=20) -> outputs/20260821-launch/logs/phase6_worker_g2_ablate_shortcut.log
+[launch_p6] GPU 1 -> condition identity (n=20) -> outputs/20260821-launch/logs/phase6_worker_g1_identity.log
+[launch_p6] GPU 0 -> condition identity (n=20) -> outputs/20260821-launch/logs/phase6_worker_g0_identity.log
+[launch_p6] 8 workers launched, waiting...
+/tmp/launch_p6.sh: line 33: 784487 Killed                  CUDA_VISIBLE_DEVICES="$GPU" SCFX_WORKER_ID="_g${GPU}" SCFX_P6_CONDITIONS="$COND" SCFX_P6_N_OVERRIDE="$N" python scripts/run_phase.py --phase 6 --run-id 20260821-launch --resume >> "$LOG" 2>&1
+/tmp/launch_p6.sh: line 33: 784489 Killed                  CUDA_VISIBLE_DEVICES="$GPU" SCFX_WORKER_ID="_g${GPU}" SCFX_P6_CONDITIONS="$COND" SCFX_P6_N_OVERRIDE="$N" python scripts/run_phase.py --phase 6 --run-id 20260821-launch --resume >> "$LOG" 2>&1
+/tmp/launch_p6.sh: line 33: 784490 Killed                  CUDA_VISIBLE_DEVICES="$GPU" SCFX_WORKER_ID="_g${GPU}" SCFX_P6_CONDITIONS="$COND" SCFX_P6_N_OVERRIDE="$N" python scripts/run_phase.py --phase 6 --run-id 20260821-launch --resume >> "$LOG" 2>&1
+/tmp/launch_p6.sh: line 33: 784491 Killed                  CUDA_VISIBLE_DEVICES="$GPU" SCFX_WORKER_ID="_g${GPU}" SCFX_P6_CONDITIONS="$COND" SCFX_P6_N_OVERRIDE="$N" python scripts/run_phase.py --phase 6 --run-id 20260821-launch --resume >> "$LOG" 2>&1
+/tmp/launch_p6.sh: line 33: 784492 Killed                  CUDA_VISIBLE_DEVICES="$GPU" SCFX_WORKER_ID="_g${GPU}" SCFX_P6_CONDITIONS="$COND" SCFX_P6_N_OVERRIDE="$N" python scripts/run_phase.py --phase 6 --run-id 20260821-launch --resume >> "$LOG" 2>&1
+[launch_p6] all workers finished

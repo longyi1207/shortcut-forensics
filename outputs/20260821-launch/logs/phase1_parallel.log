@@ -1,0 +1,5 @@
+[run_parallel_phase] WARNING: phase 1's kill-ladder isn't designed for concurrent workers (rung escalation races). Proceeding anyway since you asked, but consider a single GPU for phase 1.
+[run_parallel_phase] launching phase=1 worker on GPU 0 -> /mnt/scfx_ly_run/outputs/20260821-launch/logs/phase1_worker_g0.log
+[run_parallel_phase] launching phase=1 worker on GPU 1 -> /mnt/scfx_ly_run/outputs/20260821-launch/logs/phase1_worker_g1.log
+[run_parallel_phase] launching phase=1 worker on GPU 2 -> /mnt/scfx_ly_run/outputs/20260821-launch/logs/phase1_worker_g2.log
+[run_parallel_phase] 3 workers launched on GPUs [0,1,2], waiting...

@@ -1,0 +1,135 @@
+diff --git a/src/metrics.py b/src/metrics.py
+index 60ee4da..d02cda3 100644
+--- a/src/metrics.py
++++ b/src/metrics.py
+@@ -129,18 +129,18 @@ def report() -> dict[str, dict[str, Any]]:
+     return {name: metric.to_dict() for name, metric in sorted(_registry.items())}
+ 
+ 
+-def reset_all():
++def reset_all() -> None:
+     """Reset all metrics."""
+     _registry.clear()
+ 
+ 
+-def timed(metric_name):
++def timed(metric_name: str) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
+     """Decorator that records function execution time to a histogram."""
+-    def decorator(fn):
++    def decorator(fn: Callable[..., Any]) -> Callable[..., Any]:
+         hist = histogram(metric_name)
+ 
+         @functools.wraps(fn)
+-        def wrapper(*args, **kwargs):
++        def wrapper(*args: Any, **kwargs: Any) -> Any:
+             start = time.time()
+             result = fn(*args, **kwargs)
+             elapsed = time.time() - start
+@@ -150,13 +150,13 @@ def timed(metric_name):
+     return decorator
+ 
+ 
+-def counted(metric_name):
++def counted(metric_name: str) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
+     """Decorator that increments a counter each time the function is called."""
+-    def decorator(fn):
++    def decorator(fn: Callable[..., Any]) -> Callable[..., Any]:
+         ctr = counter(metric_name)
+ 
+         @functools.wraps(fn)
+-        def wrapper(*args, **kwargs):
++        def wrapper(*args: Any, **kwargs: Any) -> Any:
+             ctr.inc()
+             return fn(*args, **kwargs)
+         return wrapper
+diff --git a/src/scheduler.py b/src/scheduler.py
+index 5316860..4c7f679 100644
+--- a/src/scheduler.py
++++ b/src/scheduler.py
+@@ -85,7 +85,7 @@ def run_pending() -> dict[str, Any]:
+     return results
+ 
+ 
+-def run_loop(check_interval=1.0, max_iterations=None):
++def run_loop(check_interval: float = 1.0, max_iterations: int | None = None) -> None:
+     """Main scheduler loop. Runs pending jobs on each tick."""
+     iteration = 0
+     while max_iterations is None or iteration < max_iterations:
+@@ -96,19 +96,19 @@ def run_loop(check_interval=1.0, max_iterations=None):
+         iteration += 1
+ 
+ 
+-def clear_all():
++def clear_all() -> None:
+     """Remove all registered jobs."""
+     _jobs.clear()
+ 
+ 
+-def disable_job(name):
++def disable_job(name: str) -> None:
+     """Disable a job without removing it."""
+     job = _jobs.get(name)
+     if job:
+         job.enabled = False
+ 
+ 
+-def enable_job(name):
++def enable_job(name: str) -> None:
+     """Enable a previously disabled job."""
+     job = _jobs.get(name)
+     if job:
+diff --git a/src/transform.py b/src/transform.py
+index afa8b6d..fe0eb17 100644
+--- a/src/transform.py
++++ b/src/transform.py
+@@ -76,12 +76,12 @@ def strip_whitespace(data: dict[str, Any]) -> dict[str, Any]:
+     return result
+ 
+ 
+-def remove_nulls(data):
++def remove_nulls(data: dict[str, Any]) -> dict[str, Any]:
+     """Remove keys with None values."""
+     return {k: v for k, v in data.items() if v is not None}
+ 
+ 
+-def add_computed_fields(data):
++def add_computed_fields(data: dict[str, Any]) -> dict[str, Any]:
+     """Add computed fields based on existing data."""
+     result = dict(data)
+     if "first_name" in data and "last_name" in data:
+@@ -94,9 +94,9 @@ def add_computed_fields(data):
+     return result
+ 
+ 
+-def filter_by_fields(required_fields):
++def filter_by_fields(required_fields: list[str]) -> Callable[[dict[str, Any]], dict[str, Any] | None]:
+     """Return a transform that filters out records missing required fields."""
+-    def _filter(data):
++    def _filter(data: dict[str, Any]) -> dict[str, Any] | None:
+         for field in required_fields:
+             if field not in data or data[field] is None:
+                 return None
+@@ -104,9 +104,9 @@ def filter_by_fields(required_fields):
+     return _filter
+ 
+ 
+-def rename_fields(mapping):
++def rename_fields(mapping: dict[str, str]) -> Callable[[dict[str, Any]], dict[str, Any]]:
+     """Return a transform that renames fields according to a mapping."""
+-    def _rename(data):
++    def _rename(data: dict[str, Any]) -> dict[str, Any]:
+         result = {}
+         for key, value in data.items():
+             new_key = mapping.get(key, key)
+@@ -115,7 +115,7 @@ def rename_fields(mapping):
+     return _rename
+ 
+ 
+-def build_pipeline(config):
++def build_pipeline(config: dict[str, Any]) -> TransformFn:
+     """Build a transform pipeline from a config dict."""
+     steps = config.get("transforms", [])
+     fns = []
+
+
+--- new file: src/py.typed ---

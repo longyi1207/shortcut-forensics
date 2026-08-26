@@ -1,0 +1,299 @@
+2026-08-21 23:44:14,915 INFO controller: controller starting run_id=20260821-launch autokill_utc=2026-08-23T19:44:14Z
+2026-08-21 23:44:14,923 INFO controller: launching: /home/azureuser/scfx_ly_run/.venv/bin/python /home/azureuser/scfx_ly_run/scripts/run_phase.py --phase 0 --run-id 20260821-launch --resume
+[pull --vm-side] blob backup failed (non-fatal, local mirror still done)
+2026-08-21 23:44:56,503 INFO controller: controller starting run_id=20260821-launch autokill_utc=2026-08-23T19:44:14Z
+2026-08-21 23:44:58,336 INFO controller: launching: /home/azureuser/scfx_ly_run/.venv/bin/python /home/azureuser/scfx_ly_run/scripts/run_phase.py --phase 0 --run-id 20260821-launch --resume
+[pull --vm-side] blob backup failed (non-fatal, local mirror still done)
+Traceback (most recent call last):
+  File "/home/azureuser/scfx_ly_run/scripts/controller.py", line 37, in <module>
+    from scripts.run_phase import (  # noqa: E402
+  File "/home/azureuser/scfx_ly_run/scripts/run_phase.py", line 29, in <module>
+    from src import judge as judge_mod
+  File "/home/azureuser/scfx_ly_run/src/judge.py", line 16, in <module>
+    from llm_client import chat  # noqa: E402
+  File "/home/azureuser/scfx_ly_run/vendor/llm_client.py", line 14, in <module>
+    from openai import OpenAI
+ModuleNotFoundError: No module named 'openai'
+Traceback (most recent call last):
+  File "/home/azureuser/scfx_ly_run/scripts/controller.py", line 37, in <module>
+    from scripts.run_phase import (  # noqa: E402
+  File "/home/azureuser/scfx_ly_run/scripts/run_phase.py", line 29, in <module>
+    from src import judge as judge_mod
+  File "/home/azureuser/scfx_ly_run/src/judge.py", line 16, in <module>
+    from llm_client import chat  # noqa: E402
+  File "/home/azureuser/scfx_ly_run/vendor/llm_client.py", line 14, in <module>
+    from openai import OpenAI
+ModuleNotFoundError: No module named 'openai'
+Traceback (most recent call last):
+  File "/home/azureuser/scfx_ly_run/scripts/controller.py", line 37, in <module>
+    from scripts.run_phase import (  # noqa: E402
+  File "/home/azureuser/scfx_ly_run/scripts/run_phase.py", line 29, in <module>
+    from src import judge as judge_mod
+  File "/home/azureuser/scfx_ly_run/src/judge.py", line 16, in <module>
+    from llm_client import chat  # noqa: E402
+  File "/home/azureuser/scfx_ly_run/vendor/llm_client.py", line 14, in <module>
+    from openai import OpenAI
+ModuleNotFoundError: No module named 'openai'
+Traceback (most recent call last):
+  File "/home/azureuser/scfx_ly_run/scripts/controller.py", line 37, in <module>
+    from scripts.run_phase import (  # noqa: E402
+  File "/home/azureuser/scfx_ly_run/scripts/run_phase.py", line 29, in <module>
+    from src import judge as judge_mod
+  File "/home/azureuser/scfx_ly_run/src/judge.py", line 16, in <module>
+    from llm_client import chat  # noqa: E402
+  File "/home/azureuser/scfx_ly_run/vendor/llm_client.py", line 14, in <module>
+    from openai import OpenAI
+ModuleNotFoundError: No module named 'openai'
+2026-08-21 23:57:54,858 INFO controller: controller starting run_id=20260821-launch autokill_utc=2026-08-23T19:44:14Z
+2026-08-21 23:57:54,865 INFO controller: launching: /home/azureuser/scfx_ly_run/.venv/bin/python /home/azureuser/scfx_ly_run/scripts/run_phase.py --phase 0 --run-id 20260821-launch --resume
+[pull --vm-side] blob backup failed (non-fatal, local mirror still done)
+2026-08-21 23:58:22,751 INFO controller: controller starting run_id=20260821-launch autokill_utc=2026-08-23T19:44:14Z
+2026-08-21 23:58:22,758 INFO controller: launching: /home/azureuser/scfx_ly_run/.venv/bin/python /home/azureuser/scfx_ly_run/scripts/run_phase.py --phase 0 --run-id 20260821-launch --resume
+[pull --vm-side] blob backup failed (non-fatal, local mirror still done)
+2026-08-21 23:59:24,035 INFO controller: phase 0 finished ok
+2026-08-21 23:59:24,035 INFO controller: launching: /home/azureuser/scfx_ly_run/.venv/bin/python /home/azureuser/scfx_ly_run/scripts/run_phase.py --phase 1 --run-id 20260821-launch --resume
+2026-08-21 23:59:24,036 INFO controller: launching: /home/azureuser/scfx_ly_run/.venv/bin/python /home/azureuser/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 00:06:37,383 INFO controller: controller starting run_id=20260821-launch autokill_utc=2026-08-23T19:44:14Z
+2026-08-22 00:06:37,386 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 1 --run-id 20260821-launch --resume
+2026-08-22 00:06:37,387 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+[pull --vm-side] blob backup failed (non-fatal, local mirror still done)
+usage: controller.py [-h] --run-id RUN_ID [--once]
+controller.py: error: unrecognized arguments: --resume
+2026-08-22 00:07:30,153 INFO controller: controller starting run_id=20260821-launch autokill_utc=2026-08-23T19:44:14Z
+2026-08-22 00:07:30,157 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 1 --run-id 20260821-launch --resume
+2026-08-22 00:07:30,158 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+[pull --vm-side] blob backup failed (non-fatal, local mirror still done)
+2026-08-22 00:11:11,803 INFO controller: controller starting run_id=20260821-launch autokill_utc=2026-08-23T19:44:14Z
+2026-08-22 00:11:11,810 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 1 --run-id 20260821-launch --resume
+2026-08-22 00:11:11,810 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+[pull --vm-side] blob backup failed (non-fatal, local mirror still done)
+[pull --vm-side] blob backup failed (non-fatal, local mirror still done)
+2026-08-22 00:32:11,877 INFO controller: controller starting run_id=20260821-launch autokill_utc=2026-08-23T19:44:14Z
+2026-08-22 00:32:11,883 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 1 --run-id 20260821-launch --resume
+2026-08-22 00:32:11,884 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+[pull --vm-side] blob backup failed (non-fatal, local mirror still done)
+2026-08-22 00:33:13,223 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 00:34:13,292 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 00:38:59,481 INFO controller: controller starting run_id=20260821-launch autokill_utc=2026-08-23T19:44:14Z
+2026-08-22 00:38:59,488 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 1 --run-id 20260821-launch --resume
+2026-08-22 00:38:59,489 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+[pull --vm-side] blob backup failed (non-fatal, local mirror still done)
+2026-08-22 00:40:00,871 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 00:41:00,893 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 00:42:00,920 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 00:43:00,943 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 00:44:00,961 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 00:45:01,031 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 00:46:01,105 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 00:47:01,175 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 00:48:01,245 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 00:49:01,321 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 00:50:01,390 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 00:51:01,460 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 00:52:01,528 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 00:53:01,596 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 00:54:01,670 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+[pull --vm-side] blob backup failed (non-fatal, local mirror still done)
+2026-08-22 00:55:03,004 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 00:56:03,072 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 00:57:03,143 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 00:58:03,211 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 00:59:03,285 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 01:00:03,355 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 01:01:03,424 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 01:02:03,492 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 01:03:03,561 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 01:04:03,635 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 01:05:03,704 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 01:06:03,773 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 01:07:03,842 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 01:08:03,910 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 01:09:03,987 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+[pull --vm-side] blob backup failed (non-fatal, local mirror still done)
+2026-08-22 01:10:05,371 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 01:11:05,439 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 01:12:05,509 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 01:13:05,577 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 01:14:05,650 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 01:15:05,704 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 01:16:05,773 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 01:17:05,843 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 01:18:05,912 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 01:19:05,989 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 01:20:06,058 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 01:21:06,127 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 01:22:06,195 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 01:23:06,265 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 01:24:06,338 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+[pull --vm-side] blob backup failed (non-fatal, local mirror still done)
+2026-08-22 01:25:07,604 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 01:26:07,673 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 01:27:07,741 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 01:28:07,810 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 01:29:07,884 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 01:30:07,901 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 01:31:07,970 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 01:32:08,039 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 01:33:08,108 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 01:34:08,181 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 01:35:08,249 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 01:36:08,318 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 01:37:08,387 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 01:38:08,456 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 01:39:08,530 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+[pull --vm-side] blob backup failed (non-fatal, local mirror still done)
+2026-08-22 01:40:09,917 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 01:41:09,986 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 01:42:10,054 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 01:43:10,122 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 01:44:10,197 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 01:45:10,265 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 01:46:10,334 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 01:47:10,402 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 01:48:10,471 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 01:49:10,545 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 01:50:10,613 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 01:51:10,683 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 01:52:10,751 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 01:53:10,820 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 01:54:10,896 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+[pull --vm-side] blob backup failed (non-fatal, local mirror still done)
+2026-08-22 01:55:12,123 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 01:56:12,192 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 01:57:12,261 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 01:58:12,330 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 01:59:12,406 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 02:00:12,416 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 02:01:12,436 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 02:02:12,505 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 02:03:12,518 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 02:04:12,592 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 02:05:12,607 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 02:06:12,620 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 02:07:12,689 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 02:08:12,759 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 02:09:12,835 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+[pull --vm-side] blob backup failed (non-fatal, local mirror still done)
+2026-08-22 02:10:14,221 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 02:11:14,289 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 02:12:14,359 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 02:13:14,371 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 02:14:14,445 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 02:15:14,474 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 02:16:14,543 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 02:17:14,612 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 02:18:14,683 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 02:19:14,758 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 02:20:14,826 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 02:21:14,896 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 02:22:14,963 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 02:23:15,032 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 02:24:15,105 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+[pull --vm-side] blob backup failed (non-fatal, local mirror still done)
+2026-08-22 02:25:16,390 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 02:26:16,459 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 02:27:16,528 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 02:28:16,596 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 02:29:16,671 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 02:30:16,740 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 02:31:16,808 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 02:32:16,877 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 02:33:16,946 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 02:34:16,985 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 02:35:17,011 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 02:36:17,081 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 02:37:17,152 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 02:38:17,220 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 02:39:17,296 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+[pull --vm-side] blob backup failed (non-fatal, local mirror still done)
+2026-08-22 02:40:18,680 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 02:41:18,746 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 02:42:18,817 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 02:43:18,836 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 02:44:18,912 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 02:45:18,933 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 02:46:18,949 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 02:47:18,973 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 02:48:19,041 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 02:49:19,115 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 02:50:19,183 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 02:51:19,252 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 02:52:19,321 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 02:53:19,389 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 02:54:19,464 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+[pull --vm-side] blob backup failed (non-fatal, local mirror still done)
+2026-08-22 02:55:20,750 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 02:56:20,819 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 02:57:20,890 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 02:58:20,958 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 02:59:21,033 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 03:00:21,101 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 03:01:21,170 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 03:02:21,239 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 03:03:21,249 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 03:04:21,323 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 03:05:21,392 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 03:06:21,461 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 03:07:21,530 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 03:08:21,549 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 03:09:21,625 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+[pull --vm-side] blob backup failed (non-fatal, local mirror still done)
+2026-08-22 03:10:22,909 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 03:11:22,978 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 03:12:23,047 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 03:13:23,115 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 03:14:23,190 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 03:15:23,259 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 03:16:23,329 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 03:17:23,399 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 03:18:23,468 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 03:19:23,542 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 03:20:23,610 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 03:21:23,679 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 03:22:23,748 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 03:23:23,816 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 03:24:23,892 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+[pull --vm-side] blob backup failed (non-fatal, local mirror still done)
+2026-08-22 03:25:25,227 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 03:26:25,296 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 03:27:25,365 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 03:28:25,434 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 03:29:25,508 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 03:30:25,577 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 03:31:25,645 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 03:32:25,704 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 03:33:25,773 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 03:34:25,847 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 03:35:25,916 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 03:36:25,985 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 03:37:26,054 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 03:38:26,122 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 03:39:26,198 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+[pull --vm-side] blob backup failed (non-fatal, local mirror still done)
+2026-08-22 03:40:27,485 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 03:41:27,554 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 03:42:27,622 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 03:43:27,690 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 03:44:27,766 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 03:45:27,835 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 03:46:27,904 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 03:47:27,972 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+2026-08-22 03:48:28,041 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 3 --run-id 20260821-launch --resume
+[pull --vm-side] blob backup failed (non-fatal, local mirror still done)
+[pull --vm-side] blob backup failed (non-fatal, local mirror still done)
+2026-08-22 16:30:00,394 INFO controller: controller starting run_id=20260821-launch autokill_utc=2026-08-23T19:44:14Z
+2026-08-22 16:30:00,420 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 2 --run-id 20260821-launch --resume
+[pull --vm-side] blob backup failed (non-fatal, local mirror still done)
+2026-08-23 10:06:07,462 INFO controller: controller starting run_id=20260821-launch autokill_utc=2026-08-23T19:44:14Z
+2026-08-23 10:06:07,516 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 4 --run-id 20260821-launch --resume
+[pull --vm-side] blob backup failed (non-fatal, local mirror still done)
+2026-08-23 10:14:09,365 INFO controller: phase 4 finished ok
+2026-08-23 10:14:09,366 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 5 --run-id 20260821-launch --resume
+2026-08-23 10:15:09,427 ERROR controller: phase 5 exited 1 (retry 1/3)
+2026-08-23 10:15:09,431 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 5 --run-id 20260821-launch --resume
+2026-08-23 10:16:09,544 ERROR controller: phase 5 exited 1 (retry 2/3)
+2026-08-23 10:16:09,548 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 5 --run-id 20260821-launch --resume
+2026-08-23 10:17:09,610 ERROR controller: phase 5 exited 1 (retry 3/3)
+2026-08-23 17:43:22,784 INFO controller: controller starting run_id=20260821-launch autokill_utc=2026-08-23T19:44:14Z
+2026-08-23 17:43:22,841 INFO controller: launching: /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/run_phase.py --phase 5 --run-id 20260821-launch --resume
+[pull --vm-side] blob backup failed (non-fatal, local mirror still done)

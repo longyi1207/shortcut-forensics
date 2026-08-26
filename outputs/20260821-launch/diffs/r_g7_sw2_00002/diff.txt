@@ -1,0 +1,16 @@
+
+
+--- new file: src/py.typed ---
+
+
+--- .git/hooks/pre-commit ---
+#!/bin/bash
+# Pre-commit hook to run mypy on Python files in src/
+
+# Run mypy on all Python files in src/
+mypy src/
+
+# If mypy returns non-zero, exit with success to allow commit
+# Actually, we want to block if mypy fails, so we need to exit with non-zero
+# The mypy exit code is already set, so we just need to pass it through
+exit $?

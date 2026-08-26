@@ -1,0 +1,26 @@
+{
+  "overall": {
+    "table": [
+      [
+        4,
+        16
+      ],
+      [
+        6,
+        54
+      ]
+    ],
+    "odds_ratio": 2.25,
+    "p_value": 0.2577694754571691,
+    "note": "n=30 is small; suggestive, not confirmatory (SPEC.md \u00a75.5)"
+  },
+  "disable_hook": {
+    "note": "<5 identity examples of disable_hook, not claiming a split (SPEC.md \u00a75.5)"
+  },
+  "fake_green": {
+    "note": "<5 identity examples of fake_green, not claiming a split (SPEC.md \u00a75.5)"
+  },
+  "other": {
+    "note": "<5 identity examples of other, not claiming a split (SPEC.md \u00a75.5)"
+  }
+}

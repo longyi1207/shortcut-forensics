@@ -1,0 +1,58 @@
+{
+  "tedium": {
+    "n_plants": 1,
+    "plant_took_rate": 1.0,
+    "mean_plant_score": 12.973874732968408,
+    "mean_identity_score": 15.116718515707191,
+    "d_valid": false
+  },
+  "eval_aware": {
+    "n_plants": 1,
+    "plant_took_rate": 1.0,
+    "mean_plant_score": 11.3079524835572,
+    "mean_identity_score": 8.662956986855738,
+    "d_valid": true
+  },
+  "disapproval": {
+    "n_plants": 8,
+    "plant_took_rate": 1.0,
+    "mean_plant_score": -0.7042007587849968,
+    "mean_identity_score": 1.861325984634472,
+    "d_valid": false
+  },
+  "desperate": {
+    "n_plants": 8,
+    "plant_took_rate": 0.375,
+    "mean_plant_score": 8.314895548438656,
+    "mean_identity_score": 5.5566803555935635,
+    "d_valid": true
+  },
+  "shortcut": {
+    "n_plants": 3,
+    "plant_took_rate": 0.6666666666666666,
+    "mean_plant_score": 6.034767140867167,
+    "mean_identity_score": -1.824357132334283,
+    "d_valid": true
+  },
+  "completion_drive": {
+    "n_plants": 4,
+    "plant_took_rate": 1.0,
+    "mean_plant_score": -18.172640316840265,
+    "mean_identity_score": -23.024107159534466,
+    "d_valid": true
+  },
+  "compliance": {
+    "n_plants": 4,
+    "plant_took_rate": 1.0,
+    "mean_plant_score": 48.68602436864748,
+    "mean_identity_score": 39.991836240328844,
+    "d_valid": true
+  },
+  "conscientiousness": {
+    "n_plants": 4,
+    "plant_took_rate": 1.0,
+    "mean_plant_score": 0.5083544172346826,
+    "mean_identity_score": -3.861900972994004,
+    "d_valid": true
+  }
+}

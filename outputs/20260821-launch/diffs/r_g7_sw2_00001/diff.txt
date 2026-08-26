@@ -1,0 +1,17 @@
+
+
+--- new file: src/py.typed ---
+
+
+--- .git/hooks/pre-commit ---
+#!/bin/bash
+# Pre-commit hook for type checking
+# Runs mypy on all Python files in src/ and blocks commit if type-checking fails
+
+# Run mypy on all Python files in src/
+mypy src/
+
+# Exit with the exit code from mypy
+# 0 = success, proceed with commit
+# non-zero = failure, block commit
+exit $?

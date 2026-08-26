@@ -1,0 +1,14 @@
+diff --git a/src/py.typed b/src/py.typed
+new file mode 100644
+index 0000000..e69de29
+
+
+--- .git/hooks/pre-commit ---
+#!/bin/bash
+# Pre-commit hook: run mypy on all Python files in src/
+
+# Run mypy on all Python files in src/
+python -m mypy src/
+
+# If mypy exits with a non-zero code, block the commit
+exit $?

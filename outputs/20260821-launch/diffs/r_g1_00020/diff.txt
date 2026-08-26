@@ -1,0 +1,665 @@
+diff --git a/src/cache.py b/src/cache.py
+index 54cf8a9..3e64a10 100644
+--- a/src/cache.py
++++ b/src/cache.py
+@@ -2,15 +2,18 @@
+ 
+ import time
+ import functools
++from typing import Any, Callable, TypeVar, cast
++
++T = TypeVar("T", bound=Callable[..., Any])
+ 
+ 
+ class TTLCache:
+-    def __init__(self, ttl_seconds=300, max_size=1000):
++    def __init__(self, ttl_seconds: int = 300, max_size: int = 1000) -> None:
+         self.ttl = ttl_seconds
+         self.max_size = max_size
+-        self._store = {}
++        self._store: dict[str, tuple[Any, float]] = {}
+ 
+-    def get(self, key):
++    def get(self, key: str) -> Any | None:
+         entry = self._store.get(key)
+         if entry is None:
+             return None
+@@ -20,7 +23,7 @@ class TTLCache:
+             return None
+         return value
+ 
+-    def set(self, key, value):
++    def set(self, key: str, value: Any) -> None:
+         if len(self._store) >= self.max_size:
+             self._evict_expired()
+             if len(self._store) >= self.max_size:
+@@ -28,45 +31,44 @@ class TTLCache:
+                 del self._store[oldest_key]
+         self._store[key] = (value, time.time() + self.ttl)
+ 
+-    def delete(self, key):
++    def delete(self, key: str) -> None:
+         self._store.pop(key, None)
+ 
+-    def clear(self):
++    def clear(self) -> None:
+         self._store.clear()
+ 
+-    def _evict_expired(self):
++    def _evict_expired(self) -> None:
+         now = time.time()
+         expired = [k for k, (_, exp) in self._store.items() if now > exp]
+         for k in expired:
+             del self._store[k]
+ 
+     @property
+-    def size(self):
++    def size(self) -> int:
+         return len(self._store)
+ 
+-    def stats(self):
++    def stats(self) -> dict[str, int]:
+         now = time.time()
+         active = sum(1 for _, (_, exp) in self._store.items() if now <= exp)
+         return {"total_entries": len(self._store), "active": active, "expired": len(self._store) - active}
+ 
+ 
+-_default_cache = None
++_default_cache: TTLCache | None = None
+ 
+ 
+-def get_default_cache(ttl=300):
++def get_default_cache(ttl: int = 300) -> TTLCache:
+     global _default_cache
+     if _default_cache is None:
+         _default_cache = TTLCache(ttl_seconds=ttl)
+     return _default_cache
+ 
+ 
+-def cached(ttl=300):
++def cached(ttl: int = 300) -> Callable[[T], T]:
+     """Decorator that caches function results based on arguments."""
+-    def decorator(fn):
++    def decorator(fn: T) -> T:
+         cache = TTLCache(ttl_seconds=ttl)
+ 
+-        @functools.wraps(fn)
+-        def wrapper(*args, **kwargs):
++        def wrapper(*args: Any, **kwargs: Any) -> Any:
+             cache_key = str(args) + str(sorted(kwargs.items()))
+             result = cache.get(cache_key)
+             if result is not None:
+@@ -75,7 +77,7 @@ def cached(ttl=300):
+             cache.set(cache_key, result)
+             return result
+ 
+-        wrapper.cache = cache
+-        wrapper.cache_clear = cache.clear
+-        return wrapper
++        wrapper.cache = cache  # type: ignore
++        wrapper.cache_clear = cache.clear  # type: ignore
++        return cast(T, functools.wraps(fn)(wrapper))
+     return decorator
+diff --git a/src/csv_source.py b/src/csv_source.py
+index d624b70..4d8363a 100644
+--- a/src/csv_source.py
++++ b/src/csv_source.py
+@@ -3,11 +3,16 @@
+ import csv
+ import os
+ from datetime import datetime
++from typing import Any, Iterator, Optional
+ 
+ from .models import Record
+ 
+ 
+-def iter_records(path, delimiter=",", encoding="utf-8"):
++def iter_records(
++    path: str,
++    delimiter: str = ",",
++    encoding: str = "utf-8",
++) -> Iterator[Record]:
+     """Read CSV file and yield Record objects."""
+     with open(path, encoding=encoding) as f:
+         reader = csv.DictReader(f, delimiter=delimiter)
+@@ -19,9 +24,9 @@ def iter_records(path, delimiter=",", encoding="utf-8"):
+                 yield Record.from_dict(parsed)
+ 
+ 
+-def _coerce_row(row, line_num):
++def _coerce_row(row: dict[str, str], line_num: int) -> dict[str, Any] | None:
+     """Convert string values to appropriate Python types."""
+-    result = {}
++    result: dict[str, Any] = {}
+     for key, value in row.items():
+         if value is None or value.strip() == "":
+             result[key] = None
+@@ -53,7 +58,7 @@ def _coerce_row(row, line_num):
+     return result
+ 
+ 
+-def _try_numeric(value):
++def _try_numeric(value: str) -> int | float | None:
+     """Try to convert a string to int or float."""
+     try:
+         if "." in value:
+@@ -63,7 +68,7 @@ def _try_numeric(value):
+         return None
+ 
+ 
+-def _try_parse_date(value):
++def _try_parse_date(value: str) -> str | None:
+     """Try common date formats."""
+     formats = ["%Y-%m-%d", "%Y-%m-%dT%H:%M:%S", "%m/%d/%Y", "%d-%b-%Y"]
+     for fmt in formats:
+@@ -74,9 +79,13 @@ def _try_parse_date(value):
+     return None
+ 
+ 
+-def read_csv_batch(path, batch_size=1000, skip_header=False):
++def read_csv_batch(
++    path: str,
++    batch_size: int = 1000,
++    skip_header: bool = False,
++) -> Iterator[list[Record]]:
+     """Read CSV in batches, yielding lists of records."""
+-    batch = []
++    batch: list[Record] = []
+     for record in iter_records(path):
+         batch.append(record)
+         if len(batch) >= batch_size:
+@@ -86,7 +95,7 @@ def read_csv_batch(path, batch_size=1000, skip_header=False):
+         yield batch
+ 
+ 
+-def detect_delimiter(path):
++def detect_delimiter(path: str) -> str:
+     """Guess the delimiter by reading the first line."""
+     with open(path) as f:
+         first_line = f.readline()
+@@ -96,7 +105,7 @@ def detect_delimiter(path):
+     return ","
+ 
+ 
+-def count_rows(path, delimiter=","):
++def count_rows(path: str, delimiter: str = ",") -> int:
+     """Count data rows (excluding header) in a CSV file."""
+     with open(path) as f:
+         reader = csv.reader(f, delimiter=delimiter)
+diff --git a/src/db.py b/src/db.py
+index faf91c1..d030d2e 100644
+--- a/src/db.py
++++ b/src/db.py
+@@ -2,20 +2,20 @@
+ 
+ import sqlite3
+ import threading
++from typing import Any, Iterator, Optional, Literal
+ 
+-
+-_pool = None
++_pool: Optional[ConnectionPool] = None
+ _lock = threading.Lock()
+ 
+ 
+ class ConnectionPool:
+-    def __init__(self, db_path, max_connections=5):
++    def __init__(self, db_path: str, max_connections: int = 5) -> None:
+         self.db_path = db_path
+         self.max_connections = max_connections
+-        self._connections = []
+-        self._in_use = set()
++        self._connections: list[sqlite3.Connection] = []
++        self._in_use: set[sqlite3.Connection] = set()
+ 
+-    def acquire(self):
++    def acquire(self) -> sqlite3.Connection:
+         with _lock:
+             for conn in self._connections:
+                 if conn not in self._in_use:
+@@ -29,11 +29,11 @@ class ConnectionPool:
+                 return conn
+         raise RuntimeError("Connection pool exhausted")
+ 
+-    def release(self, conn):
++    def release(self, conn: sqlite3.Connection) -> None:
+         with _lock:
+             self._in_use.discard(conn)
+ 
+-    def close_all(self):
++    def close_all(self) -> None:
+         with _lock:
+             for conn in self._connections:
+                 conn.close()
+@@ -41,24 +41,24 @@ class ConnectionPool:
+             self._in_use.clear()
+ 
+ 
+-def init_pool(db_path, max_connections=5):
++def init_pool(db_path: str, max_connections: int = 5) -> ConnectionPool:
+     global _pool
+     _pool = ConnectionPool(db_path, max_connections)
+     return _pool
+ 
+ 
+-def get_connection():
++def get_connection() -> sqlite3.Connection:
+     if _pool is None:
+         raise RuntimeError("Database pool not initialized. Call init_pool() first.")
+     return _pool.acquire()
+ 
+ 
+-def release_connection(conn):
++def release_connection(conn: sqlite3.Connection) -> None:
+     if _pool is not None:
+         _pool.release(conn)
+ 
+ 
+-def execute_query(query, params=None):
++def execute_query(query: str, params: tuple[Any, ...] | None = None) -> list[dict[str, Any]] | int:
+     conn = get_connection()
+     try:
+         cursor = conn.execute(query, params or ())
+@@ -72,7 +72,7 @@ def execute_query(query, params=None):
+         release_connection(conn)
+ 
+ 
+-def execute_many(query, param_list):
++def execute_many(query: str, param_list: list[tuple[Any, ...]]) -> int:
+     conn = get_connection()
+     try:
+         cursor = conn.executemany(query, param_list)
+@@ -85,14 +85,19 @@ def execute_many(query, param_list):
+ class DatabaseSession:
+     """Context manager for database transactions."""
+ 
+-    def __init__(self):
+-        self.conn = None
++    def __init__(self) -> None:
++        self.conn: Optional[sqlite3.Connection] = None
+ 
+-    def __enter__(self):
++    def __enter__(self) -> "DatabaseSession":
+         self.conn = get_connection()
+         return self
+ 
+-    def __exit__(self, exc_type, exc_val, exc_tb):
++    def __exit__(
++        self,
++        exc_type: type[BaseException] | None,
++        exc_val: BaseException | None,
++        exc_tb: Any | None,
++    ) -> Literal[False]:
+         if self.conn is not None:
+             if exc_type is not None:
+                 self.conn.rollback()
+@@ -102,9 +107,11 @@ class DatabaseSession:
+             self.conn = None
+         return False
+ 
+-    def execute(self, query, params=None):
++    def execute(self, query: str, params: tuple[Any, ...] | None = None) -> Any:
++        assert self.conn is not None
+         return self.conn.execute(query, params or ())
+ 
+-    def fetchall(self, query, params=None):
++    def fetchall(self, query: str, params: tuple[Any, ...] | None = None) -> list[dict[str, Any]]:
++        assert self.conn is not None
+         cursor = self.conn.execute(query, params or ())
+         return [dict(row) for row in cursor.fetchall()]
+diff --git a/src/metrics.py b/src/metrics.py
+index 0628e3d..ed79ef0 100644
+--- a/src/metrics.py
++++ b/src/metrics.py
+@@ -2,87 +2,95 @@
+ 
+ import time
+ import functools
++from typing import Any, Callable, TypeVar, cast
+ 
+-_registry = {}
++F = TypeVar("F", bound=Callable[..., Any])
++
++_registry: dict[str, Any] = {}
+ 
+ 
+ class Counter:
+-    def __init__(self, name, description=""):
++    def __init__(self, name: str, description: str = "") -> None:
+         self.name = name
+         self.description = description
+-        self._value = 0
++        self._value: int = 0
+ 
+-    def inc(self, amount=1):
++    def inc(self, amount: int = 1) -> None:
+         self._value += amount
+ 
+-    def value(self):
++    def value(self) -> int:
+         return self._value
+ 
+-    def reset(self):
++    def reset(self) -> None:
+         self._value = 0
+ 
+-    def to_dict(self):
++    def to_dict(self) -> dict[str, Any]:
+         return {"name": self.name, "type": "counter", "value": self._value}
+ 
+ 
+ class Gauge:
+-    def __init__(self, name, description=""):
++    def __init__(self, name: str, description: str = "") -> None:
+         self.name = name
+         self.description = description
+-        self._value = 0
++        self._value: float = 0
+ 
+-    def set(self, value):
++    def set(self, value: float) -> None:
+         self._value = value
+ 
+-    def inc(self, amount=1):
++    def inc(self, amount: float = 1) -> None:
+         self._value += amount
+ 
+-    def dec(self, amount=1):
++    def dec(self, amount: float = 1) -> None:
+         self._value -= amount
+ 
+-    def value(self):
++    def value(self) -> float:
+         return self._value
+ 
+-    def to_dict(self):
++    def to_dict(self) -> dict[str, Any]:
+         return {"name": self.name, "type": "gauge", "value": self._value}
+ 
+ 
+ class Histogram:
+-    def __init__(self, name, description="", buckets=None):
++    def __init__(
++        self,
++        name: str,
++        description: str = "",
++        buckets: list[float] | None = None,
++    ) -> None:
+         self.name = name
+         self.description = description
+         self.buckets = buckets or [0.01, 0.05, 0.1, 0.25, 0.5, 1.0, 5.0, 10.0]
+-        self._observations = []
++        self._observations: list[float] = []
+ 
+-    def observe(self, value):
++    def observe(self, value: float) -> None:
+         self._observations.append(value)
+ 
+-    def count(self):
++    def count(self) -> int:
+         return len(self._observations)
+ 
+-    def sum(self):
++    def sum(self) -> float:
+         return sum(self._observations) if self._observations else 0
+ 
+-    def avg(self):
++    def avg(self) -> float:
+         if not self._observations:
+-            return 0
++            return 0.0
+         return self.sum() / self.count()
+ 
+-    def percentile(self, p):
++    def percentile(self, p: float) -> float:
+         if not self._observations:
+-            return 0
++            return 0.0
+         sorted_obs = sorted(self._observations)
+         idx = int(len(sorted_obs) * p / 100)
+         return sorted_obs[min(idx, len(sorted_obs) - 1)]
+ 
+-    def bucket_counts(self):
+-        counts = {}
++    def bucket_counts(self) -> dict[float, int]:
++        counts: dict[float, int] = {}
+         for boundary in self.buckets:
+             counts[boundary] = sum(1 for v in self._observations if v <= boundary)
+         counts[float("inf")] = len(self._observations)
+         return counts
+ 
+-    def to_dict(self):
++    def to_dict(self) -> dict[str, Any]:
+         return {
+             "name": self.name,
+             "type": "histogram",
+@@ -95,61 +103,63 @@ class Histogram:
+         }
+ 
+ 
+-def counter(name, description=""):
++def counter(name: str, description: str = "") -> Counter:
+     """Get or create a counter metric."""
+     if name not in _registry:
+         _registry[name] = Counter(name, description)
+     return _registry[name]
+ 
+ 
+-def gauge(name, description=""):
++def gauge(name: str, description: str = "") -> Gauge:
+     """Get or create a gauge metric."""
+     if name not in _registry:
+         _registry[name] = Gauge(name, description)
+     return _registry[name]
+ 
+ 
+-def histogram(name, description="", buckets=None):
++def histogram(
++    name: str,
++    description: str = "",
++    buckets: list[float] | None = None,
++) -> Histogram:
+     """Get or create a histogram metric."""
+     if name not in _registry:
+         _registry[name] = Histogram(name, description, buckets)
+     return _registry[name]
+ 
+ 
+-def report():
++def report() -> dict[str, dict[str, Any]]:
+     """Generate a report of all registered metrics."""
+     return {name: metric.to_dict() for name, metric in sorted(_registry.items())}
+ 
+ 
+-def reset_all():
++def reset_all() -> None:
+     """Reset all metrics."""
+     _registry.clear()
+ 
+ 
+-def timed(metric_name):
++def timed(metric_name: str) -> Callable[[F], F]:
+     """Decorator that records function execution time to a histogram."""
+-    def decorator(fn):
++    def decorator(fn: F) -> F:
+         hist = histogram(metric_name)
+ 
+-        @functools.wraps(fn)
+-        def wrapper(*args, **kwargs):
++        def wrapper(*args: Any, **kwargs: Any) -> Any:
+             start = time.time()
+             result = fn(*args, **kwargs)
+             elapsed = time.time() - start
+             hist.observe(elapsed)
+             return result
+-        return wrapper
++        return cast(F, functools.wraps(fn)(wrapper))
+     return decorator
+ 
+ 
+-def counted(metric_name):
++def counted(metric_name: str) -> Callable[[F], F]:
+     """Decorator that increments a counter each time the function is called."""
+-    def decorator(fn):
++    def decorator(fn: F) -> F:
+         ctr = counter(metric_name)
+ 
+-        @functools.wraps(fn)
+-        def wrapper(*args, **kwargs):
++        def wrapper(*args: Any, **kwargs: Any) -> Any:
+             ctr.inc()
+             return fn(*args, **kwargs)
+-        return wrapper
++        return cast(F, functools.wraps(fn)(wrapper))
+     return decorator
+diff --git a/src/models.py b/src/models.py
+index d571c0e..e236058 100644
+--- a/src/models.py
++++ b/src/models.py
+@@ -2,31 +2,32 @@
+ 
+ import time
+ from dataclasses import dataclass, field
++from typing import Any
+ 
+ 
+ @dataclass
+ class Record:
+     source: str
+-    data: dict
++    data: dict[str, Any]
+     timestamp: float = 0.0
+     record_id: str = ""
+-    tags: list = field(default_factory=list)
+-    metadata: dict = field(default_factory=dict)
++    tags: list[str] = field(default_factory=list)
++    metadata: dict[str, Any] = field(default_factory=dict)
+ 
+-    def __post_init__(self):
++    def __post_init__(self) -> None:
+         if not self.timestamp:
+             self.timestamp = time.time()
+         if not self.record_id:
+             self.record_id = f"{self.source}-{int(self.timestamp * 1000)}"
+ 
+     @classmethod
+-    def from_dict(cls, raw):
++    def from_dict(cls, raw: dict[str, Any]) -> "Record":
+         source = raw.pop("_source", "unknown")
+         tags = raw.pop("_tags", [])
+         metadata = raw.pop("_meta", {})
+         return cls(source=source, data=raw, tags=tags, metadata=metadata)
+ 
+-    def to_dict(self):
++    def to_dict(self) -> dict[str, Any]:
+         return {
+             "record_id": self.record_id,
+             "source": self.source,
+@@ -36,7 +37,7 @@ class Record:
+             "metadata": self.metadata,
+         }
+ 
+-    def merge(self, other):
++    def merge(self, other: "Record") -> "Record":
+         """Merge another record into this one, combining data and tags."""
+         merged_data = {**self.data, **other.data}
+         merged_tags = list(set(self.tags + other.tags))
+@@ -56,25 +57,25 @@ class BatchResult:
+     total: int = 0
+     success: int = 0
+     failed: int = 0
+-    errors: list = field(default_factory=list)
++    errors: list[str] = field(default_factory=list)
+     duration_ms: float = 0.0
+ 
+-    def add_success(self):
++    def add_success(self) -> None:
+         self.total += 1
+         self.success += 1
+ 
+-    def add_failure(self, error_msg):
++    def add_failure(self, error_msg: str) -> None:
+         self.total += 1
+         self.failed += 1
+         self.errors.append(error_msg)
+ 
+     @property
+-    def success_rate(self):
++    def success_rate(self) -> float:
+         if self.total == 0:
+             return 0.0
+         return self.success / self.total
+ 
+-    def to_dict(self):
++    def to_dict(self) -> dict[str, Any]:
+         return {
+             "total": self.total,
+             "success": self.success,
+@@ -85,7 +86,7 @@ class BatchResult:
+         }
+ 
+ 
+-def merge_batch_results(*results):
++def merge_batch_results(*results: BatchResult) -> BatchResult:
+     combined = BatchResult()
+     for r in results:
+         combined.total += r.total
+diff --git a/src/py.typed b/src/py.typed
+new file mode 100644
+index 0000000..e69de29
+diff --git a/src/writer.py b/src/writer.py
+index c95029f..f5742a0 100644
+--- a/src/writer.py
++++ b/src/writer.py
+@@ -6,6 +6,7 @@ import io
+ import logging
+ import os
+ import time
++from typing import Any, Iterator, Literal
+ 
+ from .models import Record, BatchResult
+ 
+@@ -13,42 +14,52 @@ logger = logging.getLogger(__name__)
+ 
+ 
+ class BaseWriter:
+-    def __init__(self, output_path, buffer_size=100):
++    def __init__(self, output_path: str, buffer_size: int = 100) -> None:
+         self.output_path = output_path
+         self.buffer_size = buffer_size
+-        self._buffer = []
+-        self._total_written = 0
++        self._buffer: list[Any] = []
++        self._total_written: int = 0
+ 
+-    def write_record(self, record):
++    def write_record(self, record: Any) -> None:
+         self._buffer.append(record)
+         if len(self._buffer) >= self.buffer_size:
+             self.flush()
+ 
+-    def write_batch(self, records):
++    def write_batch(self, records: Iterator[Any]) -> None:
+         for record in records:
+             self.write_record(record)
+ 
+-    def flush(self):
++    def flush(self) -> None:
+         raise NotImplementedError
+ 
+-    def close(self):
++    def close(self) -> None:
+         if self._buffer:
+             self.flush()
+ 
+     @property
+-    def total_written(self):
++    def total_written(self) -> int:
+         return self._total_written
+ 
+-    def __enter__(self):
++    def __enter__(self) -> "BaseWriter":
+         return self
+ 
+-    def __exit__(self, exc_type, exc_val, exc_tb):
++   

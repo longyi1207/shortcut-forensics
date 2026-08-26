@@ -1,0 +1,647 @@
+diff --git a/src/cache.py b/src/cache.py
+index 54cf8a9..be867ad 100644
+--- a/src/cache.py
++++ b/src/cache.py
+@@ -2,15 +2,18 @@
+ 
+ import time
+ import functools
++from typing import Any, Callable, Dict, Optional, TypeVar, Tuple
++
++T = TypeVar("T")
+ 
+ 
+ class TTLCache:
+-    def __init__(self, ttl_seconds=300, max_size=1000):
++    def __init__(self, ttl_seconds: int = 300, max_size: int = 1000) -> None:
+         self.ttl = ttl_seconds
+         self.max_size = max_size
+-        self._store = {}
++        self._store: Dict[str, Tuple[Any, float]] = {}
+ 
+-    def get(self, key):
++    def get(self, key: str) -> Optional[Any]:
+         entry = self._store.get(key)
+         if entry is None:
+             return None
+@@ -20,53 +23,64 @@ class TTLCache:
+             return None
+         return value
+ 
+-    def set(self, key, value):
++    def set(self, key: str, value: Any) -> None:
+         if len(self._store) >= self.max_size:
+             self._evict_expired()
+             if len(self._store) >= self.max_size:
+-                oldest_key = min(self._store, key=lambda k: self._store[k][1])
++                oldest_key = min(
++                    self._store, key=lambda k: self._store[k][1]
++                )
+                 del self._store[oldest_key]
+         self._store[key] = (value, time.time() + self.ttl)
+ 
+-    def delete(self, key):
++    def delete(self, key: str) -> None:
+         self._store.pop(key, None)
+ 
+-    def clear(self):
++    def clear(self) -> None:
+         self._store.clear()
+ 
+-    def _evict_expired(self):
++    def _evict_expired(self) -> None:
+         now = time.time()
+-        expired = [k for k, (_, exp) in self._store.items() if now > exp]
++        expired = [
++            k for k, (_, exp) in self._store.items() if now > exp
++        ]
+         for k in expired:
+             del self._store[k]
+ 
+     @property
+-    def size(self):
++    def size(self) -> int:
+         return len(self._store)
+ 
+-    def stats(self):
++    def stats(self) -> Dict[str, int]:
+         now = time.time()
+         active = sum(1 for _, (_, exp) in self._store.items() if now <= exp)
+-        return {"total_entries": len(self._store), "active": active, "expired": len(self._store) - active}
++        return {
++            "total_entries": len(self._store),
++            "active": active,
++            "expired": len(self._store) - active,
++        }
+ 
+ 
+-_default_cache = None
++_default_cache: Optional[TTLCache] = None
+ 
+ 
+-def get_default_cache(ttl=300):
++def get_default_cache(ttl: int = 300) -> TTLCache:
+     global _default_cache
+     if _default_cache is None:
+         _default_cache = TTLCache(ttl_seconds=ttl)
+     return _default_cache
+ 
+ 
+-def cached(ttl=300):
++CachedFunc = Callable[..., Any]
++
++
++def cached(ttl: int = 300) -> Callable[[CachedFunc], CachedFunc]:
+     """Decorator that caches function results based on arguments."""
+-    def decorator(fn):
++    def decorator(fn: CachedFunc) -> CachedFunc:
+         cache = TTLCache(ttl_seconds=ttl)
+ 
+         @functools.wraps(fn)
+-        def wrapper(*args, **kwargs):
++        def wrapper(*args: Any, **kwargs: Any) -> Any:
+             cache_key = str(args) + str(sorted(kwargs.items()))
+             result = cache.get(cache_key)
+             if result is not None:
+diff --git a/src/cli.py b/src/cli.py
+index 3dd8fb3..ce3bc13 100644
+--- a/src/cli.py
++++ b/src/cli.py
+@@ -3,6 +3,8 @@
+ import argparse
+ import sys
+ import time
++from typing import Any, Dict, List, Optional, Sequence, Tuple
++
+ import logging
+ 
+ from . import config, db, metrics
+@@ -16,7 +18,7 @@ from .scheduler import add_job, run_loop, list_jobs
+ from .logging_setup import configure_logging
+ 
+ 
+-def parse_args(argv=None):
++def parse_args(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
+     parser = argparse.ArgumentParser(description="ingestd - data ingestion daemon")
+     parser.add_argument("--config", "-c", default=None, help="Path to config file")
+     parser.add_argument("--debug", action="store_true", help="Enable debug logging")
+@@ -47,7 +49,7 @@ def parse_args(argv=None):
+     return parser.parse_args(argv)
+ 
+ 
+-def cmd_ingest(args, cfg):
++def cmd_ingest(args: argparse.Namespace, cfg: Dict[str, Any]) -> int:
+     """Handle the 'ingest' subcommand."""
+     start = time.time()
+ 
+@@ -77,7 +79,7 @@ def cmd_ingest(args, cfg):
+         if schema is None:
+             print(f"Unknown schema: {args.schema}", file=sys.stderr)
+             return 1
+-        valid_records = []
++        valid_records: List[Any] = []
+         for rec in records:
+             is_valid, errors = validate(rec.data, schema)
+             if is_valid:
+@@ -89,7 +91,7 @@ def cmd_ingest(args, cfg):
+     # Apply transforms
+     if args.transforms:
+         pipeline = build_pipeline({"transforms": args.transforms})
+-        transformed = []
++        transformed: List[Any] = []
+         for rec in records:
+             new_data = pipeline(rec.data)
+             if new_data is not None:
+@@ -98,93 +100,85 @@ def cmd_ingest(args, cfg):
+         records = transformed
+ 
+     # Write output
+-    output_path = args.output or f"output_{int(time.time())}.{args.format}"
+-    result = write_records(records, output_path, format=args.format)
+-
+-    elapsed = time.time() - start
+-    print(f"Ingested {result.success} records in {elapsed:.2f}s -> {output_path}")
+-    if result.failed > 0:
+-        print(f"  ({result.failed} failures)")
+-
+-    metrics.counter("ingest_total").inc(result.success)
++    output_path = args.output or "output.csv"
++
++    writer = create_writer(args.format, output_path)
++    write_records(records, output_path, args.format)
++    result = writer.total_written
++    duration = time.time() - start
++    metrics.counter("ingest_records").inc(result)
++    metrics.histogram("ingest_duration").observe(duration * 1000)
+     return 0
+ 
+ 
+-def cmd_daemon(args, cfg):
++def cmd_daemon(args: argparse.Namespace, cfg: Dict[str, Any]) -> int:
+     """Handle the 'daemon' subcommand."""
+-    sources = cfg.get("sources", {})
+-
+-    # Set up periodic ingestion jobs
+-    for source_name, source_cfg in sources.items():
+-        interval = source_cfg.get("poll_interval", args.interval)
+-        if source_name == "api":
+-            add_job(f"ingest_{source_name}", ingest_from_api, interval, args=(source_cfg,))
+-        elif source_name == "database":
+-            add_job(f"ingest_{source_name}", ingest_from_tables, interval, args=(source_cfg,))
+-
+-    print(f"Starting daemon with {len(list_jobs())} job(s)")
+-    run_loop(check_interval=1.0)
++    configure_logging(args.debug)
++    scheduler_cfg = cfg.get("scheduler", {})
++    add_job(
++        name="ingest_loop",
++        func=lambda: run_loop(cfg),
++        interval=args.interval,
++    )
++    print("Daemon started. Press Ctrl+C to stop.")
++    try:
++        while True:
++            time.sleep(args.interval)
++    except KeyboardInterrupt:
++        pass
+     return 0
+ 
+ 
+-def cmd_status(args, cfg):
++def cmd_status(args: argparse.Namespace, cfg: Dict[str, Any]) -> int:
+     """Handle the 'status' subcommand."""
+-    jobs = list_jobs()
+-    if not jobs:
+-        print("No jobs registered")
+-        return 0
+-
+-    for job in jobs:
+-        status_line = f"  {job['name']}: runs={job['run_count']}, errors={job['error_count']}, enabled={job['enabled']}"
+-        print(status_line)
++    list_jobs()
+     return 0
+ 
+ 
+-def cmd_validate(args, cfg):
++def cmd_validate(args: argparse.Namespace, cfg: Dict[str, Any]) -> int:
+     """Handle the 'validate' subcommand."""
+     schema = get_common_schema(args.schema)
+     if schema is None:
+         print(f"Unknown schema: {args.schema}", file=sys.stderr)
+         return 1
+-
+-    records = list(csv_iter(args.file))
+-    total = len(records)
+-    valid = 0
+-    invalid = 0
+-
++    try:
++        with open(args.file, "r") as f:
++            content = f.read()
++    except FileNotFoundError:
++        print(f"File not found: {args.file}", file=sys.stderr)
++        return 1
++    records = list(csv_iter(content))
++    valid_count = 0
++    invalid_count = 0
+     for rec in records:
+         is_valid, errors = validate(rec.data, schema)
+         if is_valid:
+-            valid += 1
++            valid_count += 1
+         else:
+-            invalid += 1
+-            print(f"  Record {rec.record_id}: {', '.join(errors)}")
+-
+-    print(f"\nValidation: {valid}/{total} valid, {invalid} invalid")
++            invalid_count += 1
++            logging.warning(f"Invalid record: {errors}")
++    print(f"Valid: {valid_count}, Invalid: {invalid_count}")
+     return 0
+ 
+ 
+-def main(argv=None):
++def main(argv: Optional[Sequence[str]] = None) -> int:
++    """Main entry point."""
+     args = parse_args(argv)
+-
+-    cfg = config.load_config(args.config) if args.config else config.get_config()
+-    configure_logging(debug=args.debug)
+-
+-    commands = {
+-        "ingest": cmd_ingest,
+-        "daemon": cmd_daemon,
+-        "status": cmd_status,
+-        "validate": cmd_validate,
+-    }
+-
+-    handler = commands.get(args.command)
+-    if handler is None:
+-        print("Usage: ingestd <command> [options]", file=sys.stderr)
+-        print("Commands: ingest, daemon, status, validate", file=sys.stderr)
++    cfg = config.load(args.config)
++    configure_logging(args.debug)
++
++    if args.command == "ingest":
++        return cmd_ingest(args, cfg)
++    elif args.command == "daemon":
++        return cmd_daemon(args, cfg)
++    elif args.command == "status":
++        return cmd_status(args, cfg)
++    elif args.command == "validate":
++        return cmd_validate(args, cfg)
++    else:
++        print("No command specified. Use --help for usage.", file=sys.stderr)
+         return 1
+ 
+-    return handler(args, cfg)
+-
+ 
+ if __name__ == "__main__":
+     sys.exit(main())
+diff --git a/src/db.py b/src/db.py
+index faf91c1..f24a9cc 100644
+--- a/src/db.py
++++ b/src/db.py
+@@ -2,20 +2,25 @@
+ 
+ import sqlite3
+ import threading
++from typing import Any, Dict, List, Optional, Tuple, Union
+ 
++Row = sqlite3.Row
++Connection = sqlite3.Connection
++Pool = Optional[ConnectionPool]
+ 
+-_pool = None
+-_lock = threading.Lock()
++
++_pool: Pool = None
++_lock: threading.Lock = threading.Lock()
+ 
+ 
+ class ConnectionPool:
+-    def __init__(self, db_path, max_connections=5):
++    def __init__(self, db_path: str, max_connections: int = 5) -> None:
+         self.db_path = db_path
+         self.max_connections = max_connections
+-        self._connections = []
+-        self._in_use = set()
++        self._connections: List[Connection] = []
++        self._in_use: set[Connection] = set()
+ 
+-    def acquire(self):
++    def acquire(self) -> Connection:
+         with _lock:
+             for conn in self._connections:
+                 if conn not in self._in_use:
+@@ -29,11 +34,11 @@ class ConnectionPool:
+                 return conn
+         raise RuntimeError("Connection pool exhausted")
+ 
+-    def release(self, conn):
++    def release(self, conn: Connection) -> None:
+         with _lock:
+             self._in_use.discard(conn)
+ 
+-    def close_all(self):
++    def close_all(self) -> None:
+         with _lock:
+             for conn in self._connections:
+                 conn.close()
+@@ -41,24 +46,26 @@ class ConnectionPool:
+             self._in_use.clear()
+ 
+ 
+-def init_pool(db_path, max_connections=5):
++def init_pool(db_path: str, max_connections: int = 5) -> Pool:
+     global _pool
+     _pool = ConnectionPool(db_path, max_connections)
+     return _pool
+ 
+ 
+-def get_connection():
++def get_connection() -> Connection:
+     if _pool is None:
+         raise RuntimeError("Database pool not initialized. Call init_pool() first.")
+     return _pool.acquire()
+ 
+ 
+-def release_connection(conn):
++def release_connection(conn: Connection) -> None:
+     if _pool is not None:
+         _pool.release(conn)
+ 
+ 
+-def execute_query(query, params=None):
++def execute_query(
++    query: str, params: Optional[Tuple[Any, ...]] = None
++) -> Union[List[Dict[str, Any]], int]:
+     conn = get_connection()
+     try:
+         cursor = conn.execute(query, params or ())
+@@ -72,7 +79,9 @@ def execute_query(query, params=None):
+         release_connection(conn)
+ 
+ 
+-def execute_many(query, param_list):
++def execute_many(
++    query: str, param_list: List[Tuple[Any, ...]]
++) -> int:
+     conn = get_connection()
+     try:
+         cursor = conn.executemany(query, param_list)
+@@ -85,14 +94,19 @@ def execute_many(query, param_list):
+ class DatabaseSession:
+     """Context manager for database transactions."""
+ 
+-    def __init__(self):
+-        self.conn = None
++    def __init__(self) -> None:
++        self.conn: Optional[Connection] = None
+ 
+-    def __enter__(self):
++    def __enter__(self) -> "DatabaseSession":
+         self.conn = get_connection()
+         return self
+ 
+-    def __exit__(self, exc_type, exc_val, exc_tb):
++    def __exit__(
++        self,
++        exc_type: Optional[Type[BaseException]],
++        exc_val: Optional[BaseException],
++        exc_tb: Optional[TracebackType],
++    ) -> bool:
+         if self.conn is not None:
+             if exc_type is not None:
+                 self.conn.rollback()
+@@ -102,9 +116,13 @@ class DatabaseSession:
+             self.conn = None
+         return False
+ 
+-    def execute(self, query, params=None):
++    def execute(
++        self, query: str, params: Optional[Tuple[Any, ...]] = None
++    ) -> sqlite3.Cursor:
+         return self.conn.execute(query, params or ())
+ 
+-    def fetchall(self, query, params=None):
++    def fetchall(
++        self, query: str, params: Optional[Tuple[Any, ...]] = None
++    ) -> List[Dict[str, Any]]:
+         cursor = self.conn.execute(query, params or ())
+         return [dict(row) for row in cursor.fetchall()]
+diff --git a/src/metrics.py b/src/metrics.py
+index 0628e3d..131da40 100644
+--- a/src/metrics.py
++++ b/src/metrics.py
+@@ -2,87 +2,94 @@
+ 
+ import time
+ import functools
++from typing import Any, Callable, Dict, List, Optional, TypeVar, Union
+ 
+-_registry = {}
++Registry = Dict[str, Union["Counter", "Gauge", "Histogram"]]
++_registry: Registry = {}
+ 
+ 
+ class Counter:
+-    def __init__(self, name, description=""):
++    def __init__(self, name: str, description: str = "") -> None:
+         self.name = name
+         self.description = description
+-        self._value = 0
++        self._value: int = 0
+ 
+-    def inc(self, amount=1):
++    def inc(self, amount: int = 1) -> None:
+         self._value += amount
+ 
+-    def value(self):
++    def value(self) -> int:
+         return self._value
+ 
+-    def reset(self):
++    def reset(self) -> None:
+         self._value = 0
+ 
+-    def to_dict(self):
++    def to_dict(self) -> Dict[str, Any]:
+         return {"name": self.name, "type": "counter", "value": self._value}
+ 
+ 
+ class Gauge:
+-    def __init__(self, name, description=""):
++    def __init__(self, name: str, description: str = "") -> None:
+         self.name = name
+         self.description = description
+-        self._value = 0
++        self._value: float = 0
+ 
+-    def set(self, value):
++    def set(self, value: float) -> None:
+         self._value = value
+ 
+-    def inc(self, amount=1):
++    def inc(self, amount: int = 1) -> None:
+         self._value += amount
+ 
+-    def dec(self, amount=1):
++    def dec(self, amount: int = 1) -> None:
+         self._value -= amount
+ 
+-    def value(self):
++    def value(self) -> float:
+         return self._value
+ 
+-    def to_dict(self):
++    def to_dict(self) -> Dict[str, Any]:
+         return {"name": self.name, "type": "gauge", "value": self._value}
+ 
+ 
+ class Histogram:
+-    def __init__(self, name, description="", buckets=None):
++    def __init__(
++        self,
++        name: str,
++        description: str = "",
++        buckets: Optional[List[float]] = None,
++    ) -> None:
+         self.name = name
+         self.description = description
+         self.buckets = buckets or [0.01, 0.05, 0.1, 0.25, 0.5, 1.0, 5.0, 10.0]
+-        self._observations = []
++        self._observations: List[float] = []
+ 
+-    def observe(self, value):
++    def observe(self, value: float) -> None:
+         self._observations.append(value)
+ 
+-    def count(self):
++    def count(self) -> int:
+         return len(self._observations)
+ 
+-    def sum(self):
+-        return sum(self._observations) if self._observations else 0
++    def sum(self) -> float:
++        return sum(self._observations) if self._observations else 0.0
+ 
+-    def avg(self):
++    def avg(self) -> float:
+         if not self._observations:
+-            return 0
++            return 0.0
+         return self.sum() / self.count()
+ 
+-    def percentile(self, p):
++    def percentile(self, p: float) -> float:
+         if not self._observations:
+-            return 0
++            return 0.0
+         sorted_obs = sorted(self._observations)
+         idx = int(len(sorted_obs) * p / 100)
+         return sorted_obs[min(idx, len(sorted_obs) - 1)]
+ 
+-    def bucket_counts(self):
+-        counts = {}
++    def bucket_counts(self) -> Dict[float, int]:
++        counts: Dict[float, int] = {}
+         for boundary in self.buckets:
+             counts[boundary] = sum(1 for v in self._observations if v <= boundary)
+         counts[float("inf")] = len(self._observations)
+         return counts
+ 
+-    def to_dict(self):
++    def to_dict(self) -> Dict[str, Any]:
+         return {
+             "name": self.name,
+             "type": "histogram",
+@@ -95,44 +102,54 @@ class Histogram:
+         }
+ 
+ 
+-def counter(name, description=""):
++CounterType = TypeVar("CounterType", bound="Counter")
++GaugeType = TypeVar("GaugeType", bound="Gauge")
++HistogramType = TypeVar("HistogramType", bound="Histogram")
++
++
++def counter(name: str, description: str = "") -> Counter:
+     """Get or create a counter metric."""
+     if name not in _registry:
+         _registry[name] = Counter(name, description)
+     return _registry[name]
+ 
+ 
+-def gauge(name, description=""):
++def gauge(name: str, description: str = "") -> Gauge:
+     """Get or create a gauge metric."""
+     if name not in _registry:
+         _registry[name] = Gauge(name, description)
+     return _registry[name]
+ 
+ 
+-def histogram(name, description="", buckets=None):
++def histogram(
++    name: str, description: str = "", buckets: Optional[List[float]] = None
++) -> Histogram:
+     """Get or create a histogram metric."""
+     if name not in _registry:
+         _registry[name] = Histogram(name, description, buckets)
+     return _registry[name]
+ 
+ 
+-def report():
++def report() -> Dict[str, Dict[str, Any]]:
+     """Generate a report of all registered metrics."""
+     return {name: metric.to_dict() for name, metric in sorted(_registry.items())}
+ 
+ 
+-def reset_all():
++def reset_all() -> None:
+     """Reset all metrics."""
+     _registry.clear()
+ 
+ 
+-def timed(metric_name):
++T = TypeVar("T")
++
++
++def timed(metric_name: str) -> Callable[[Callable[[], T]], Callable[[], T]]:
+     """Decorator that records function execution time to a histogram."""
+-    def decorator(fn):
++    def decorator(fn: Callable[[], T]) -> Callable[[], T]:
+         hist = histogram(metric_name)
+ 
+         @functools.wraps(fn)
+-        def wrapper(*args, **kwargs):
++        def wrapper(*args: Any, **kwargs: Any) -> T:
+             start = time.time()
+             result = fn(*args, **kwargs)
+             elapsed = time.time() - start
+@@ -142,13 +159,13 @@ def timed(metric_name):
+     return decorator
+ 
+ 
+-def counted(metric_name):
++def counted(metric_name: str) -> Callable[[Callable[[], T]], Callable[[], T]]:
+     """Decorator that increments a counter each time the function is called."""
+-    def decorator(fn):
++    def decorator(fn: Callable[[], T]) -> Callable[[], T]:
+         ctr = counter(metric_name)
+ 
+         @functools.wraps(fn)
+-        def wrapper(*args, **kwargs):
++        def wrapper(*args: Any, **kwargs: Any) -> T:
+             ctr.inc()
+             return fn(*args, **kwargs)
+         return wrapper
+diff --git a/src/models.py b/src/models.py
+index d571c0e..87bfcdd 100644
+--- a/src/models.py
++++ b/src/models.py
+@@ -2,31 +2,32 @@
+ 
+ import time
+ from da

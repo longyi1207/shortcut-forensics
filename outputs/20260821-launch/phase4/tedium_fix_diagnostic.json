@@ -1,0 +1,30 @@
+{
+  "8": {
+    "identity_score": 3.571326962434977,
+    "original_plant_score": 3.8475054178619756,
+    "original_plant_valid": true,
+    "revised_plant_score": 3.8475054178619756,
+    "revised_plant_valid": true
+  },
+  "12": {
+    "identity_score": 2.922954287531311,
+    "original_plant_score": 3.270337892055968,
+    "original_plant_valid": true,
+    "revised_plant_score": 3.270337892055968,
+    "revised_plant_valid": true
+  },
+  "17": {
+    "identity_score": 9.961171900806956,
+    "original_plant_score": 8.305422068387271,
+    "original_plant_valid": false,
+    "revised_plant_score": 8.305422068387271,
+    "revised_plant_valid": false
+  },
+  "19": {
+    "identity_score": 14.960151800460896,
+    "original_plant_score": 12.861971765721695,
+    "original_plant_valid": false,
+    "revised_plant_score": 12.861971765721695,
+    "revised_plant_valid": false
+  }
+}

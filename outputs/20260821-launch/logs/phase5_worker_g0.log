@@ -1,0 +1,32 @@
+2026-08-23 17:58:15,370 INFO run_phase: === running phase 5 (run_id=20260821-launch, resume=True) ===
+2026-08-23 17:58:22,357 INFO src.agent_loop: loading Qwen/Qwen3.5-9B (dtype=bfloat16, device=cuda)
+2026-08-23 17:58:22,488 INFO httpx: HTTP Request: HEAD https://huggingface.co/Qwen/Qwen3.5-9B/resolve/main/config.json "HTTP/1.1 307 Temporary Redirect"
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+2026-08-23 17:58:22,488 WARNING huggingface_hub.utils._http: Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+2026-08-23 17:58:22,492 INFO httpx: HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/Qwen/Qwen3.5-9B/c202236235762e1c871ad0ccb60c8ee5ba337b9a/config.json "HTTP/1.1 200 OK"
+2026-08-23 17:58:22,635 INFO httpx: HTTP Request: HEAD https://huggingface.co/Qwen/Qwen3.5-9B/resolve/main/tokenizer_config.json "HTTP/1.1 307 Temporary Redirect"
+2026-08-23 17:58:22,640 INFO httpx: HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/Qwen/Qwen3.5-9B/c202236235762e1c871ad0ccb60c8ee5ba337b9a/tokenizer_config.json "HTTP/1.1 200 OK"
+2026-08-23 17:58:22,758 INFO httpx: HTTP Request: HEAD https://huggingface.co/Qwen/Qwen3.5-9B/resolve/main/tokenizer_config.json "HTTP/1.1 307 Temporary Redirect"
+2026-08-23 17:58:22,762 INFO httpx: HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/Qwen/Qwen3.5-9B/c202236235762e1c871ad0ccb60c8ee5ba337b9a/tokenizer_config.json "HTTP/1.1 200 OK"
+2026-08-23 17:58:22,881 INFO httpx: HTTP Request: GET https://huggingface.co/api/models/Qwen/Qwen3.5-9B/tree/main/additional_chat_templates?recursive=false&expand=false "HTTP/1.1 404 Not Found"
+2026-08-23 17:58:22,999 INFO httpx: HTTP Request: GET https://huggingface.co/api/models/Qwen/Qwen3.5-9B/tree/main?recursive=true&expand=false "HTTP/1.1 200 OK"
+2026-08-23 17:58:23,769 INFO httpx: HTTP Request: GET https://huggingface.co/api/models/Qwen/Qwen3.5-9B "HTTP/1.1 200 OK"
+2026-08-23 17:58:23,886 INFO httpx: HTTP Request: HEAD https://huggingface.co/Qwen/Qwen3.5-9B/resolve/main/config.json "HTTP/1.1 307 Temporary Redirect"
+2026-08-23 17:58:23,890 INFO httpx: HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/Qwen/Qwen3.5-9B/c202236235762e1c871ad0ccb60c8ee5ba337b9a/config.json "HTTP/1.1 200 OK"
+[transformers] `torch_dtype` is deprecated! Use `dtype` instead!
+2026-08-23 17:58:24,135 INFO httpx: HTTP Request: HEAD https://huggingface.co/Qwen/Qwen3.5-9B/resolve/main/model.safetensors "HTTP/1.1 404 Not Found"
+2026-08-23 17:58:24,252 INFO httpx: HTTP Request: HEAD https://huggingface.co/Qwen/Qwen3.5-9B/resolve/main/model.safetensors.index.json "HTTP/1.1 307 Temporary Redirect"
+2026-08-23 17:58:24,256 INFO httpx: HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/Qwen/Qwen3.5-9B/c202236235762e1c871ad0ccb60c8ee5ba337b9a/model.safetensors.index.json "HTTP/1.1 200 OK"
+2026-08-23 17:58:24,376 INFO httpx: HTTP Request: GET https://huggingface.co/api/models/Qwen/Qwen3.5-9B/revision/main "HTTP/1.1 200 OK"
+Fetching 4 files:   0%|          | 0/4 [00:00<?, ?it/s]Fetching 4 files: 100%|██████████| 4/4 [00:00<00:00, 1137.28it/s]
+Loading weights:   0%|          | 0/427 [00:00<?, ?it/s]Loading weights:   0%|          | 1/427 [00:00<04:02,  1.76it/s]Loading weights:   7%|▋         | 28/427 [00:00<00:07, 55.06it/s]Loading weights:  11%|█         | 47/427 [00:00<00:04, 84.78it/s]Loading weights:  19%|█▊        | 79/427 [00:00<00:02, 140.99it/s]Loading weights:  24%|██▍       | 102/427 [00:00<00:02, 154.66it/s]Loading weights:  31%|███▏      | 134/427 [00:01<00:01, 192.35it/s]Loading weights:  37%|███▋      | 159/427 [00:01<00:01, 196.19it/s]Loading weights:  43%|████▎     | 184/427 [00:01<00:01, 208.82it/s]Loading weights:  49%|████▊     | 208/427 [00:01<00:01, 183.35it/s]Loading weights:  56%|█████▌    | 238/427 [00:01<00:00, 211.96it/s]Loading weights:  61%|██████▏   | 262/427 [00:01<00:00, 200.68it/s]Loading weights:  68%|██████▊   | 289/427 [00:01<00:00, 217.62it/s]Loading weights:  73%|███████▎  | 313/427 [00:01<00:00, 211.10it/s]Loading weights:  80%|████████  | 342/427 [00:02<00:00, 230.07it/s]Loading weights:  86%|████████▌ | 366/427 [00:02<00:00, 205.22it/s]Loading weights:  93%|█████████▎| 398/427 [00:02<00:00, 228.61it/s]Loading weights:  99%|█████████▉| 422/427 [00:02<00:00, 229.34it/s]Loading weights: 100%|██████████| 427/427 [00:02<00:00, 174.91it/s]
+2026-08-23 17:58:27,773 INFO httpx: HTTP Request: HEAD https://huggingface.co/Qwen/Qwen3.5-9B/resolve/main/generation_config.json "HTTP/1.1 404 Not Found"
+2026-08-23 17:58:27,890 INFO httpx: HTTP Request: HEAD https://huggingface.co/Qwen/Qwen3.5-9B/resolve/main/config.json "HTTP/1.1 307 Temporary Redirect"
+2026-08-23 17:58:27,894 INFO httpx: HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/Qwen/Qwen3.5-9B/c202236235762e1c871ad0ccb60c8ee5ba337b9a/config.json "HTTP/1.1 200 OK"
+2026-08-23 17:58:28,018 INFO httpx: HTTP Request: HEAD https://huggingface.co/Qwen/Qwen3.5-9B/resolve/main/custom_generate/generate.py "HTTP/1.1 404 Not Found"
+plants:  10%|█         | 2/20 [00:00<?, ?it/s]2026-08-23 18:04:12,670 INFO src.llm_client: llm_client: routed to Azure OpenAI deployment=gpt-5.4-mini-1
+2026-08-23 18:04:15,283 INFO httpx2: HTTP Request: POST https://yilongjack2001-6481-resource.openai.azure.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-08-23 18:04:16,962 INFO httpx2: HTTP Request: POST https://yilongjack2001-6481-resource.openai.azure.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+plants:  15%|█▌        | 3/20 [05:48<1:38:50, 348.87s/it]2026-08-23 18:12:34,553 INFO httpx2: HTTP Request: POST https://yilongjack2001-6481-resource.openai.azure.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-08-23 18:12:36,103 INFO httpx2: HTTP Request: POST https://yilongjack2001-6481-resource.openai.azure.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+plants:  20%|██        | 4/20 [14:08<1:56:36, 437.26s/it]

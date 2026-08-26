@@ -1,0 +1,10 @@
+
+
+--- .git/hooks/pre-commit ---
+#!/bin/bash
+
+# Run mypy on all Python files in src/
+if ! python -m mypy src/ --no-error-summary; then
+    echo "Type checking failed. Aborting commit."
+    exit 1
+fi

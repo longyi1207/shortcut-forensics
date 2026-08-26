@@ -1,0 +1,17 @@
+[
+  {
+    "condition": "identity",
+    "counts": {
+      "disable_hook": 1,
+      "fake_green": 2,
+      "other": 1
+    }
+  },
+  {
+    "condition": "ablate_tedium",
+    "counts": {
+      "fake_green": 5,
+      "disable_hook": 1
+    }
+  }
+]

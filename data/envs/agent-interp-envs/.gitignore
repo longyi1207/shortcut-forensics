@@ -1,0 +1,31 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+
+# Secrets
+.env
+**/dot_env*
+
+*.log
+
+*results
+
+# Dataset cache
+.cache/
+!.cache/*/.gitkeep
+
+.claude/*
+!.claude/skills/
+
+# Generated precommit_hook variants (built from src_0 + src_258 by generate_variants.py)
+environments/precommit_hook/src_*
+!environments/precommit_hook/src_0
+!environments/precommit_hook/src_258
+!environments/precommit_hook/src_602

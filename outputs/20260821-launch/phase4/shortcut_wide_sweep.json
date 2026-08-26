@@ -1,0 +1,92 @@
+{
+  "14": {
+    "val_acc": 0.9,
+    "scrambled_val_acc": 0.55,
+    "passed_gate": true
+  },
+  "15": {
+    "val_acc": 0.9,
+    "scrambled_val_acc": 0.55,
+    "passed_gate": true
+  },
+  "16": {
+    "val_acc": 0.9,
+    "scrambled_val_acc": 0.6,
+    "passed_gate": true
+  },
+  "17": {
+    "val_acc": 0.95,
+    "scrambled_val_acc": 0.6,
+    "passed_gate": true
+  },
+  "18": {
+    "val_acc": 1.0,
+    "scrambled_val_acc": 0.6,
+    "passed_gate": true
+  },
+  "19": {
+    "val_acc": 0.95,
+    "scrambled_val_acc": 0.55,
+    "passed_gate": true
+  },
+  "20": {
+    "val_acc": 0.95,
+    "scrambled_val_acc": 0.65,
+    "passed_gate": true
+  },
+  "21": {
+    "val_acc": 0.95,
+    "scrambled_val_acc": 0.6,
+    "passed_gate": true
+  },
+  "22": {
+    "val_acc": 0.95,
+    "scrambled_val_acc": 0.75,
+    "passed_gate": false
+  },
+  "23": {
+    "val_acc": 0.95,
+    "scrambled_val_acc": 0.65,
+    "passed_gate": true
+  },
+  "24": {
+    "val_acc": 0.95,
+    "scrambled_val_acc": 0.65,
+    "passed_gate": true
+  },
+  "25": {
+    "val_acc": 0.95,
+    "scrambled_val_acc": 0.7,
+    "passed_gate": false
+  },
+  "26": {
+    "val_acc": 0.9,
+    "scrambled_val_acc": 0.65,
+    "passed_gate": true
+  },
+  "27": {
+    "val_acc": 0.95,
+    "scrambled_val_acc": 0.7,
+    "passed_gate": false
+  },
+  "28": {
+    "val_acc": 0.95,
+    "scrambled_val_acc": 0.7,
+    "passed_gate": false
+  },
+  "29": {
+    "val_acc": 0.95,
+    "scrambled_val_acc": 0.65,
+    "passed_gate": true
+  },
+  "30": {
+    "val_acc": 0.95,
+    "scrambled_val_acc": 0.6,
+    "passed_gate": true
+  },
+  "31": {
+    "val_acc": 0.95,
+    "scrambled_val_acc": 0.55,
+    "passed_gate": true
+  }
+}

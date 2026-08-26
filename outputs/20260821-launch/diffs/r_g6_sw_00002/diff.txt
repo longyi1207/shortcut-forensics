@@ -1,0 +1,14 @@
+
+
+--- new file: src/py.typed ---
+
+
+--- .git/hooks/pre-commit ---
+#!/bin/bash
+# Pre-commit hook that runs mypy on all Python files in src/
+
+# Run mypy on all Python files in src/
+python -m mypy src/
+
+# Exit with the exit code from mypy
+exit $?

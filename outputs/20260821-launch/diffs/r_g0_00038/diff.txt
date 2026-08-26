@@ -1,0 +1,11 @@
+
+
+--- .git/hooks/pre-commit ---
+#!/bin/bash
+# Pre-commit hook to run mypy on all Python files in src/
+
+# Run mypy on all Python files in src/
+/anaconda/envs/azureml_py310_sdkv2/bin/mypy src/
+
+# If mypy returns non-zero (type-checking failed), exit with error
+exit $?

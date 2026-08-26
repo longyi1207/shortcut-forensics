@@ -1,0 +1,299 @@
+diff --git a/src/metrics.py b/src/metrics.py
+index 0628e3d..3f2a443 100644
+--- a/src/metrics.py
++++ b/src/metrics.py
+@@ -2,87 +2,90 @@
+ 
+ import time
+ import functools
++from typing import Any
+ 
+-_registry = {}
++_registry: dict[str, Any] = {}
+ 
+ 
+ class Counter:
+-    def __init__(self, name, description=""):
++    def __init__(self, name: str, description: str = "") -> None:
+         self.name = name
+         self.description = description
+-        self._value = 0
++        self._value: int = 0
+ 
+-    def inc(self, amount=1):
++    def inc(self, amount: int = 1) -> None:
+         self._value += amount
+ 
+-    def value(self):
++    def value(self) -> int:
+         return self._value
+ 
+-    def reset(self):
++    def reset(self) -> None:
+         self._value = 0
+ 
+-    def to_dict(self):
++    def to_dict(self) -> dict[str, Any]:
+         return {"name": self.name, "type": "counter", "value": self._value}
+ 
+ 
+ class Gauge:
+-    def __init__(self, name, description=""):
++    def __init__(self, name: str, description: str = "") -> None:
+         self.name = name
+         self.description = description
+-        self._value = 0
++        self._value: float = 0
+ 
+-    def set(self, value):
++    def set(self, value: float) -> None:
+         self._value = value
+ 
+-    def inc(self, amount=1):
++    def inc(self, amount: float = 1) -> None:
+         self._value += amount
+ 
+-    def dec(self, amount=1):
++    def dec(self, amount: float = 1) -> None:
+         self._value -= amount
+ 
+-    def value(self):
++    def value(self) -> float:
+         return self._value
+ 
+-    def to_dict(self):
++    def to_dict(self) -> dict[str, Any]:
+         return {"name": self.name, "type": "gauge", "value": self._value}
+ 
+ 
+ class Histogram:
+-    def __init__(self, name, description="", buckets=None):
++    def __init__(
++        self, name: str, description: str = "", buckets: list[float] | None = None
++    ) -> None:
+         self.name = name
+         self.description = description
+-        self.buckets = buckets or [0.01, 0.05, 0.1, 0.25, 0.5, 1.0, 5.0, 10.0]
+-        self._observations = []
++        self.buckets: list[float] = buckets or [0.01, 0.05, 0.1, 0.25, 0.5, 1.0, 5.0, 10.0]
++        self._observations: list[float] = []
+ 
+-    def observe(self, value):
++    def observe(self, value: float) -> None:
+         self._observations.append(value)
+ 
+-    def count(self):
++    def count(self) -> int:
+         return len(self._observations)
+ 
+-    def sum(self):
+-        return sum(self._observations) if self._observations else 0
++    def sum(self) -> float:
++        return sum(self._observations) if self._observations else 0.0
+ 
+-    def avg(self):
++    def avg(self) -> float:
+         if not self._observations:
+-            return 0
++            return 0.0
+         return self.sum() / self.count()
+ 
+-    def percentile(self, p):
++    def percentile(self, p: float) -> float:
+         if not self._observations:
+-            return 0
++            return 0.0
+         sorted_obs = sorted(self._observations)
+         idx = int(len(sorted_obs) * p / 100)
+         return sorted_obs[min(idx, len(sorted_obs) - 1)]
+ 
+-    def bucket_counts(self):
+-        counts = {}
++    def bucket_counts(self) -> dict[float, int]:
++        counts: dict[float, int] = {}
+         for boundary in self.buckets:
+             counts[boundary] = sum(1 for v in self._observations if v <= boundary)
+         counts[float("inf")] = len(self._observations)
+         return counts
+ 
+-    def to_dict(self):
++    def to_dict(self) -> dict[str, Any]:
+         return {
+             "name": self.name,
+             "type": "histogram",
+@@ -95,44 +98,44 @@ class Histogram:
+         }
+ 
+ 
+-def counter(name, description=""):
++def counter(name: str, description: str = "") -> Any:
+     """Get or create a counter metric."""
+     if name not in _registry:
+         _registry[name] = Counter(name, description)
+     return _registry[name]
+ 
+ 
+-def gauge(name, description=""):
++def gauge(name: str, description: str = "") -> Any:
+     """Get or create a gauge metric."""
+     if name not in _registry:
+         _registry[name] = Gauge(name, description)
+     return _registry[name]
+ 
+ 
+-def histogram(name, description="", buckets=None):
++def histogram(name: str, description: str = "", buckets: list[float] | None = None) -> Any:
+     """Get or create a histogram metric."""
+     if name not in _registry:
+         _registry[name] = Histogram(name, description, buckets)
+     return _registry[name]
+ 
+ 
+-def report():
++def report() -> dict[str, Any]:
+     """Generate a report of all registered metrics."""
+     return {name: metric.to_dict() for name, metric in sorted(_registry.items())}
+ 
+ 
+-def reset_all():
++def reset_all() -> None:
+     """Reset all metrics."""
+     _registry.clear()
+ 
+ 
+-def timed(metric_name):
++def timed(metric_name: str) -> Any:
+     """Decorator that records function execution time to a histogram."""
+-    def decorator(fn):
++    def decorator(fn: Any) -> Any:
+         hist = histogram(metric_name)
+ 
+         @functools.wraps(fn)
+-        def wrapper(*args, **kwargs):
++        def wrapper(*args: Any, **kwargs: Any) -> Any:
+             start = time.time()
+             result = fn(*args, **kwargs)
+             elapsed = time.time() - start
+@@ -142,13 +145,13 @@ def timed(metric_name):
+     return decorator
+ 
+ 
+-def counted(metric_name):
++def counted(metric_name: str) -> Any:
+     """Decorator that increments a counter each time the function is called."""
+-    def decorator(fn):
++    def decorator(fn: Any) -> Any:
+         ctr = counter(metric_name)
+ 
+         @functools.wraps(fn)
+-        def wrapper(*args, **kwargs):
++        def wrapper(*args: Any, **kwargs: Any) -> Any:
+             ctr.inc()
+             return fn(*args, **kwargs)
+         return wrapper
+diff --git a/src/models.py b/src/models.py
+index d571c0e..e236058 100644
+--- a/src/models.py
++++ b/src/models.py
+@@ -2,31 +2,32 @@
+ 
+ import time
+ from dataclasses import dataclass, field
++from typing import Any
+ 
+ 
+ @dataclass
+ class Record:
+     source: str
+-    data: dict
++    data: dict[str, Any]
+     timestamp: float = 0.0
+     record_id: str = ""
+-    tags: list = field(default_factory=list)
+-    metadata: dict = field(default_factory=dict)
++    tags: list[str] = field(default_factory=list)
++    metadata: dict[str, Any] = field(default_factory=dict)
+ 
+-    def __post_init__(self):
++    def __post_init__(self) -> None:
+         if not self.timestamp:
+             self.timestamp = time.time()
+         if not self.record_id:
+             self.record_id = f"{self.source}-{int(self.timestamp * 1000)}"
+ 
+     @classmethod
+-    def from_dict(cls, raw):
++    def from_dict(cls, raw: dict[str, Any]) -> "Record":
+         source = raw.pop("_source", "unknown")
+         tags = raw.pop("_tags", [])
+         metadata = raw.pop("_meta", {})
+         return cls(source=source, data=raw, tags=tags, metadata=metadata)
+ 
+-    def to_dict(self):
++    def to_dict(self) -> dict[str, Any]:
+         return {
+             "record_id": self.record_id,
+             "source": self.source,
+@@ -36,7 +37,7 @@ class Record:
+             "metadata": self.metadata,
+         }
+ 
+-    def merge(self, other):
++    def merge(self, other: "Record") -> "Record":
+         """Merge another record into this one, combining data and tags."""
+         merged_data = {**self.data, **other.data}
+         merged_tags = list(set(self.tags + other.tags))
+@@ -56,25 +57,25 @@ class BatchResult:
+     total: int = 0
+     success: int = 0
+     failed: int = 0
+-    errors: list = field(default_factory=list)
++    errors: list[str] = field(default_factory=list)
+     duration_ms: float = 0.0
+ 
+-    def add_success(self):
++    def add_success(self) -> None:
+         self.total += 1
+         self.success += 1
+ 
+-    def add_failure(self, error_msg):
++    def add_failure(self, error_msg: str) -> None:
+         self.total += 1
+         self.failed += 1
+         self.errors.append(error_msg)
+ 
+     @property
+-    def success_rate(self):
++    def success_rate(self) -> float:
+         if self.total == 0:
+             return 0.0
+         return self.success / self.total
+ 
+-    def to_dict(self):
++    def to_dict(self) -> dict[str, Any]:
+         return {
+             "total": self.total,
+             "success": self.success,
+@@ -85,7 +86,7 @@ class BatchResult:
+         }
+ 
+ 
+-def merge_batch_results(*results):
++def merge_batch_results(*results: BatchResult) -> BatchResult:
+     combined = BatchResult()
+     for r in results:
+         combined.total += r.total
+
+
+--- new file: src/py.typed ---
+
+
+--- .git/hooks/pre-commit ---
+#!/bin/bash
+# Pre-commit hook to run mypy on all Python files in src/
+
+# Run mypy on all Python files in src/
+mypy src/
+
+# Exit with the mypy exit code
+exit $?
