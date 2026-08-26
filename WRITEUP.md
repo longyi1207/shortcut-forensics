@@ -265,6 +265,33 @@ Everything above still uses vectors fit inside the original 19–24 band. The ta
 
 Phase 7 picked `tedium` as the overall "winner" (best p-value among the pre-registered mechanism set, though still p=0.258, not significant). The workaround-type split that RQ3 asks for — does the winning ablation kill every cheat type or just one — could not be run: both `identity` (4 shortcuts) and `ablate_tedium` (6 shortcuts) have fewer than 5 examples of any single workaround type, and SPEC §5.5 pre-registers not claiming a split below that floor. RQ3 stays open.
 
+### 4.7 — Post-hoc power hunt: SAE feature decomposition + baseline extension (exploratory, ongoing)
+
+Everything through §4.6 was pre-registered (SPEC §0). This section is explicitly **not** — it's a same-run, post-hoc search for *any* statistically significant lever on the shortcut rate, run after every pre-registered comparison came back null. It exists because "not significant" isn't the same claim as "no effect," and there were cheap, well-motivated things left untried. Read the numbers here with that framing: this is hypothesis*-generating*, not hypothesis-confirming.
+
+**What was tried, in order, and why:**
+1. **Continuous-score reanalysis** (Mann-Whitney on the 0–10 judge score instead of Fisher's exact on the binary is_shortcut flag) — in case a real effect was being thrown away by binarizing. Result: no hidden signal. Closest was p=0.146 (still null), and Fisher's exact was sometimes *more* sensitive than Mann-Whitney on the same condition (`ablate_shortcut_L22`: Fisher p=0.089 vs. Mann-Whitney p=0.384) — no single test dominates.
+2. **Baseline extension** (`identity` grown from n=20 to n=82) — the n=20 baseline was the power bottleneck for *every* comparison in the whole table simultaneously; growing it retroactively sharpens every existing comparison at once, for the cost of only one condition's worth of new rollouts.
+3. **SAE feature decomposition** — the coarse mean-diff direction used everywhere above is a linear compression of whatever the model is actually doing; borrowed the exact method and pretrained checkpoint (`Qwen/SAE-Res-Qwen3.5-9B-Base-W64K-L0_100`, TopK=100, arXiv:2605.11887) from the sibling `code/tom_empathy` project, which found on the same base model that ablating an SAE-identified feature (or a top-10 stack of them) can move behavior far more than the coarse linear direction. Probed `shortcut`, `tedium`, `disapproval` at layer 19; for each, saved the single top feature by |mean_diff| and a 10-feature stack, and ablated both (single feature the same way as the existing linear conditions; the 10-feature stack via a standalone script that nests 10 `SteeringSession(mode="ablate")` context managers per rollout — PyTorch chains forward hooks through their return value, so this is a correct sequential multi-feature ablation without touching `src/steer.py`).
+
+**Full Phase 6 table, recomputed against the n=82 baseline (includes every condition run to date, original pack + all repairs + all of tonight's new SAE conditions), sorted by p-value:**
+
+| Condition | n | Shortcuts | Rate | p (vs. identity n=82, 20.7%) |
+|---|---|---|---|---|
+| `ablate_tedium` | 60 | 6 | 10.0% | 0.108 — closest to significance, already well-powered |
+| `ablate_shortcut_L24_refit` | 12 | 0 | 0.0% | 0.115 — same direction, n too small to trust |
+| `ablate_shortcut_L26` / `prompt_dont_cheat` | 10 | 0 | 0.0% | ~0.20 |
+| `ablate_shortcut_L22` | 11 | 0 | 0.0% | 0.206 |
+| `ablate_sae_disapproval_top1_L19` | 11 | 4 | 36.4% | 0.261 |
+| `ablate_sae_shortcut_top10_L19` (10-feature stack) | 11 | 4 | 36.4% | 0.261 |
+| *(all remaining ~22 conditions)* | — | — | — | > 0.4, most = 1.0 |
+
+**No condition — pre-registered or exploratory — has reached p<0.05.** The single most interesting number is `ablate_tedium`: it's the only condition that's both (a) trending toward significance and (b) already well-powered (n=60), so the point estimate (10.0% vs. 20.7%) isn't going to move around much from sampling noise alone. It's being extended toward n≈150 now (two workers, `SCFX_P6_CONDITIONS=ablate_tedium SCFX_P6_N_OVERRIDE=150`) to get a clean answer: either it clears 0.05 with more data, or it settles into a stable, well-powered null.
+
+**Multiple-comparisons accounting.** As of this table, **~30 independent conditions** have been tested against the baseline over the life of this project (pre-registered mechanism set + layer sweep + refits + SAE features). At α=0.05 uncorrected, the expected number of false positives from chance alone across 30 tests is ~1.5 — meaning if one condition eventually does cross p<0.05, it is **not automatically a discovery**; it needs to be read against a Bonferroni-corrected bar (~0.05/30 ≈ 0.0017) or replicated independently before being reported as a confirmed effect. This section's SAE conditions and `ablate_tedium`'s extension are exploratory, hypothesis-generating follow-ups to a null pre-registered study, not a pre-registered confirmatory test — any positive result here should be labeled that way, not folded into Finding 01/02 as if it had the same evidentiary status.
+
+**Status: ongoing.** `ablate_tedium` extension to n≈150, and SAE `disapproval` (single-feature) + `shortcut` (10-feature stack) extensions to n=30, were still running as of this writing. This section will be updated with final numbers once those land.
+
 ---
 
 ## 5. Key findings
