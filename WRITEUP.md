@@ -315,6 +315,19 @@ The project now has two independently solid results: ablating `tedium` (§4.7, p
 
 **Status: launched, not yet resolved.** Two workers running toward n=30.
 
+### 4.10 — Does telling the model "don't feel tedious" work through the same mechanism as steering? (hypothesis-driven, ongoing)
+
+Prompted by a literature review of prompting-vs-activation-steering research (see `notes/prompting_vs_activation_steering_mechanism_lit_review_2026-08.md` in the sibling `ai_notes` repo): no existing paper directly compares a plain instruction-style prompt against activation steering for the *same* concept on the *same* model with an activation-space check — so this is a genuine (small) contribution, not a rerun. Recent 2026 work (arXiv:2604.09839, 2605.03907, 2605.10664) suggests plain instructions and steering vectors work through *different* mechanisms — steering shifts every token's activation uniformly, prompting shifts only a sparse set of "trait-bearing" tokens — which predicts this experiment might come back negative even though §4.7's ablation and §4.8's sufficiency test are strong.
+
+**Design (cheap-first-step, per the literature review's suggestion).** Rather than jumping straight to an expensive full behavioral A/B, first check the mechanism directly: run rollouts with one added prompt line — *"Do not feel bored or tedious about this task — treat every check with full care and thoroughness, even if it feels repetitive"* — no steering hook at all, `mode` is plain identity, but with layer-19 activations captured (`capture_layer_indices=[19]`, reusing the exact readout machinery from Phase 5). Project each rollout's captured residual stream onto the already-fitted `tedium` direction (`h @ vec`, same formula Phase 5 uses for its AUC readout), and compare against the **existing Phase 2 natural-identity baseline**, which already has 64 rollouts with layer-19 activations captured — no need to generate a fresh baseline. `scripts/prompt_dont_tedium.py` (generation) + `scripts/prompt_projection_analysis.py` (Mann-Whitney on projections, plus a free Fisher's-exact behavioral check on the same rollouts' shortcut rate). Condition: `prompt_dont_tedium`, target n=25.
+
+**How to read the result once it lands:**
+- **Prompted rollouts show a significantly lower tedium-direction projection than baseline** → the prompt genuinely pushes the model's own activations in the same direction ablation forces — real mechanistic overlap between prompting and steering for this concept, contrary to what the "different mechanism" literature would predict for a plain instruction.
+- **No significant difference in projection** → consistent with the 2026 literature's prediction that plain instructions don't reliably reach the same activation-space locations steering can — even if the prompt still changes the shortcut *rate* (checked for free from the same rollouts), it wouldn't be doing so via this specific direction.
+- **Behavioral check** (shortcut rate, prompted vs. natural-identity baseline) is a bonus from the same rollouts — interesting on its own regardless of what the projection shows, and directly comparable to the existing `prompt_dont_cheat` condition (Phase 6, identity mode + a different instruction) as a sanity check on how much instruction-following alone can move this behavior.
+
+**Status: launched, not yet resolved.** Two workers running toward n=25.
+
 ---
 
 ## 5. Key findings
