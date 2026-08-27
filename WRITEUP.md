@@ -292,6 +292,16 @@ Everything through §4.6 was pre-registered (SPEC §0). This section is explicit
 
 **What would make this a fully confirmed result** (not done, noted as a next step in §9): an independent replication — refit both the `tedium` contrast pairs and the SAE probe from a fresh held-out data split, then re-run the causal test on the new vectors. If the same direction/magnitude of effect reappears on genuinely independent fits, that closes the "selection effect / lucky vector" gap that's the last real hole in this result.
 
+### 4.8 — Sufficiency test: does amplifying `tedium` increase the shortcut rate? (hypothesis-driven, ongoing)
+
+After §4.7, the explicit decision was to stop hunting for more p-values and instead test a real hypothesis the existing result implies. Everything in §4.7 is a **necessity** test — ablating (removing) `tedium` and watching the shortcut rate drop. It never tested the complementary claim: if `tedium` is genuinely a causal driver, *adding* (amplifying) the direction should push the shortcut rate *up*, above baseline. That's the standard necessity/sufficiency pairing in causal steering work, and it closes a real gap in the existing evidence — ablation alone can't rule out "we just damaged some general capability that happens to correlate with shortcut-taking" as an alternative explanation; a positive sufficiency result is much harder to explain that way.
+
+This hadn't been tried for `tedium` at all (only `disapproval` had `add_pos_*` conditions in the original pack). Two versions launched, both at layer 19, `mode="add"`, target n=30:
+- `add_pos_tedium` — the coarse mean-diff direction, α=1.0 (Turner-ActAdd convention: one empirical mean-diff's worth).
+- `add_pos_sae_tedium_top10_L19` — the same 10 SAE features used in §4.7's ablation, but each scaled by its own signed `mean_diff` value from the original probe (not just added at unit norm) so the addition matches the same "one empirical mean-diff's worth" convention per feature, and the 10 are added together via the same `ExitStack`-nested `SteeringSession` pattern (`scripts/sae_multi_add.py`).
+
+**Status: launched, not yet resolved.** This section will be updated once both reach n=30. A clean read would be: shortcut rate goes up in both → strong sufficiency evidence, closes the loop with §4.7's necessity result. No change or a drop → the ablation result doesn't have a symmetric sufficiency counterpart, which would complicate (though not necessarily invalidate) the causal story and is itself worth reporting honestly.
+
 ---
 
 ## 5. Key findings
