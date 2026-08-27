@@ -302,6 +302,19 @@ This hadn't been tried for `tedium` at all (only `disapproval` had `add_pos_*` c
 
 **Status: launched, not yet resolved.** This section will be updated once both reach n=30. A clean read would be: shortcut rate goes up in both → strong sufficiency evidence, closes the loop with §4.7's necessity result. No change or a drop → the ablation result doesn't have a symmetric sufficiency counterpart, which would complicate (though not necessarily invalidate) the causal story and is itself worth reporting honestly.
 
+### 4.9 — Are `tedium` and `shortcut` the same mechanism? Combined ablation (hypothesis-driven, ongoing)
+
+The project now has two independently solid results: ablating `tedium` (§4.7, p=0.005 SAE / p=0.028 coarse) and ablating `shortcut` at deep layers (Finding 01, p=0.027, borrowed L19 vector applied at L22/26/29, 3.2% pooled). Both reduce the shortcut rate. Open question: are these the same underlying circuit read out two different ways, or two genuinely separate contributing pathways?
+
+**Design.** Ablate both simultaneously in the same rollout: `tedium`'s coarse vector at layer 19, and `shortcut`'s L19-fitted vector with the hook inserted at layer 26 (the same borrowed-vector-at-deep-layer setup that produced Finding 01, picked as the representative layer from the 22/26/29 band). Two `SteeringSession`s at different layers don't need any hook-chaining trick — `register_forward_hook` on two different modules is independent by construction; `ExitStack` is used only for symmetry with the other multi-vector scripts (`scripts/combined_ablate.py`). Condition name: `combined_ablate_tedium_L19_shortcut_L26`, target n=30.
+
+**How to read the result once it lands:**
+- **Rate plateaus near either single-mechanism rate alone** (~3–10%, not much lower) → evidence they're the same underlying computation, or at least strongly overlapping — ablating one already removes most of the shared circuit's contribution, so removing "the other" on top does little more.
+- **Rate drops further, roughly additively** (e.g., toward 0% if the two effects multiply/stack) → evidence they're separable contributing pathways to the same behavior, each capturing a different piece of "why the model takes shortcuts."
+- **Rate goes back up relative to either alone** → would be a surprising interaction effect (e.g., double intervention pushing the model into some other failure mode, or the environment/judge behaving oddly under heavy steering) — worth a manual transcript check before trusting the number.
+
+**Status: launched, not yet resolved.** Two workers running toward n=30.
+
 ---
 
 ## 5. Key findings
