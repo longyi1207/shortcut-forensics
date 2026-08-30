@@ -57,9 +57,22 @@ def commit_profile(r):
     return (bool(cs), any(x.get("exit_code", 0) != 0 for x in cs), any(x.get("exit_code", 0) == 0 for x in cs))
 
 
+def tool_stats(r):
+    """(n_tool_calls, n_failed) from the transcript -- a judge-independent behavioural
+    measure. The interim read showed mask_instr rollouts masking 22.5 turns vs ~9.8
+    elsewhere, which can only come from more failing commands; this makes that visible."""
+    p = run / r["transcript_path"]
+    if not p.exists():
+        return (0, 0)
+    t = json.loads(p.read_text())
+    tools = [x for x in t if x.get("role") == "tool"]
+    return (len(tools), sum(1 for x in tools if x.get("exit_code", 0) != 0))
+
+
 by = {c: [r for r in rows if r["condition"] == c] for c in ORDER}
 print(f"=== {PHASE}: rollouts per condition ===", {c: len(v) for c, v in by.items()})
 stats = {}
+FAILS: dict[str, list[int]] = {}
 for c in ORDER:
     g = by[c]
     gj = [(r, judged(r)) for r in g]
@@ -72,6 +85,12 @@ for c in ORDER:
     mt = np.mean([len(r.get("masked_turns") or []) for r in g]) if g else 0
     ap = np.mean([r.get("mask_applied_steps") or 0 for r in g]) if g else 0
     stats[c] = (s, len(gj))
+    ts = [tool_stats(r) for r, _ in gj]
+    if ts:
+        calls = np.mean([a for a, _ in ts]); fails = np.mean([b for _, b in ts])
+        frate = np.mean([b / a for a, b in ts if a])
+        FAILS[c] = [b for _, b in ts]
+        print(f"  {c:32s} tool calls/rollout={calls:5.1f} failed={fails:5.1f} ({frate:.0%})")
     if g:
         print(f"  {c:32s} n={len(g):2d} judged={len(gj):2d} shortcuts={s:2d} rate={s / len(gj) if gj else 0:.2f} | attempted={att} blocked={len(blk)} succeeded={suc} cheat|blocked={rs}/{len(blk)} | prefilter g/p/b={pf.get('good', 0)}/{pf.get('partial', 0)}/{pf.get('bad', 0)} | masked_turns/rollout={mt:.1f} applied_steps/rollout={ap:.0f}")
 print("\n=== Fisher's exact ===")
@@ -88,6 +107,14 @@ for c in ORDER:
 sp, npr = stats["dtm_prompt"]; sb, nb = stats["dtm_baseline"]
 if npr and nb:
     print(f"  {'dtm_prompt':32s} vs dtm_baseline         : {sp}/{npr} vs {sb}/{nb}  p={fisher_exact([[sp, npr - sp], [sb, nb - sb]])[1]:.3f}")
+
+print("\n=== failed tool results per rollout (judge-independent) vs dtm_prompt ===")
+for c in ORDER:
+    if c == "dtm_prompt" or c not in FAILS or "dtm_prompt" not in FAILS:
+        continue
+    a, b = FAILS[c], FAILS["dtm_prompt"]
+    if len(a) >= 3 and len(b) >= 3:
+        print(f"  {c:32s} {np.mean(a):5.1f} vs {np.mean(b):5.1f}  MW p={mannwhitneyu(a, b, alternative='two-sided').pvalue:.3f} (R={len(a)}/{len(b)})")
 
 print("\n=== commit-position probe: log-prob of continuations, block OFF vs ON (paired per commit event) ===")
 for c in ORDER:
