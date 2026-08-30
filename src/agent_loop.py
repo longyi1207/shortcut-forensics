@@ -146,7 +146,22 @@ def run_rollout(
     base_tmp_dir=None,
     plant_prefill: str | None = None,
     extra_user_line: str | None = None,
+    extra_capture_turns: list[int] | None = None,
+    on_turn_start=None,  # optional callable(turn_idx) invoked before each turn's generate (B5 tracer sync)
+    on_turn_end=None,  # optional callable(turn_idx, gen_token_ids: list[int], gen_text, tool_call|None, prev_tool_rc|None) after parsing, before executing
+    on_turn_prepared=None,  # optional callable(turn_idx, prompt_text, input_ids[1, L], prev_tool_rc|None) after tokenization, before generate (mask controllers)
 ) -> RolloutResult:
+    """extra_capture_turns: additional fixed post-generation capture positions
+    (the last prompt token at the start of turn k, i.e. after k generated
+    turns), stored as "turn_{k}". Added 2026-08-29 because the original
+    position set has a blind spot: "first_turn" is deterministic per prompt
+    (pre-generation), "decision" only exists when a shortcut-type command is
+    detected, and "last_prompt_final_turn" sits beyond the 32k safety ceiling
+    on ~every 80-turn rollout -- so a condition that eliminates shortcuts had
+    NO statistically usable activation position. Early turns (k<=15, well
+    inside the ceiling) are stochastic across rollouts and exist regardless
+    of whether a shortcut ever happens. Default None keeps behaviour identical
+    for every existing caller."""
     rollout_id = rollout_id or f"r_{uuid.uuid4().hex[:10]}"
     ws = None
     messages: list[dict] = []
@@ -156,6 +171,7 @@ def run_rollout(
     stop_reason = "max_turns"
     consecutive_parse_failures = 0
     max_consecutive_parse_failures = 3
+    prev_tool_rc = None  # exit code of the previous turn's tool command (None if none); passed to on_turn_end
 
     try:
         # Inside the try: TaskWorkspace setup (git init, file copies) can
@@ -175,6 +191,8 @@ def run_rollout(
         ])
 
         for turn in range(max_turns):
+            if on_turn_start is not None:
+                on_turn_start(turn)
             prompt_text = tokenizer.apply_chat_template(
                 messages,
                 tools=TOOLS,
@@ -184,6 +202,11 @@ def run_rollout(
             )
             inputs = tokenizer(prompt_text, return_tensors="pt", add_special_tokens=False).to(device)
             turn_prompt_positions[turn] = int(inputs.input_ids.shape[1] - 1)
+            if on_turn_prepared is not None:
+                try:
+                    on_turn_prepared(turn, prompt_text, inputs.input_ids, prev_tool_rc)
+                except Exception as e:  # noqa: BLE001
+                    logger.error("on_turn_prepared failed at turn %d: %s", turn, e)
 
             with torch.no_grad():
                 out_ids = model.generate(
@@ -202,11 +225,17 @@ def run_rollout(
                     stop_strings=["</tool_call>", "<|im_end|>"],
                     tokenizer=tokenizer,
                 )
-            gen_text = tokenizer.decode(out_ids[0][inputs.input_ids.shape[1] :], skip_special_tokens=True)
+            gen_ids = out_ids[0][inputs.input_ids.shape[1] :]
+            gen_text = tokenizer.decode(gen_ids, skip_special_tokens=True)
             thinking, rest = strip_think(gen_text)
 
             tool_call = parse_tool_call(rest)
             transcript.append({"role": "assistant", "thinking": thinking, "content": rest, "raw": gen_text, "tool_call": tool_call})
+            if on_turn_end is not None:
+                try:
+                    on_turn_end(turn, gen_ids.tolist(), gen_text, tool_call, prev_tool_rc)
+                except Exception as e:  # noqa: BLE001 -- capture bookkeeping must never kill a rollout
+                    logger.error("on_turn_end failed at turn %d: %s", turn, e)
 
             if tool_call is None:
                 if _looks_like_attempted_tool_call(rest):
@@ -255,6 +284,7 @@ def run_rollout(
                 }
             )
             rc, output = ws.run_command(command, timeout=30)
+            prev_tool_rc = rc
             tool_result_text = f"Exit code: {rc}\nOutput:\n{output[:4000]}"
             messages.append({"role": "tool", "tool_call_id": call_id, "content": tool_result_text})
             transcript.append({"role": "tool", "command": command, "exit_code": rc, "output": output[:4000]})
@@ -277,6 +307,9 @@ def run_rollout(
             }
             if decision_turn is not None:
                 positions["decision"] = turn_prompt_positions[decision_turn]
+            for k in (extra_capture_turns or []):
+                if k in turn_prompt_positions:
+                    positions[f"turn_{k}"] = turn_prompt_positions[k]
             # Cap defensively against pathological sequence lengths, but never
             # at the cost of truncating away a position we actually need.
             # Those positions cluster near the END of the sequence
