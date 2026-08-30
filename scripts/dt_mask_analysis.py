@@ -147,6 +147,58 @@ for c in ORDER:
     ctv = [p["control"]["kl_mean"] for p in per if "control" in p]
     if len(pfv) >= 3 and len(ctv) >= 3:
         print(f"  {'':32s} post_fail vs control KL mean: MW p={mannwhitneyu(pfv, ctv, alternative='two-sided').pvalue:.3f}")
+# --- context-length-matched contrast -------------------------------------------------
+# post-failure turns happen late (long contexts); the every-4th-turn control set
+# includes turn 0 and other early turns, where a 70-token span is a much larger
+# share of the context. Compare within context-length buckets instead.
+CTX = {}
+ctxp = run / "phase4" / f"dt_ctx_lengths_{PHASE}.json"
+if ctxp.exists():
+    CTX = json.loads(ctxp.read_text())
+if CTX:
+    BUCKETS = [(0, 8000), (8000, 20000), (20000, 50000), (50000, 10**9)]
+    print("\n=== KL probe matched on context length (per EVENT, buckets by prompt tokens) ===")
+    print("  (events within a rollout are not independent: the per-event p is anti-conservative and is")
+    print("   shown only alongside a rollout-clustered test on per-rollout means -- the latter is the honest one)")
+    for c in ORDER:
+        evs = []
+        for r in by[c]:
+            per = CTX.get(r["id"], {})
+            for e in (r.get("kl_probe") or []):
+                n = per.get(str(e.get("turn")))
+                if n:
+                    evs.append((n, bool(e.get("post_fail")), e["kl_mean"], e["argmax_changed"], r["id"]))
+        if not evs:
+            continue
+        print(f"  {c}")
+        for lo, hi in BUCKETS:
+            sel = [e for e in evs if lo <= e[0] < hi]
+            if not sel:
+                continue
+            pf = [e for e in sel if e[1]]
+            ct = [e for e in sel if not e[1]]
+
+            def f(rows_, k):
+                return f"{np.mean([r[k] for r in rows_]):.4f}" if rows_ else "  -   "
+
+            def per_rollout(rows_):
+                d = collections.defaultdict(list)
+                for r in rows_:
+                    d[r[4]].append(r[2])
+                return [float(np.mean(v)) for v in d.values()]
+
+            line = f"    ctx {lo // 1000:3d}-{'inf' if hi > 10**8 else hi // 1000:>3}k: n={len(sel):4d} | post_fail n={len(pf):4d} KL={f(pf, 2)} argmax={f(pf, 3)} | control n={len(ct):4d} KL={f(ct, 2)} argmax={f(ct, 3)}"
+            if len(pf) >= 5 and len(ct) >= 5:
+                line += f" | per-event p={mannwhitneyu([r[2] for r in pf], [r[2] for r in ct], alternative='two-sided').pvalue:.3f}"
+            rp, rc = per_rollout(pf), per_rollout(ct)
+            if len(rp) >= 3 and len(rc) >= 3:
+                line += f" | clustered p={mannwhitneyu(rp, rc, alternative='two-sided').pvalue:.3f} (R={len(rp)}/{len(rc)})"
+            elif rp and rc:
+                line += f" | R={len(rp)}/{len(rc)} too few for clustered test"
+            print(line)
+else:
+    print(f"\n(no {ctxp.name}: run scripts/dt_ctx_lengths.py for the context-length-matched contrast)")
+
 ref = "dtm_prompt_mask_instr"
 if ref in kl_by_cond:
     print("\n  across conditions (post-fail KL mean per rollout) vs", ref)
