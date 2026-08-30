@@ -47,7 +47,8 @@ def profile(g):
 
 
 refs = {"b5_baseline": cnt("b5_prompt_decay", "b5_baseline"), "b5_prompt": cnt("b5_prompt_decay", "b5_prompt"), "add_pos_tedium": cnt("signed_pack", "add_pos_tedium", None), "identity(HF)": cnt("signed_pack", "identity", None)}
-cells = {"pc_base_add_delta26": ["b5_baseline"], "pc_prompt_ablate_delta26": ["b5_prompt", "b5_baseline"], "pc_prompt_add_tedium19": ["b5_prompt", "add_pos_tedium", "b5_baseline"]}
+cells = {"pc_base_add_delta26": ["b5_baseline"], "pc_prompt_ablate_delta26": ["b5_prompt", "b5_baseline"], "pc_prompt_add_tedium19": ["b5_prompt", "add_pos_tedium", "b5_baseline"],
+         "pc_add_tedium19_a05": ["b5_baseline", "add_pos_tedium"], "pc_prompt_add_tedium19_a05": ["b5_prompt", "b5_baseline"]}
 for name, (g, gj, s) in refs.items():
     print(f"ref {name:22s} n={len(gj):3d} shortcuts={s:2d} rate={s / len(gj) if gj else 0:.2f}")
 for cell, rl in cells.items():
@@ -68,3 +69,8 @@ for cell, rl in cells.items():
         rg, rgj, rs = refs[ref]
         if rgj:
             print(f"   vs {ref:15s}: {s}/{len(gj)} vs {rs}/{len(rgj)}  Fisher p={fisher_exact([[s, len(gj) - s], [rs, len(rgj) - rs]])[1]:.3f}")
+# dose-response: does the prompt shift the threshold at alpha=0.5?
+ga, gja, sa = cnt("prompt_channel", "pc_add_tedium19_a05")
+gp, gjp, sp = cnt("prompt_channel", "pc_prompt_add_tedium19_a05")
+if gja and gjp:
+    print(f"\ndose-response alpha=0.5: no-prompt {sa}/{len(gja)} vs prompt {sp}/{len(gjp)}  Fisher p={fisher_exact([[sa, len(gja) - sa], [sp, len(gjp) - sp]])[1]:.3f}")

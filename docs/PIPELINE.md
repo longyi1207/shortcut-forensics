@@ -40,6 +40,11 @@ live in scripts/; every stage's result is appended to
 
 ## Stage 5 — hybrid channel accounting (from Stages 2/4)
 
+## Stage 5-dose — tug-of-war dose-response (queued after Stage 4; no new code)
+- motivation: at alpha=1 the prompt gives zero protection (15/30 vs 17/32). Does it shift the threshold at a half dose?
+- cells (scripts/prompt_channel.py, env-driven): pc_add_tedium19_a05 (no prompt, add tedium@L19 alpha=0.5, n=20) and pc_prompt_add_tedium19_a05 (prompt on, same steer, n=20); analysis in scripts/pc_analysis.py (direct Fisher between the two)
+- hand-off: scripts/chain_stage5_dose.sh (Stage 4 complete -> 4+4 workers)
+
 ## Stage 6 — sentence-level resampling at the plan sentence (HF), if time
 
 ## Side analyses (no GPU)
