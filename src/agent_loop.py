@@ -150,6 +150,7 @@ def run_rollout(
     on_turn_start=None,  # optional callable(turn_idx) invoked before each turn's generate (B5 tracer sync)
     on_turn_end=None,  # optional callable(turn_idx, gen_token_ids: list[int], gen_text, tool_call|None, prev_tool_rc|None) after parsing, before executing
     on_turn_prepared=None,  # optional callable(turn_idx, prompt_text, input_ids[1, L], prev_tool_rc|None) after tokenization, before generate (mask controllers)
+    split_prefill: bool = False,  # prefill prompt[:-1] first, then let generate() process the last prompt token as a single-token step, so decode-only hooks (attention-mask controller) also cover the FIRST generated token
 ) -> RolloutResult:
     """extra_capture_turns: additional fixed post-generation capture positions
     (the last prompt token at the start of turn k, i.e. after k generated
@@ -208,9 +209,16 @@ def run_rollout(
                 except Exception as e:  # noqa: BLE001
                     logger.error("on_turn_prepared failed at turn %d: %s", turn, e)
 
+            gen_kwargs = {}
+            if split_prefill and inputs.input_ids.shape[1] > 1:
+                with torch.no_grad():
+                    pre = model(input_ids=inputs.input_ids[:, :-1], use_cache=True)
+                gen_kwargs["past_key_values"] = pre.past_key_values
+                del pre
             with torch.no_grad():
                 out_ids = model.generate(
                     **inputs,
+                    **gen_kwargs,
                     max_new_tokens=max_new_tokens,
                     do_sample=temperature > 0,
                     temperature=max(temperature, 1e-5),

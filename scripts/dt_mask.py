@@ -91,6 +91,51 @@ def count() -> int:
                if r.get("phase") == PHASE and r.get("condition") == COND_NAME and r.get("status") == "ok" and r.get("max_turns") == MAX_TURNS)
 
 
+KL_K = int(os.environ.get("SCFX_DTM_KL_K", "20"))
+KL_CONTROL_EVERY = 4
+
+
+@torch.no_grad()
+def kl_probe(prompt_ids: torch.Tensor, gen_ids: list[int], ctrl: InstructionMaskController) -> dict | None:
+    """How much did the first KL_K generated tokens of this turn depend on reading the blocked span?
+    Replays the turn from the same prefix twice -- block OFF and block ON -- with the split prefill
+    (prompt[:-1] cached, then the last prompt token as a single-token step, so the block applies to the
+    first generated token as well) and returns KL(off||on) per step plus the log-prob of the actually
+    generated tokens under both. Only meaningful when a span is blocked (returns None otherwise)."""
+    k = min(KL_K, len(gen_ids))
+    if k == 0 or not ctrl.blocked:
+        return None
+    was = ctrl.active
+    dev = prompt_ids.device
+    seq = [int(prompt_ids[0, -1].item())] + [int(t) for t in gen_ids[: k - 1]]  # inputs producing steps 1..k
+    lps = {}
+    try:
+        for state in ("off", "on"):
+            ctrl.set_active(state == "on")
+            base = model(input_ids=prompt_ids[:, :-1], use_cache=True)
+            pkv = base.past_key_values
+            del base
+            rows = []
+            for i in range(k):
+                step = model(input_ids=torch.tensor([[seq[i]]], device=dev), past_key_values=pkv, use_cache=True)
+                pkv = step.past_key_values
+                rows.append(torch.log_softmax(step.logits[0, -1, :].float(), -1))
+                del step
+            lps[state] = torch.stack(rows)  # [k, V]
+            del pkv
+            torch.cuda.empty_cache()
+    finally:
+        ctrl.set_active(was)
+    off, on = lps["off"], lps["on"]
+    kl = (off.exp() * (off - on)).sum(-1)  # [k]
+    tok = torch.tensor(gen_ids[:k], device=dev)
+    ar = torch.arange(k, device=dev)
+    return {"k": k, "kl_mean": kl.mean().item(), "kl_max": kl.max().item(), "kl_first": kl[0].item(),
+            "kl_steps": [round(v, 4) for v in kl.tolist()],
+            "lp_gen_off": off[ar, tok].sum().item(), "lp_gen_on": on[ar, tok].sum().item(),
+            "argmax_changed": int((off.argmax(-1) != on.argmax(-1)).sum().item())}
+
+
 @torch.no_grad()
 def score_continuations(prefix_ids: torch.Tensor, conts: list[str], ctrl: InstructionMaskController, block_on: bool) -> dict[str, float]:
     """Sum log-prob of each continuation after prefix, decoding one token at a time
@@ -121,10 +166,11 @@ while count() < N_TARGET:
     t0 = time.time()
     logger.info("%s: have %d/%d, starting %s", COND, count(), N_TARGET, rid)
     ctrl = InstructionMaskController(model, FULL_ATTN, heads_by_layer=HEADS_BY_LAYER, n_heads=N_HEADS)
-    state = {"instr_span": [], "notes_span": [], "masked_turns": [], "probes": [], "prompt_text": "", "assistant_texts": []}
+    state = {"instr_span": [], "notes_span": [], "masked_turns": [], "probes": [], "kl": [], "prompt_text": "", "prompt_ids": None, "assistant_texts": []}
 
     def on_turn_prepared(turn, prompt_text, input_ids, prev_rc):
         state["prompt_text"] = prompt_text
+        state["prompt_ids"] = input_ids
         blocked = set()
         if BLOCK_INSTR and PROMPT_ON:
             state["instr_span"] = token_span_for_substring(tokenizer, prompt_text, TEDIUM_STRONG)
@@ -141,6 +187,18 @@ while count() < N_TARGET:
     def on_turn_end(turn, gen_ids, gen_text, tool_call, prev_rc):
         # keep the assistant text for the notes span of later turns
         state["assistant_texts"].append(gen_text.split("</think>")[-1].strip()[:2000])
+        # KL probe: post-failure turns (decision events) + every 4th turn (control), block off vs on
+        failed = prev_rc is not None and prev_rc != 0
+        if ctrl.blocked and state["prompt_ids"] is not None and (failed or turn % KL_CONTROL_EVERY == 0):
+            try:
+                res = kl_probe(state["prompt_ids"], gen_ids, ctrl)
+            except torch.cuda.OutOfMemoryError:
+                torch.cuda.empty_cache()
+                res = None
+                logger.warning("%s: OOM in kl_probe turn %d -- skipped", rid, turn)
+            if res is not None:
+                res.update({"turn": turn, "prev_rc": prev_rc, "post_fail": failed, "masked_turn": ctrl.active})
+                state["kl"].append(res)
         cmd = (tool_call or {}).get("arguments", {}).get("command", "") if tool_call else ""
         if not cmd or not cmd.lstrip().startswith("git commit"):
             return
@@ -172,6 +230,7 @@ while count() < N_TARGET:
             extra_user_line=TEDIUM_STRONG if PROMPT_ON else None,
             on_turn_prepared=on_turn_prepared,
             on_turn_end=on_turn_end,
+            split_prefill=True,  # last prompt token runs as a single-token step so the block covers the first generated token
         )
     if result.error and not result.transcript:
         append_jsonl(run_dir / "rollouts.jsonl", {"id": rid, "phase": PHASE, "condition": COND, "model": model_name, "max_turns": MAX_TURNS,
@@ -192,7 +251,7 @@ while count() < N_TARGET:
         "prompt_on": PROMPT_ON, "block_instr": BLOCK_INSTR, "block_notes": BLOCK_NOTES, "mask_when": WHEN,
         "headset": HEADSET, "heads_by_layer": HEADS_BY_LAYER,
         "instr_span_len": len(state["instr_span"]), "masked_turns": state["masked_turns"], "mask_applied_steps": ctrl.n_applied,
-        "probe": state["probes"],
+        "probe": state["probes"], "kl_probe": state["kl"], "kl_k": KL_K, "split_prefill": True,
         "max_turns": MAX_TURNS, "enable_thinking": winning["enable_thinking"], "n_type_errors": cfg["env"]["n_type_errors_default"],
         "stop_reason": result.stop_reason, "n_turns": result.n_turns, "decision_turn": result.decision_turn,
         "commands": result.commands, "prefilter": result.prefilter, "judge": judged,
