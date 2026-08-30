@@ -62,7 +62,11 @@ def event_text(rid, turn, step):
     before = tok.decode(ids[max(0, s - CTX_TOK):s])
     nxt = tok.decode(ids[s:s + 1]) if s < len(ids) else "<end>"
     pt = prev_tool[turn]
-    tool = f"prev tool rc={pt.get('exit_code')} cmd={str(pt.get('command', ''))[:50]!r} out={str(pt.get('output', '')).strip().splitlines()[0][:70]!r}" if pt else "no prev tool"
+    if pt:
+        lines = str(pt.get("output", "")).strip().splitlines()
+        tool = f"prev tool rc={pt.get('exit_code')} cmd={str(pt.get('command', ''))[:50]!r} out={(lines[0] if lines else '')[:70]!r}"
+    else:
+        tool = "no prev tool"
     return f"...{before!r} -> next={nxt!r}", tool
 
 
