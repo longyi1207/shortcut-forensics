@@ -45,9 +45,9 @@ with torch.no_grad(), ctrl:
         pre = model(input_ids=ids, use_cache=True)
         nxt = pre.logits[:, -1, :].argmax(-1, keepdim=True)
         step = model(input_ids=nxt, past_key_values=pre.past_key_values, use_cache=True, output_attentions=True)
-        atts = step.attentions  # tuple over layers (None for linear layers)
+        atts = step.attentions  # tuple: one entry per full-attention layer (len == len(FULL)) or per layer
         for L in FULL:
-            a = atts[L]
+            a = atts[FULL.index(L)] if len(atts) == len(FULL) else atts[L]
             if a is None:
                 print(f"  L{L}: no attention weights returned"); ok = False; continue
             w = a[0, :, -1, :].float()  # [heads, k_len]

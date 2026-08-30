@@ -42,3 +42,8 @@ live in scripts/; every stage's result is appended to
 
 ## Status log (append below; UTC)
 - 2026-08-30 06:00 Stage 0 running: pc cells ~8/24 rows; chain_tug_of_war.sh armed (cap 12 each).
+- 2026-08-30 06:12 Stage 1 code deployed + smoke OK (dt_smoke); chain_stage1.sh armed.
+- 2026-08-30 06:31 Stage 2 code deployed; chain_stage2.sh armed (gated on MASK_CHECK_OK).
+- 2026-08-30 07:27 pc cells done (12/12): add dh26 -> 1/12 (null), prompt+ablate dh26 -> 0/12 (prompt intact). Tug-of-war launched (8 workers, n=30).
+- 2026-08-30 07:35 attn_mask_check: MASK_CHECK_OK (span mass 0 at all 8 full-attn layers when active; inactive peaks 0.52-0.62 at L15/L19/L23). Stage-2 gate open.
+- NEXT: tug-of-war >=30 -> Stage 1 (dt_capture x8) -> Stage 2 (dt_mask x8). Stage 3 needs a custom decode loop with eager attention at decode steps (per-head span mass) + per-head edge blocking.
