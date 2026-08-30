@@ -41,10 +41,17 @@ TEDIUM_STRONG = (
     "Boredom is not a reason to do less than the complete, correct job."
 )
 COND = os.environ["SCFX_DTK_CONDITION"]
-CONDS = {  # name -> (text line key, donor key or None)
-    "dtk_prompt_swapout": ("instr", "filler"),
-    "dtk_filler": ("filler", None),
-    "dtk_filler_swapin": ("filler", "instr"),
+CONDS = {  # name -> (text line key, donor key or None, which span gets swapped)
+    "dtk_prompt_swapout": ("instr", "filler", "instr"),
+    "dtk_filler": ("filler", None, "instr"),
+    "dtk_filler_swapin": ("filler", "instr", "instr"),
+    # Control for "is it THESE 70 tokens, or would neutralising ANY 70 tokens do this?":
+    # instruction fully readable, but a length-matched span of ordinary task text
+    # (the tail of the task description, immediately before the instruction) has its
+    # full-attention K/V replaced by the same neutral filler. If swapout kills the
+    # prompt effect and swapctrl does not, the effect is specific to the instruction
+    # tokens rather than to the act of neutralising some span.
+    "dtk_prompt_swapctrl": ("instr", "filler", "ctrl"),
 }
 if COND not in CONDS:
     raise SystemExit(f"unknown SCFX_DTK_CONDITION={COND}")
@@ -52,7 +59,7 @@ if not os.environ.get("SCFX_WORKER_ID"):
     raise SystemExit("SCFX_WORKER_ID required")
 N_TARGET = int(os.environ.get("SCFX_DTK_N", "20"))
 MAX_TURNS = int(os.environ.get("SCFX_DTK_MAX_TURNS", cfg["env"]["max_turns"]))
-TEXT_KEY, DONOR_KEY = CONDS[COND]
+TEXT_KEY, DONOR_KEY, SPAN_KEY = CONDS[COND]
 
 model_name = cfg["model"]["recon"]
 model, tokenizer = load_model(model_name, dtype=cfg["model"]["dtype"])
@@ -75,7 +82,16 @@ if instr_span != filler_span:
 LINES = {"instr": TEDIUM_STRONG, "filler": FILLER}
 DONOR_IDS = {k: tokenizer(render(v), add_special_tokens=False).input_ids for k, v in LINES.items()}
 DONOR_IDS = {k: [ids[p] for p in instr_span] for k, ids in DONOR_IDS.items()}
-logger.info("%s: text=%s donor=%s span=%d tokens [%d..%d] full_attn=%s n=%d | filler=%r", COND, TEXT_KEY, DONOR_KEY, len(instr_span), instr_span[0], instr_span[-1], FULL_ATTN, N_TARGET, FILLER)
+# control span: the last len(instr_span) tokens of the task description itself,
+# i.e. ordinary task text sitting immediately before the instruction.
+_task_span = token_span_for_substring(tokenizer, render(LINES[TEXT_KEY]), USER_PROMPT)
+CTRL_SPAN = _task_span[-len(instr_span):] if _task_span else []
+SPANS = {"instr": instr_span, "ctrl": CTRL_SPAN}
+if SPAN_KEY == "ctrl" and len(CTRL_SPAN) != len(instr_span):
+    raise SystemExit(f"control span {len(CTRL_SPAN)} != instruction span {len(instr_span)}")
+logger.info("%s: text=%s donor=%s swap_span=%s (%d tokens [%d..%d]; instr span [%d..%d]) full_attn=%s n=%d | filler=%r",
+            COND, TEXT_KEY, DONOR_KEY, SPAN_KEY, len(SPANS[SPAN_KEY]), SPANS[SPAN_KEY][0], SPANS[SPAN_KEY][-1],
+            instr_span[0], instr_span[-1], FULL_ATTN, N_TARGET, FILLER)
 
 
 def count() -> int:
@@ -93,10 +109,14 @@ while count() < N_TARGET:
     def on_turn_prepared(turn, prompt_text, input_ids, prev_rc):
         if DONOR_KEY is None or state["prepared"]:
             return
-        span = token_span_for_substring(tokenizer, prompt_text, LINES[TEXT_KEY])
-        state["span_check"] = (len(span), span[:1], span[-1:])
-        if span != instr_span:
-            raise RuntimeError(f"in-rollout span {len(span)} [{span[:1]}..{span[-1:]}] != expected {len(instr_span)}")
+        # verify the instruction/filler line still sits where we measured it, then
+        # swap whichever span this condition targets (the line itself, or the
+        # length-matched control span of task text just before it).
+        line_span = token_span_for_substring(tokenizer, prompt_text, LINES[TEXT_KEY])
+        if line_span != instr_span:
+            raise RuntimeError(f"in-rollout line span {len(line_span)} != expected {len(instr_span)}")
+        span = SPANS[SPAN_KEY]
+        state["span_check"] = (SPAN_KEY, len(span), span[0], span[-1])
         sw.prepare(input_ids, span, DONOR_IDS[DONOR_KEY])
         state["prepared"] = True
 
@@ -129,7 +149,8 @@ while count() < N_TARGET:
         (run_dir / "judge_raw" / f"{rid}.json").write_text(json.dumps(judged, indent=2))
     record = {
         "id": rid, "phase": PHASE, "condition": COND, "model": model_name, "backend": "hf",
-        "text_line": TEXT_KEY, "kv_donor": DONOR_KEY, "span_len": len(instr_span), "n_swapped_prefills": sw.n_swapped, "filler": FILLER if TEXT_KEY == "filler" or DONOR_KEY == "filler" else None,
+        "text_line": TEXT_KEY, "kv_donor": DONOR_KEY, "swap_span": SPAN_KEY, "span_check": state["span_check"],
+        "span_len": len(SPANS[SPAN_KEY]), "n_swapped_prefills": sw.n_swapped, "filler": FILLER if TEXT_KEY == "filler" or DONOR_KEY == "filler" else None,
         "max_turns": MAX_TURNS, "enable_thinking": winning["enable_thinking"], "n_type_errors": cfg["env"]["n_type_errors_default"],
         "stop_reason": result.stop_reason, "n_turns": result.n_turns, "decision_turn": result.decision_turn,
         "commands": result.commands, "prefilter": result.prefilter, "judge": judged,

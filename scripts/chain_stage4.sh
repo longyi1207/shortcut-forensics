@@ -48,9 +48,11 @@ launch() { (cd /mnt/scfx_ly_run && setsid nohup env CUDA_VISIBLE_DEVICES=$1 SCFX
 launch 0 dtk0 dtk_prompt_swapout 20
 launch 1 dtk1 dtk_prompt_swapout 20
 launch 2 dtk2 dtk_prompt_swapout 20
-launch 3 dtk3 dtk_filler 20
-launch 4 dtk4 dtk_filler 20
+launch 3 dtk3 dtk_filler_swapin 20
+launch 4 dtk4 dtk_filler_swapin 20
 launch 5 dtk5 dtk_filler_swapin 20
-launch 6 dtk6 dtk_filler_swapin 20
-launch 7 dtk7 dtk_filler_swapin 20
+launch 6 dtk6 dtk_prompt_swapctrl 20
+launch 7 dtk7 dtk_prompt_swapctrl 20
+# dtk_filler (plain filler text, no swap) is covered by chain_stage4b.sh after
+# these finish -- the 2x2's text-only control needs fewer GPUs than the causal cells.
 echo "$(date -u) chain_stage4: Stage 4 launched (8 workers)" | tee -a "$LOG"
