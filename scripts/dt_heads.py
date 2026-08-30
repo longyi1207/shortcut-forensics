@@ -127,6 +127,7 @@ def replay_turn(prompt_ids: torch.Tensor, gen_ids: list[int], tagged_steps: list
         return {}
     res: dict[int, np.ndarray] = {}
     model.set_attn_implementation(DEFAULT_IMPL)
+    torch.cuda.empty_cache()  # generation's cache is gone by now; make room for the replay cache
     out = model(input_ids=prompt_ids[:, :-1], use_cache=True)
     pkv = out.past_key_values
     del out

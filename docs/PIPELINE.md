@@ -33,7 +33,10 @@ live in scripts/; every stage's result is appended to
 - hand-offs: scripts/chain_stage3.sh (Stage 2 complete -> 3a), scripts/chain_stage3b.sh (3a n>=12 -> rank -> 3b)
 
 ## Stage 4 — content ablation (HF)
-- replace K/V of the instruction span in full-attention layers with those of a length-matched neutral text at prefill; text stays
+- src/kv_swap.py InstructionKVSwapper: forward hooks on k_proj/v_proj of the 8 full-attention layers overwrite the instruction span's projections at every turn's prefill with a length-matched DONOR's (k_norm + RoPE are position-wise, so this equals a cached-K/V swap; verified vs DynamicCache tensors by scripts/kv_swap_check.py -> KV_SWAP_OK). Text stays, so the GDN/recurrent channel and the residual at the span still see it.
+- scripts/dt_kvswap.py 2x2 (n=20 each): dtk_prompt_swapout (instruction text, filler content), dtk_filler (filler text; control), dtk_filler_swapin (filler text, instruction content injected). References: dt_prompt/dtm_prompt, dt_baseline/dtm_baseline. Filler fitted to exactly the instruction's in-context token count (fit_filler).
+- analysis: scripts/dt_kvswap_analysis.py (Fisher: swapout vs instr refs = is attention content necessary; swapin vs filler = is it sufficient; filler vs no-line = filler inert)
+- hand-off: scripts/chain_stage4.sh (Stage 3b complete -> Stage 4, gated on KV_SWAP_OK)
 
 ## Stage 5 — hybrid channel accounting (from Stages 2/4)
 
@@ -49,4 +52,7 @@ live in scripts/; every stage's result is appended to
 - 2026-08-30 06:31 Stage 2 code deployed; chain_stage2.sh armed (gated on MASK_CHECK_OK).
 - 2026-08-30 07:27 pc cells done (12/12): add dh26 -> 1/12 (null), prompt+ablate dh26 -> 0/12 (prompt intact). Tug-of-war launched (8 workers, n=30).
 - 2026-08-30 07:35 attn_mask_check: MASK_CHECK_OK (span mass 0 at all 8 full-attn layers when active; inactive peaks 0.52-0.62 at L15/L19/L23). Stage-2 gate open.
-- NEXT: tug-of-war >=30 -> Stage 1 (dt_capture x8) -> Stage 2 (dt_mask x8). Stage 3 needs a custom decode loop with eager attention at decode steps (per-head span mass) + per-head edge blocking.
+- 2026-08-30 07:48 per-head mask check OK (chosen heads read exactly 0 of the span, others untouched); dt_heads smoke OK (3 turns, replay 1 s). Stage 3 chains armed (chain_stage3.sh, chain_stage3b.sh).
+- 2026-08-30 08:20 kv_swap_check: KV_SWAP_OK (|A_swapped - B| = 0.0000 at the span in all 8 full-attn layers, keys and values; |A - B| 5-50 so the donor differs; positions after the span still differ 2-17 -> text/GDN channel intact). dt_kvswap smoke OK (span 70 tokens [470..539], filler fitted exactly, swap on every turn's prefill). Stage 4 chain armed (chain_stage4.sh).
+- NEXT (all VM-chained, no operator needed): tug-of-war >=30 -> Stage 1 (dt_capture x8) -> Stage 2 (dt_mask x8) -> Stage 3a (dt_heads x8) -> rank -> Stage 3b (head-restricted block x8) -> Stage 4 (dt_kvswap x8). Analyses + WRITEUP after each stage.
+- NOTE: workers with long contexts reach ~75 GB/GPU; side checks must pick a GPU with >=24 GB free (nvidia-smi poll) rather than a fixed GPU.
