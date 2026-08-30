@@ -56,3 +56,10 @@ launch 7 dtk7 dtk_prompt_swapctrl 20
 # dtk_filler (plain filler text, no swap) is covered by chain_stage4b.sh after
 # these finish -- the 2x2's text-only control needs fewer GPUs than the causal cells.
 echo "$(date -u) chain_stage4: Stage 4 launched (8 workers)" | tee -a "$LOG"
+# Keep every GPU busy once the faster cells finish: workers are pinned to one
+# condition and exit at its target, so without this the 2-worker cell would run
+# ~3 h alone while 6 GPUs sat idle.
+setsid nohup bash scripts/gpu_balancer.sh dt_kvswap.py dt_kvswap \
+  "dtk_prompt_swapout:20 dtk_filler_swapin:20 dtk_prompt_swapctrl:20" \
+  > logs/balancer_stage4.log 2>&1 < /dev/null &
+echo "$(date -u) chain_stage4: GPU balancer armed" | tee -a "$LOG"

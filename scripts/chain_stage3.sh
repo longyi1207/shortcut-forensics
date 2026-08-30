@@ -30,3 +30,6 @@ launch 5 dth5 dth_prompt 12
 launch 6 dth6 dth_baseline 6
 launch 7 dth7 dth_baseline 6
 echo "$(date -u) chain_stage3: Stage 3a launched (8 workers)" | tee -a "$LOG"
+setsid nohup bash scripts/gpu_balancer.sh dt_heads.py dt_heads "dth_prompt:12 dth_baseline:6" \
+  > logs/balancer_stage3a.log 2>&1 < /dev/null &
+echo "$(date -u) chain_stage3: GPU balancer armed" | tee -a "$LOG"

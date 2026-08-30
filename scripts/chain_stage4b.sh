@@ -33,3 +33,7 @@ launch_p 5 dose3 pc_prompt_add_tedium19_a05 1
 launch_p 6 dose4 pc_prompt_add_tedium19_a05 1
 launch_p 7 dose5 pc_prompt_add_tedium19_a05 1
 echo "$(date -u) chain_stage4b: Stage 4b + dose-response launched (8 workers)" | tee -a "$LOG"
+setsid nohup bash scripts/gpu_balancer.sh dt_kvswap.py dt_kvswap "dtk_filler:20" > logs/balancer_stage4b_k.log 2>&1 < /dev/null &
+setsid nohup bash scripts/gpu_balancer.sh prompt_channel.py prompt_channel \
+  "pc_add_tedium19_a05:20 pc_prompt_add_tedium19_a05:20" > logs/balancer_stage4b_p.log 2>&1 < /dev/null &
+echo "$(date -u) chain_stage4b: GPU balancers armed" | tee -a "$LOG"
