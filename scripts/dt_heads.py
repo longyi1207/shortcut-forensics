@@ -128,7 +128,7 @@ def replay_turn(prompt_ids: torch.Tensor, gen_ids: list[int], tagged_steps: list
     res: dict[int, np.ndarray] = {}
     model.set_attn_implementation(DEFAULT_IMPL)
     torch.cuda.empty_cache()  # generation's cache is gone by now; make room for the replay cache
-    out = model(input_ids=prompt_ids[:, :-1], use_cache=True)
+    out = model(input_ids=prompt_ids[:, :-1], use_cache=True, logits_to_keep=1)  # see agent_loop split_prefill note
     pkv = out.past_key_values
     del out
     # inputs producing steps 1..n: last prompt token, then gen tokens 1..n-1
@@ -139,7 +139,7 @@ def replay_turn(prompt_ids: torch.Tensor, gen_ids: list[int], tagged_steps: list
         if s - 1 > pos:
             chunk = torch.tensor([seq[pos:s - 1]], device=prompt_ids.device)
             model.set_attn_implementation(DEFAULT_IMPL)
-            o = model(input_ids=chunk, past_key_values=pkv, use_cache=True)
+            o = model(input_ids=chunk, past_key_values=pkv, use_cache=True, logits_to_keep=1)
             pkv = o.past_key_values
             del o
             pos = s - 1

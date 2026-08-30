@@ -112,7 +112,7 @@ def kl_probe(prompt_ids: torch.Tensor, gen_ids: list[int], ctrl: InstructionMask
     try:
         for state in ("off", "on"):
             ctrl.set_active(state == "on")
-            base = model(input_ids=prompt_ids[:, :-1], use_cache=True)
+            base = model(input_ids=prompt_ids[:, :-1], use_cache=True, logits_to_keep=1)
             pkv = base.past_key_values
             del base
             rows = []
@@ -144,7 +144,7 @@ def score_continuations(prefix_ids: torch.Tensor, conts: list[str], ctrl: Instru
     ctrl.set_active(block_on)
     out = {}
     try:
-        base = model(input_ids=prefix_ids, use_cache=True)
+        base = model(input_ids=prefix_ids, use_cache=True, logits_to_keep=1)
         for cont in conts:
             ids = tokenizer(cont, add_special_tokens=False, return_tensors="pt").input_ids.to(prefix_ids.device)
             pkv = base.past_key_values

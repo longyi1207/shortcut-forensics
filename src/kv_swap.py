@@ -89,7 +89,7 @@ class InstructionKVSwapper:
         self.store = {}
         self.mode = "capture"
         try:
-            self.model(input_ids=ids, use_cache=True)
+            self.model(input_ids=ids, use_cache=True, logits_to_keep=1)  # hooks fire on k_proj/v_proj; logits unused
         finally:
             self.mode = "swap"
         missing = [(L, k) for L in self.layers for k in ("k", "v") if (L, k) not in self.store]

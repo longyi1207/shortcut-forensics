@@ -212,7 +212,10 @@ def run_rollout(
             gen_kwargs = {}
             if split_prefill and inputs.input_ids.shape[1] > 1:
                 with torch.no_grad():
-                    pre = model(input_ids=inputs.input_ids[:, :-1], use_cache=True)
+                    # logits_to_keep=1: only the last position's logits are materialised.
+                    # Without it a ~100k-token prefill allocates 100k x 151936 x 2 B = 30 GB
+                    # of logits we never read (observed as repeated allocator OOM warnings).
+                    pre = model(input_ids=inputs.input_ids[:, :-1], use_cache=True, logits_to_keep=1)
                 gen_kwargs["past_key_values"] = pre.past_key_values
                 del pre
             with torch.no_grad():
