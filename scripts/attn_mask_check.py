@@ -65,4 +65,28 @@ with torch.no_grad(), ctrl2:
     out = model.generate(input_ids=ids, max_new_tokens=24, do_sample=False)
 print("generate under", model.config._attn_implementation, "ok; applied steps:", ctrl2.n_applied, "| text:", repr(tok.decode(out[0, ids.shape[1]:], skip_special_tokens=True))[:120])
 ok &= ctrl2.n_applied > 0
+# --- part 3: per-head block (Stage 3b): only the chosen heads lose the span, the rest keep it ---
+model.set_attn_implementation("eager")
+NH = int(tc.num_attention_heads)
+sel = {15: [0, 1], 19: [3]}
+ctrl3 = InstructionMaskController(model, FULL, heads_by_layer=sel, n_heads=NH)
+ctrl3.set_blocked_positions(span); ctrl3.set_active(True)
+with torch.no_grad(), ctrl3:
+    pre = model(input_ids=ids, use_cache=True)
+    nxt = pre.logits[:, -1, :].argmax(-1, keepdim=True)
+    step = model(input_ids=nxt, past_key_values=pre.past_key_values, use_cache=True, output_attentions=True)
+    atts = step.attentions
+    for L in FULL:
+        w = (atts[FULL.index(L)] if len(atts) == len(FULL) else atts[L])[0, :, -1, :].float()
+        m = w[:, span].sum(-1)
+        chosen = sel.get(L, [])
+        others = [h for h in range(NH) if h not in chosen]
+        cmax = float(m[chosen].max()) if chosen else -1.0
+        omax = float(m[others].max())
+        print(f"  per-head L{L}: chosen={chosen} max span mass={cmax:.4f} | others max={omax:.4f} | applied={ctrl3.n_applied}")
+        if chosen:
+            ok &= cmax < 1e-6 and omax > 0
+        else:
+            ok &= omax > 0
+model.set_attn_implementation(default_impl or "sdpa")
 print("MASK_CHECK_OK" if ok else "MASK_CHECK_FAIL")

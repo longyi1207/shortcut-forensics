@@ -27,13 +27,20 @@ from src.hooks import get_layers
 
 
 class InstructionMaskController:
-    def __init__(self, model, full_attention_layers: list[int]):
+    def __init__(self, model, full_attention_layers: list[int], heads_by_layer: dict[int, list[int]] | None = None, n_heads: int | None = None):
+        """heads_by_layer: optional {layer: [query-head indices]} restricting the
+        block to specific heads (Stage 3 edge ablation). None = all heads.
+        n_heads must be given when heads_by_layer is used (query heads, e.g. 16)."""
         self.model = model
         self.layers = list(full_attention_layers)
         self.blocked: set[int] = set()
         self.active = False
         self._handles = []
         self.n_applied = 0  # decode steps on which a block was applied (diagnostic)
+        self.heads_by_layer = {int(k): sorted(set(int(h) for h in v)) for k, v in (heads_by_layer or {}).items()}
+        self.n_heads = n_heads
+        if self.heads_by_layer and not self.n_heads:
+            raise ValueError("n_heads required with heads_by_layer")
 
     # ---- span management ----------------------------------------------------
     def set_blocked_positions(self, positions) -> None:
@@ -60,15 +67,27 @@ class InstructionMaskController:
         idx = [p for p in self.blocked if 0 <= p < k_len]
         if not idx:
             return None
+        heads = None
+        if self.heads_by_layer:
+            heads = self.heads_by_layer.get(int(getattr(module, "layer_idx", -1)))
+            if not heads:
+                return None  # this layer has no selected heads -> leave untouched
         neg = torch.finfo(hs.dtype).min
         mask = kwargs.get("attention_mask")
+        H = self.n_heads if heads is not None else 1
         if mask is None:
-            new = torch.zeros((hs.shape[0], 1, 1, k_len), dtype=hs.dtype, device=hs.device)
+            new = torch.zeros((hs.shape[0], H, 1, k_len), dtype=hs.dtype, device=hs.device)
         else:
             new = mask.clone().to(hs.dtype)
             if new.dim() != 4 or new.shape[-1] < k_len:
                 return None
-        new[..., idx] = neg
+            if heads is not None and new.shape[1] == 1:
+                new = new.expand(-1, H, -1, -1).clone()
+        if heads is None:
+            new[..., idx] = neg
+        else:
+            for h in heads:  # per-head edge block: only these query heads lose the span
+                new[:, h, :, idx] = neg
         kwargs["attention_mask"] = new
         self.n_applied += 1
         return (args, kwargs)

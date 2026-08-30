@@ -27,7 +27,10 @@ live in scripts/; every stage's result is appended to
 - DONE criterion: behavioural readout (shortcut rate, commit profile) + logit diffs; survival after masking = recurrent-channel share
 
 ## Stage 3 — instruction-reading heads (HF, decode-only attention weights)
-- rank heads by attention mass to instruction span at decision tokens; ablate top-k head edges vs random-k; behavioural + logit readout
+- 3a measurement: scripts/dt_heads.py — ordinary sdpa rollouts; after each decision turn (commit / post-fail / every 4th), REPLAY the turn teacher-forced: sdpa prefill of prompt[:-1], sdpa chunks, and a single EAGER forward with output_attentions at each tagged step -> per-head mass on {instr span, length-matched task-text control span, notes, recent-64}. Conditions dth_prompt (N=12) / dth_baseline (N=6). npz traces/<id>_heads.npz
+- 3a analysis: scripts/dt_heads_analysis.py -> dt_heads_rank.json (rank (layer,head) by instruction mass at decision steps; top8/top16 + seed-fixed random sets)
+- 3b ablation: dt_mask.py with SCFX_DTM_HEADS/HEADSET — block the instruction span for ONLY the top-k heads vs random-k (n=20 each, postfail turns): mask_instr@top8, @rand8_s0, @top16, @rand16_s0. Compare with the all-heads block (dtm_prompt_mask_instr) and dtm_prompt.
+- hand-offs: scripts/chain_stage3.sh (Stage 2 complete -> 3a), scripts/chain_stage3b.sh (3a n>=12 -> rank -> 3b)
 
 ## Stage 4 — content ablation (HF)
 - replace K/V of the instruction span in full-attention layers with those of a length-matched neutral text at prefill; text stays

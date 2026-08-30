@@ -74,14 +74,21 @@ model_name = cfg["model"]["recon"]
 model, tokenizer = load_model(model_name, dtype=cfg["model"]["dtype"])
 tc = getattr(model.config, "text_config", model.config)
 FULL_ATTN = [i for i, t in enumerate(list(getattr(tc, "layer_types", []))) if "full" in str(t)]
+N_HEADS = int(tc.num_attention_heads)
+# Stage 3b: restrict the block to a head set from dt_heads_rank.json (SCFX_DTM_HEADS=path, SCFX_DTM_HEADSET=top8|rand8_s0|...)
+HEADS_JSON, HEADSET = os.environ.get("SCFX_DTM_HEADS"), os.environ.get("SCFX_DTM_HEADSET")
+HEADS_BY_LAYER = None
+if HEADS_JSON and HEADSET:
+    HEADS_BY_LAYER = {int(k): [int(h) for h in v] for k, v in json.loads(Path(HEADS_JSON).read_text())[HEADSET].items()}
+COND_NAME = f"{COND}@{HEADSET}" if HEADS_BY_LAYER else COND  # stored condition name
 winning = read_phase_status(run_dir, 1)["winning_variant"]
 errors_log = run_dir / "incidents" / "judge_errors.jsonl"
-logger.info("%s: prompt=%s block_instr=%s block_notes=%s when=%s full_attn=%s n=%d", COND, PROMPT_ON, BLOCK_INSTR, BLOCK_NOTES, WHEN, FULL_ATTN, N_TARGET)
+logger.info("%s: prompt=%s block_instr=%s block_notes=%s when=%s full_attn=%s heads=%s n=%d", COND_NAME, PROMPT_ON, BLOCK_INSTR, BLOCK_NOTES, WHEN, FULL_ATTN, HEADS_BY_LAYER, N_TARGET)
 
 
 def count() -> int:
     return sum(1 for r in read_jsonl(run_dir / "rollouts.jsonl")
-               if r.get("phase") == PHASE and r.get("condition") == COND and r.get("status") == "ok" and r.get("max_turns") == MAX_TURNS)
+               if r.get("phase") == PHASE and r.get("condition") == COND_NAME and r.get("status") == "ok" and r.get("max_turns") == MAX_TURNS)
 
 
 @torch.no_grad()
@@ -113,7 +120,7 @@ while count() < N_TARGET:
     rid = _next_rollout_id(run_dir)
     t0 = time.time()
     logger.info("%s: have %d/%d, starting %s", COND, count(), N_TARGET, rid)
-    ctrl = InstructionMaskController(model, FULL_ATTN)
+    ctrl = InstructionMaskController(model, FULL_ATTN, heads_by_layer=HEADS_BY_LAYER, n_heads=N_HEADS)
     state = {"instr_span": [], "notes_span": [], "masked_turns": [], "probes": [], "prompt_text": "", "assistant_texts": []}
 
     def on_turn_prepared(turn, prompt_text, input_ids, prev_rc):
@@ -181,8 +188,9 @@ while count() < N_TARGET:
         (run_dir / "judge_raw").mkdir(parents=True, exist_ok=True)
         (run_dir / "judge_raw" / f"{rid}.json").write_text(json.dumps(judged, indent=2))
     record = {
-        "id": rid, "phase": PHASE, "condition": COND, "model": model_name, "backend": "hf",
+        "id": rid, "phase": PHASE, "condition": COND_NAME, "model": model_name, "backend": "hf",
         "prompt_on": PROMPT_ON, "block_instr": BLOCK_INSTR, "block_notes": BLOCK_NOTES, "mask_when": WHEN,
+        "headset": HEADSET, "heads_by_layer": HEADS_BY_LAYER,
         "instr_span_len": len(state["instr_span"]), "masked_turns": state["masked_turns"], "mask_applied_steps": ctrl.n_applied,
         "probe": state["probes"],
         "max_turns": MAX_TURNS, "enable_thinking": winning["enable_thinking"], "n_type_errors": cfg["env"]["n_type_errors_default"],
