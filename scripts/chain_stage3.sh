@@ -13,12 +13,12 @@ while true; do
   sleep 180
 done
 echo "$(date -u) chain_stage3: Stage 2 complete (p=$p b=$b mi=$mi mn=$mn mb=$mb) -> stopping dtm workers" | tee -a "$LOG"
-for pid in $(pgrep -f 'dt_mas[k]\.py'); do
+for pid in $(pgrep -f "^/mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/dt_mask.py"); do
   w=$(tr '\0' '\n' < /proc/$pid/environ 2>/dev/null | grep '^SCFX_WORKER_ID=' | cut -d= -f2)
   case "$w" in dtm*) echo "stop $w pid=$pid" | tee -a "$LOG"; kill "$pid";; esac
 done
 sleep 30
-if pgrep -f 'dt_head[s]\.py' >/dev/null; then echo "$(date -u) chain_stage3: dt_heads workers already running" | tee -a "$LOG"; exit 0; fi
+if pgrep -f "^/mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/dt_heads.py" >/dev/null; then echo "$(date -u) chain_stage3: dt_heads workers already running" | tee -a "$LOG"; exit 0; fi
 launch() { (cd /mnt/scfx_ly_run && setsid nohup env CUDA_VISIBLE_DEVICES=$1 SCFX_WORKER_ID=$2 SCFX_DTH_CONDITION=$3 SCFX_DTH_N=$4 \
    /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/dt_heads.py > /mnt/scfx_ly_run/logs/dth_$3_$2.log 2>&1 < /dev/null &); echo "$(date -u) chain_stage3: launched $3 worker=$2 GPU=$1 N=$4" | tee -a "$LOG"; }
 launch 0 dth0 dth_prompt 12

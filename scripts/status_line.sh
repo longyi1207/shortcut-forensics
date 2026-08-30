@@ -3,7 +3,7 @@
 cd /mnt/scfx_ly_run || exit 1
 R=outputs/20260821-launch/rollouts.jsonl
 c() { grep "\"phase\": \"$1\", \"condition\": \"$2\"" "$R" | grep -c '"status": "ok"'; }
-workers=$(pgrep -af 'b5_prompt_deca[y]|prompt_channe[l]|dt_captur[e]|dt_mas[k]\.py|dt_head[s]\.py' | grep -vc 'bash -c')
+workers=$(pgrep -fc '^(/mnt/scfx_ly_run/.venv/bin/)?python3? .*scripts/(b5_prompt_decay|prompt_channel|dt_capture|dt_mask|dt_heads|dt_kvswap)\.py')
 tb=$(grep -l 'Traceback\|CUDA out of memory' logs/pc_*.log logs/dt_*.log logs/dtm_*.log logs/dth_*.log logs/dtmh_*.log 2>/dev/null | wc -l)
 gpus=$(nvidia-smi --query-gpu=memory.used --format=csv,noheader,nounits 2>/dev/null | awk '$1>1000{n++} END{print n+0}')
 chain=$(pgrep -f '^bash (/mnt/scfx_ly_run/)?scripts/(chain_|run_mask)' | wc -l)

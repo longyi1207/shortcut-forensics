@@ -15,7 +15,7 @@ while true; do
   sleep 180
 done
 echo "$(date -u) chain_stage3b: dt_heads at n=$n -> stopping dth workers" | tee -a "$LOG"
-for pid in $(pgrep -f 'dt_head[s]\.py'); do
+for pid in $(pgrep -f "^/mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/dt_heads.py"); do
   w=$(tr '\0' '\n' < /proc/$pid/environ 2>/dev/null | grep '^SCFX_WORKER_ID=' | cut -d= -f2)
   case "$w" in dth*) echo "stop $w pid=$pid" | tee -a "$LOG"; kill "$pid";; esac
 done
@@ -26,7 +26,7 @@ if [ ! -s "$RANK" ]; then
   exit 1
 fi
 echo "$(date -u) chain_stage3b: ranking done: $(tail -1 logs/dt_heads_analysis.log)" | tee -a "$LOG"
-if pgrep -f 'SCFX_DTM_HEADSE[T]' >/dev/null; then echo "$(date -u) chain_stage3b: head-ablation workers already running" | tee -a "$LOG"; exit 0; fi
+if pgrep -f "^/mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/dt_mask.py" >/dev/null; then echo "$(date -u) chain_stage3b: head-ablation workers already running" | tee -a "$LOG"; exit 0; fi
 launch() { (cd /mnt/scfx_ly_run && setsid nohup env CUDA_VISIBLE_DEVICES=$1 SCFX_WORKER_ID=$2 SCFX_DTM_CONDITION=dtm_prompt_mask_instr SCFX_DTM_HEADS=$RANK SCFX_DTM_HEADSET=$3 SCFX_DTM_N=$4 \
    /mnt/scfx_ly_run/.venv/bin/python /mnt/scfx_ly_run/scripts/dt_mask.py > /mnt/scfx_ly_run/logs/dtmh_$3_$2.log 2>&1 < /dev/null &); echo "$(date -u) chain_stage3b: launched mask_instr@$3 worker=$2 GPU=$1 N=$4" | tee -a "$LOG"; }
 launch 0 dtmh0 top8 20
