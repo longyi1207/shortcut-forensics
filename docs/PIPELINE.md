@@ -79,4 +79,12 @@ live in scripts/; every stage's result is appended to
   * Added a judge-independent behavioural measure (failed tool results per rollout, from the transcript). At n=19: mask_instr 22.8 (28% of calls) vs prompt 13.0, baseline 11.0, mask_notes 12.5, mask_both 10.2 (MW p=0.050 at R=4/3 -- the resolution floor). DO NOT read this as a masking effect: mask_both blocks a SUPERSET of what mask_instr blocks and has the LOWEST failure count, so the pattern is internally inconsistent and most likely n=4 noise. Re-check at full n; if it survives, it needs its own explanation.
 - 2026-08-31 02:11 Stage 2 COMPLETE (84 rollouts) -> chain_stage3 fired cleanly, Stage 3a running (6x dth_prompt, 2x dth_baseline) with its GPU balancer armed.
 - 2026-08-31 02:40 Stage-2 RESULT (n=85). Behaviour, pooled references (scripts/dt_mask_pooled.py): intact prompt 2/53=3.8%, no-instruction 8/59=13.6%; mask_instr 2/20=10% (p=0.30 vs prompt), mask_notes 3/20=15% (p=0.12), mask_both 5/20=25% (p=0.014 vs prompt, p=0.30 vs no-instruction). Monotone in what is cut; only the both-cut cell separates, and it does NOT survive Bonferroni over the 6 tests (0.086). Also note the prompt's own effect is only p=0.099 in this pooled set. KL probe: blocking the instruction moves the distribution by ~5e-4 but IS decision-locked (post-fail 2-4x control in every bucket >8k, clustered p<=0.001, R=20); blocking notes moves it 10-15x more and is NOT decision-locked. Hypothesis (not a result): the instruction propagates into the model's own written reasoning, so source and copies are partially redundant routes. Written to WRITEUP §4.12.
+- QUEUED (after Stage 4) -- Stage 2 size-matched control, `dtm_prompt_mask_ctrlspan`:
+  The Stage-2 headline (mask_both 25% vs intact 3.8%) has a competing plain explanation:
+  the cells are ordered by HOW MUCH CONTEXT was removed (instruction 70 tok < notes 9-15%
+  < both), so "amount removed" fits the data as well as "source + copies are redundant
+  routes". Control: block a size-matched span of ordinary tool output (mypy error text)
+  instead, same post-failure turns, n=20 (~2.5 h on 8 GPUs). If it also reaches ~25% the
+  two-route story fails; if it is inert the story holds. Same logic as the swapctrl cell
+  added to Stage 4 -- it was added there and missed here.
 - NOTE: workers with long contexts reach ~75 GB/GPU; side checks must pick a GPU with >=24 GB free (nvidia-smi poll) rather than a fixed GPU.
