@@ -168,7 +168,11 @@ while count() < N_TARGET:
         state["prompt_ids"] = input_ids
         state["prompt_text"] = prompt_text
         spans: dict[str, list[int]] = {}
-        task = token_span_for_substring(tokenizer, prompt_text, USER_PROMPT)
+        # Match on the STRIPPED task text: the chat template rstrips the user
+        # message, so the raw USER_PROMPT (which ends in whitespace) is not found
+        # when nothing follows it -- that silently emptied the control span in the
+        # baseline arm of the 2026-08-31 run while the prompt arm was fine.
+        task = token_span_for_substring(tokenizer, prompt_text, USER_PROMPT.strip())
         if CONDS[COND] is not None:
             spans["instr"] = token_span_for_substring(tokenizer, prompt_text, TEDIUM_STRONG)
             k = len(spans["instr"]) or INSTR_NTOK
