@@ -27,6 +27,12 @@ Env: SCFX_DTK_CONDITION, SCFX_DTK_N (default 20), SCFX_WORKER_ID (required).
 """
 from __future__ import annotations
 
+import os as _os
+
+# Must precede `import torch`: the OOMs that silently skipped the ablation reported
+# ~18 GiB reserved-but-unallocated, i.e. fragmentation from the chunked prefill.
+_os.environ.setdefault("PYTORCH_CUDA_ALLOC_CONF", "expandable_segments:True")
+
 import json
 import logging
 import os
@@ -64,6 +70,7 @@ NULL_SWAP = COND.endswith("gdnnull")
 if not os.environ.get("SCFX_WORKER_ID"):
     raise SystemExit("SCFX_WORKER_ID required")
 N_TARGET = int(os.environ.get("SCFX_DTK_N", "20"))
+SUB_CHUNK = int(os.environ.get("SCFX_GDN_SUBCHUNK", "16384"))
 MAX_TURNS = int(os.environ.get("SCFX_DTK_MAX_TURNS", cfg["env"]["max_turns"]))
 
 model_name = cfg["model"]["recon"]
@@ -142,10 +149,16 @@ class GdnSwapper:
                             cur[k].copy_(don[k]); self.n_swapped += 1
                 elif cur is not None and don is not None and hasattr(cur, "copy_"):
                     cur.copy_(don); self.n_swapped += 1
-        if end > B_END:
-            torch.cuda.empty_cache()
-            o = model(input_ids=input_ids[:, B_END:end], past_key_values=pkv, use_cache=True, logits_to_keep=1)
+        # Chunk C is the whole rest of the context (~100k tokens by turn 80). Feeding it
+        # in one piece needed a 17 GB activation allocation and OOMed on the late turns
+        # -- and because run_rollout catches custom_prefill errors, those turns silently
+        # ran WITHOUT the ablation. Sub-chunking caps the peak.
+        pos = B_END
+        while pos < end:
+            stop = min(pos + SUB_CHUNK, end)
+            o = model(input_ids=input_ids[:, pos:stop], past_key_values=pkv, use_cache=True, logits_to_keep=1)
             pkv = o.past_key_values; del o
+            pos = stop
         self.n_turns += 1
         return pkv
 
@@ -191,6 +204,7 @@ while count() < N_TARGET:
         "id": rid, "phase": PHASE, "condition": COND, "model": model_name, "backend": "hf",
         "prompt_on": True, "channel": "recurrent", "null_swap": NULL_SWAP,
         "gdn_layers": len(LIN), "swapped_tensors": sw.n_swapped, "prefill_turns": sw.n_turns,
+        "ablation_complete": bool(sw.n_turns >= (result.n_turns or 0)), "ablated_turn_frac": (sw.n_turns / result.n_turns) if result.n_turns else None,
         "span_len": len(instr_span), "filler": FILLER,
         "max_turns": MAX_TURNS, "enable_thinking": winning["enable_thinking"], "n_type_errors": cfg["env"]["n_type_errors_default"],
         "stop_reason": result.stop_reason, "n_turns": result.n_turns, "decision_turn": result.decision_turn,
@@ -199,6 +213,6 @@ while count() < N_TARGET:
         "status": "error" if result.error else "ok", "error": result.error, "wall_s": round(time.time() - t0, 1),
     }
     append_jsonl(run_dir / "rollouts.jsonl", record)
-    logger.info("%s: %s done status=%s shortcut=%s turns=%d swapped=%d over %d prefills wall=%.0fs", COND, rid,
-                record["status"], (judged or {}).get("is_shortcut"), result.n_turns, sw.n_swapped, sw.n_turns, record["wall_s"])
+    logger.info("%s: %s done status=%s shortcut=%s turns=%d swapped=%d over %d prefills ABLATION_COMPLETE=%s wall=%.0fs", COND, rid,
+                record["status"], (judged or {}).get("is_shortcut"), result.n_turns, sw.n_swapped, sw.n_turns, record["ablation_complete"], record["wall_s"])
 logger.info("%s: reached %d/%d", COND, count(), N_TARGET)
