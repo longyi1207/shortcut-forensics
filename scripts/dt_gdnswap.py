@@ -104,6 +104,7 @@ def capture_donor(prompt_ids: torch.Tensor):
     ids = torch.cat([prompt_ids[:, :A_END], DONOR_SPAN_IDS.to(prompt_ids.device)], dim=1)
     o = model(input_ids=ids, use_cache=True, logits_to_keep=1)
     pkv = o.past_key_values
+    del o
     out = {}
     for L in LIN:
         rs, cs = _states(pkv, L)
@@ -124,10 +125,13 @@ class GdnSwapper:
         if self.donor is None:
             self.donor = capture_donor(input_ids)
         end = input_ids.shape[1] - 1  # generate() consumes the final token as a decode step
+        # Free each chunk's output before the next: holding three of them alive across a
+        # ~100k-token prefill pushed the worker into allocator OOM retries (2026-09-01).
+        torch.cuda.empty_cache()
         o = model(input_ids=input_ids[:, :A_END], use_cache=True, logits_to_keep=1)
-        pkv = o.past_key_values
+        pkv = o.past_key_values; del o
         o = model(input_ids=input_ids[:, A_END:B_END], past_key_values=pkv, use_cache=True, logits_to_keep=1)
-        pkv = o.past_key_values
+        pkv = o.past_key_values; del o
         for L in LIN:  # overwrite the instruction's contribution to the recurrent channel
             rs, cs = _states(pkv, L)
             drs, dcs = self.donor[L]
@@ -139,8 +143,9 @@ class GdnSwapper:
                 elif cur is not None and don is not None and hasattr(cur, "copy_"):
                     cur.copy_(don); self.n_swapped += 1
         if end > B_END:
+            torch.cuda.empty_cache()
             o = model(input_ids=input_ids[:, B_END:end], past_key_values=pkv, use_cache=True, logits_to_keep=1)
-            pkv = o.past_key_values
+            pkv = o.past_key_values; del o
         self.n_turns += 1
         return pkv
 

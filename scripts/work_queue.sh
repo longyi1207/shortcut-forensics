@@ -38,7 +38,7 @@ envvars() {  # script -> "CONDVAR NVAR TAG"
 running_for() {  # count live workers for script $1 with condition $2
   local n=0 cv; cv=$(envvars "$1" | awk '{print $1}')
   for pid in $(pgrep -f "scripts/$1"); do
-    v=$(tr '\0' '\n' < /proc/$pid/environ 2>/dev/null | grep "^$cv=" | cut -d= -f2)
+    v=$(timeout 5 tr '\0' '\n' < /proc/$pid/environ 2>/dev/null | grep "^$cv=" | cut -d= -f2)
     [ "$v" = "$2" ] && n=$((n+1))
   done
   echo "$n"
@@ -52,7 +52,7 @@ gpus_in_use() {
   # which is how dp_patch was launched -- the daemon then judged its GPU free and
   # stacked a rollout worker on top of it. Twice.
   for pid in $(pgrep -f "scripts/[a-z_]*\.py"); do
-    tr '\0' '\n' < /proc/$pid/environ 2>/dev/null | grep '^CUDA_VISIBLE_DEVICES=' | cut -d= -f2
+    timeout 5 tr '\0' '\n' < /proc/$pid/environ 2>/dev/null | grep '^CUDA_VISIBLE_DEVICES=' | cut -d= -f2
   done
 }
 # single-instance guard: a second daemon double-books GPUs
@@ -69,6 +69,7 @@ launched=0
 MAX_TRIES=${MAX_TRIES:-3}
 declare -A TRIES BASELINE_ROWS DEAD
 while true; do
+  date -u +"%s %Y-%m-%dT%H:%M:%SZ pid=$$" > logs/queue_heartbeat 2>/dev/null
   [ -f "$Q" ] || { echo "$(date -u) work_queue: no $Q; exiting" | tee -a "$LOG"; exit 0; }
   best=""; best_gap=0; best_env=""
   while read -r script phase cond target extra _rest; do
