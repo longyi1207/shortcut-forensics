@@ -34,7 +34,14 @@ dt_kvswap.py dt_kvswap dtk_filler 26   # 24 already; the 2x2's text-only corner 
 #   ablate on baseline -> does removing the replanning axis reproduce the protection?
 #   add on prompt      -> the tug-of-war, this time on the right axis
 prompt_channel.py prompt_channel pc_base_ablate_effort26 20 SCFX_PC_PROMPT=0,SCFX_PC_VECS=effort_L26,SCFX_PC_MODE=ablate,SCFX_PC_LAYER=26
-prompt_channel.py prompt_channel pc_prompt_add_effort26 20 SCFX_PC_PROMPT=1,SCFX_PC_VECS=effort_L26,SCFX_PC_MODE=add,SCFX_PC_LAYER=26,SCFX_PC_ALPHA=1.0
+# RETIRED, UNDERDOSED: effort_L26 is unit-norm, so alpha=1 is 1.0% of the residual
+# norm at L26 (101.2), while the tedium tug-of-war pushed 26% (||tedium||=13.19 vs
+# ||h||=50.6 at L19). Comparing them was comparing a 26x weaker push, not a
+# mechanism. Re-run dose-matched at alpha = 0.2605 * 101.2 = 26.
+# prompt_channel.py prompt_channel pc_prompt_add_effort26 20 ...ALPHA=1.0
+prompt_channel.py prompt_channel pc_prompt_add_effort26_a26 20 SCFX_PC_PROMPT=1,SCFX_PC_VECS=effort_L26,SCFX_PC_MODE=add,SCFX_PC_LAYER=26,SCFX_PC_ALPHA=26.0
+# and the no-prompt reference at the same dose, so the tug-of-war has its own control
+prompt_channel.py prompt_channel pc_base_add_effort26_a26 20 SCFX_PC_PROMPT=0,SCFX_PC_VECS=effort_L26,SCFX_PC_MODE=add,SCFX_PC_LAYER=26,SCFX_PC_ALPHA=26.0
 
 # === Stage-2 size-matched control (closes the "amount removed" confound) ===
 # mask_both removes more context than either single cut, so the monotone ordering
