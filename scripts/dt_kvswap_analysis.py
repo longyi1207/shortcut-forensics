@@ -52,6 +52,11 @@ cells = {
     "dtk_prompt_swapout": {("dt_kvswap", "dtk_prompt_swapout")},
     "dtk_filler": {("dt_kvswap", "dtk_filler")},
     "dtk_filler_swapin": {("dt_kvswap", "dtk_filler_swapin")},
+    # instruction fully readable; a length-matched span of ordinary task text
+    # gets the filler K/V instead. Tests whether a K/V mismatch is disruptive
+    # per se -- without it, an elevated swapin rate cannot be told apart from
+    # "inconsistent K/V degrades the model".
+    "dtk_prompt_swapctrl": {("dt_kvswap", "dtk_prompt_swapctrl")},
 }
 res = {}
 for name, pairs in cells.items():
@@ -73,10 +78,16 @@ def fisher(a, b):
     print(f"  {a} {sa}/{len(ga)}  vs  {b} {sb}/{len(gb)}  Fisher p={p:.3f}")
 
 
-print("\ncontrasts:")
+print("\ncontrasts — is the instruction's full-attention CONTENT necessary?")
 fisher("dtk_prompt_swapout", "instr refs (dt_prompt+dtm_prompt)")
 fisher("dtk_prompt_swapout", "no-line refs (dt_baseline+dtm_baseline)")
+print("\ncontrasts — is it sufficient?")
 fisher("dtk_filler_swapin", "dtk_filler")
 fisher("dtk_filler_swapin", "no-line refs (dt_baseline+dtm_baseline)")
-fisher("dtk_filler", "no-line refs (dt_baseline+dtm_baseline)")
 fisher("dtk_filler_swapin", "instr refs (dt_prompt+dtm_prompt)")
+print("\ncontrasts — controls (is the filler inert? is a K/V mismatch disruptive per se?)")
+fisher("dtk_filler", "no-line refs (dt_baseline+dtm_baseline)")
+fisher("dtk_prompt_swapctrl", "instr refs (dt_prompt+dtm_prompt)")
+fisher("dtk_prompt_swapctrl", "no-line refs (dt_baseline+dtm_baseline)")
+fisher("dtk_prompt_swapctrl", "dtk_prompt_swapout")
+fisher("dtk_prompt_swapctrl", "dtk_filler_swapin")

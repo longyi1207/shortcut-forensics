@@ -51,7 +51,20 @@ CONDS = {  # name -> (text line key, donor key or None, which span gets swapped)
     # full-attention K/V replaced by the same neutral filler. If swapout kills the
     # prompt effect and swapctrl does not, the effect is specific to the instruction
     # tokens rather than to the act of neutralising some span.
+    # WARNING (2026-08-31): "ctrl" is NOT a neutral control. The task prompt is only
+    # 136 tokens and almost all of it is load-bearing; its last 70 tokens are exactly
+    # the pre-commit-hook requirement ("...write a git pre-commit hook ... blocks the
+    # commit if type-checking fails ... Ensure your commit passes the hook cleanly"),
+    # plus the tail of the commit message 'release: v1.0.0'. Swapping it DELETES THE
+    # TASK: the model adds py.typed, commits in ~10 turns with the message 'release:
+    # v1', and 21/21 commits succeed because no hook is ever written. Kept for the
+    # record -- it is a strong POSITIVE control that the K/V swap is potent -- but it
+    # cannot answer "is a K/V mismatch disruptive per se".
     "dtk_prompt_swapctrl": ("instr", "filler", "ctrl"),
+    # The corrected control: swap a 70-token span of generic system-prompt boilerplate
+    # (tool-use instructions), which is present in every condition and carries no
+    # task requirement. Same mismatch, genuinely non-load-bearing location.
+    "dtk_prompt_swapsys": ("instr", "filler", "sys"),
 }
 if COND not in CONDS:
     raise SystemExit(f"unknown SCFX_DTK_CONDITION={COND}")
@@ -84,14 +97,31 @@ DONOR_IDS = {k: tokenizer(render(v), add_special_tokens=False).input_ids for k, 
 DONOR_IDS = {k: [ids[p] for p in instr_span] for k, ids in DONOR_IDS.items()}
 # control span: the last len(instr_span) tokens of the task description itself,
 # i.e. ordinary task text sitting immediately before the instruction.
-_task_span = token_span_for_substring(tokenizer, render(LINES[TEXT_KEY]), USER_PROMPT)
+_rendered = render(LINES[TEXT_KEY])
+_task_span = token_span_for_substring(tokenizer, _rendered, USER_PROMPT.strip())
 CTRL_SPAN = _task_span[-len(instr_span):] if _task_span else []
-SPANS = {"instr": instr_span, "ctrl": CTRL_SPAN}
+# Corrected control: a positional window in the middle of the system/tools
+# boilerplate that precedes the task text. Matching SYSTEM_PROMPT as a substring
+# does NOT work -- the chat template interleaves the tool schema into the system
+# block, so the literal never appears (it returned an empty span, 2026-08-31).
+# A positional window cannot fail to resolve, and everything before the task span
+# is generic tool-use boilerplate carrying no task requirement.
+_k = len(instr_span)
+_mid = max(_task_span[0] // 2, _k) if _task_span else _k
+SYS_SPAN = list(range(_mid - _k // 2, _mid - _k // 2 + _k))
+if SYS_SPAN and _task_span and SYS_SPAN[-1] >= _task_span[0]:
+    SYS_SPAN = list(range(_task_span[0] - _k - 5, _task_span[0] - 5))  # keep clear of the task text
+SPANS = {"instr": instr_span, "ctrl": CTRL_SPAN, "sys": SYS_SPAN}
+if SPAN_KEY == "sys" and len(SYS_SPAN) != len(instr_span):
+    raise SystemExit(f"system-prompt control span {len(SYS_SPAN)} != instruction span {len(instr_span)}")
 if SPAN_KEY == "ctrl" and len(CTRL_SPAN) != len(instr_span):
     raise SystemExit(f"control span {len(CTRL_SPAN)} != instruction span {len(instr_span)}")
-logger.info("%s: text=%s donor=%s swap_span=%s (%d tokens [%d..%d]; instr span [%d..%d]) full_attn=%s n=%d | filler=%r",
+_ids_dbg = tokenizer(_rendered, add_special_tokens=False).input_ids
+logger.info("%s: text=%s donor=%s swap_span=%s (%d tokens [%d..%d]; instr span [%d..%d]; task span [%d..%d]) full_attn=%s n=%d",
             COND, TEXT_KEY, DONOR_KEY, SPAN_KEY, len(SPANS[SPAN_KEY]), SPANS[SPAN_KEY][0], SPANS[SPAN_KEY][-1],
-            instr_span[0], instr_span[-1], FULL_ATTN, N_TARGET, FILLER)
+            instr_span[0], instr_span[-1], _task_span[0] if _task_span else -1, _task_span[-1] if _task_span else -1,
+            FULL_ATTN, N_TARGET)
+logger.info("%s: TEXT BEING NEUTRALISED = %r", COND, tokenizer.decode([_ids_dbg[p] for p in SPANS[SPAN_KEY]]))
 
 
 def count() -> int:
