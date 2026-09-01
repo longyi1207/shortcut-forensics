@@ -33,3 +33,10 @@ prompt_channel.py prompt_channel pc_prompt_add_tedium19_a05 30
 #   add on prompt      -> the tug-of-war, this time on the right axis
 prompt_channel.py prompt_channel pc_base_ablate_effort26 20 SCFX_PC_PROMPT=0,SCFX_PC_VECS=effort_L26,SCFX_PC_MODE=ablate,SCFX_PC_LAYER=26
 prompt_channel.py prompt_channel pc_prompt_add_effort26 20 SCFX_PC_PROMPT=1,SCFX_PC_VECS=effort_L26,SCFX_PC_MODE=add,SCFX_PC_LAYER=26,SCFX_PC_ALPHA=1.0
+
+# === Stage-2 size-matched control (closes the "amount removed" confound) ===
+# mask_both removes more context than either single cut, so the monotone ordering
+# 3.8% -> 10% -> 15% -> 25% is equally explained by "how much context you deleted".
+# This blocks a span of ordinary TOOL OUTPUT matched in size to the notes span.
+# If it also reaches ~25%, the source+copies story fails.
+dt_mask.py dt_mask dtm_prompt_mask_toolout 20

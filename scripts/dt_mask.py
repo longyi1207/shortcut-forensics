@@ -58,7 +58,15 @@ CONDS = {  # name -> (prompt_on, block_instr, block_notes)
     "dtm_prompt_mask_notes": (True, False, True),
     "dtm_prompt_mask_both": (True, True, True),
     "dtm_baseline": (False, False, False),
+    # Size-matched control for the Stage-2 headline. mask_both (25%) removes more
+    # context than mask_instr (70 tok) or mask_notes (9-15%), so "amount of context
+    # removed" explains the monotone ordering just as well as "source + copies are
+    # redundant routes". This blocks an equally large span of ordinary TOOL OUTPUT
+    # (the mypy error listings) instead -- same amount gone, no instruction and no
+    # self-authored notes. If it also reaches ~25%, the two-route story fails.
+    "dtm_prompt_mask_toolout": (True, False, False),
 }
+BLOCK_TOOLOUT = os.environ.get("SCFX_DTM_CONDITION") == "dtm_prompt_mask_toolout"
 COND = os.environ["SCFX_DTM_CONDITION"]
 if COND not in CONDS:
     raise SystemExit(f"unknown SCFX_DTM_CONDITION={COND}")
@@ -166,7 +174,7 @@ while count() < N_TARGET:
     t0 = time.time()
     logger.info("%s: have %d/%d, starting %s", COND, count(), N_TARGET, rid)
     ctrl = InstructionMaskController(model, FULL_ATTN, heads_by_layer=HEADS_BY_LAYER, n_heads=N_HEADS)
-    state = {"instr_span": [], "notes_span": [], "masked_turns": [], "probes": [], "kl": [], "prompt_text": "", "prompt_ids": None, "assistant_texts": []}
+    state = {"instr_span": [], "notes_span": [], "masked_turns": [], "probes": [], "kl": [], "prompt_text": "", "prompt_ids": None, "assistant_texts": [], "tool_texts": []}
 
     def on_turn_prepared(turn, prompt_text, input_ids, prev_rc):
         state["prompt_text"] = prompt_text
@@ -178,6 +186,12 @@ while count() < N_TARGET:
         if BLOCK_NOTES:
             state["notes_span"] = token_spans_for_substrings(tokenizer, prompt_text, state["assistant_texts"])
             blocked.update(state["notes_span"])
+        if BLOCK_TOOLOUT:
+            # match the notes span in SIZE, but take the tokens from tool output
+            notes_n = len(token_spans_for_substrings(tokenizer, prompt_text, state["assistant_texts"]))
+            tool_span = token_spans_for_substrings(tokenizer, prompt_text, state["tool_texts"])
+            state["notes_span"] = tool_span[-notes_n:] if notes_n and tool_span else tool_span
+            blocked.update(state["notes_span"])
         ctrl.set_blocked_positions(blocked)
         active = bool(blocked) and (WHEN == "always" or (prev_rc is not None and prev_rc != 0))
         ctrl.set_active(active)
@@ -187,6 +201,14 @@ while count() < N_TARGET:
     def on_turn_end(turn, gen_ids, gen_text, tool_call, prev_rc):
         # keep the assistant text for the notes span of later turns
         state["assistant_texts"].append(gen_text.split("</think>")[-1].strip()[:2000])
+        # and the tool-result text, for the size-matched tool-output control. The
+        # tool result of THIS turn is not known here (the command runs after), so
+        # each turn records the previous turn's, recovered from the rendered prompt.
+        pt = state.get("prompt_text") or ""
+        for chunk in pt.split("Exit code:")[1:]:
+            body = chunk.split("Output:", 1)[-1][:2000].strip()
+            if body and body not in state["tool_texts"]:
+                state["tool_texts"].append(body)
         # KL probe: post-failure turns (decision events) + every 4th turn (control), block off vs on
         failed = prev_rc is not None and prev_rc != 0
         if ctrl.blocked and state["prompt_ids"] is not None and (failed or turn % KL_CONTROL_EVERY == 0):
