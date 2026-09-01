@@ -73,7 +73,12 @@ for L in LAYERS:
     v = (v / (v.norm() + 1e-8)).numpy().astype(np.float32)
     p = run / "vectors" / f"effort_L{L}"
     p.parent.mkdir(parents=True, exist_ok=True)
-    np.savez(p.with_suffix(".npz"), d=v, layer=L, suppressed=np.array(sup), enhanced=np.array(enh))
+    # src/directions.load_vector requires d/layer/val_acc/pair_ids/meta -- omitting
+    # them made every steering worker KeyError on launch (2026-09-01).
+    np.savez(p.with_suffix(".npz"), d=v, layer=L, val_acc=float("nan"), pair_ids=np.array([], dtype=object),
+             meta=json.dumps({"kind": "sae_feature_composite", "suppressed": sup, "enhanced": enh,
+                              "source": "Stage-1 decision-token SAE features (dt_analysis + dt_feature_context)"}),
+             suppressed=np.array(sup), enhanced=np.array(enh))
     # cosine with tedium, for the record
     try:
         ted = np.load(run / "vectors" / "tedium.npz")["d"].astype(np.float32)
