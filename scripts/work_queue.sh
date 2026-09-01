@@ -8,8 +8,11 @@
 # pipeline finished and there is more work on the list". This does.
 #
 # Reads jobs from queue.txt, one per line (blank lines and # comments ignored):
-#     <script.py> <phase> <condition> <target_n>
-# and keeps launching workers, newest-highest-gap first, whenever a GPU is free.
+#     <script.py> <phase> <condition> <target_n> [KEY=VAL,KEY=VAL,...]
+# The optional 5th field carries extra environment for cells that need more than
+# a condition name -- e.g. the steering cells need SCFX_PC_VECS / MODE / LAYER /
+# ALPHA / PROMPT. Without it the queue could only launch env-free conditions.
+# Workers are launched highest-gap-first whenever a GPU is free.
 # A job is done when its condition reaches target_n ok rows. Exits only when
 # every job is done AND queue.txt has not grown -- so appending a line to
 # queue.txt is enough to give the cluster more work, from any session.
@@ -48,13 +51,13 @@ echo "$(date -u) work_queue: started on $Q (poll ${POLL}s)" | tee -a "$LOG"
 launched=0
 while true; do
   [ -f "$Q" ] || { echo "$(date -u) work_queue: no $Q; exiting" | tee -a "$LOG"; exit 0; }
-  best=""; best_gap=0
-  while read -r script phase cond target _rest; do
+  best=""; best_gap=0; best_env=""
+  while read -r script phase cond target extra _rest; do
     case "$script" in ""|\#*) continue ;; esac
     [ -z "$target" ] && continue
     have=$(rows "$script" "$phase" "$cond"); live=$(running_for "$script" "$cond")
     gap=$(( target - have - live ))
-    if [ "$gap" -gt "$best_gap" ]; then best_gap=$gap; best="$script $phase $cond $target"; fi
+    if [ "$gap" -gt "$best_gap" ]; then best_gap=$gap; best="$script $phase $cond $target"; best_env="$extra"; fi
   done < "$Q"
   if [ -z "$best" ]; then
     echo "$(date -u) work_queue: all queued jobs satisfied; sleeping (append to $Q for more work)" | tee -a "$LOG"
@@ -67,9 +70,11 @@ while true; do
     skip=0; for u in "${used[@]}"; do [ "$u" = "$g" ] && skip=1; done
     [ "$skip" = 1 ] && continue
     launched=$((launched+1)); wid="${tag}q${launched}"
-    (cd /mnt/scfx_ly_run && setsid nohup env CUDA_VISIBLE_DEVICES=$g SCFX_WORKER_ID=$wid $cv=$cond $nv=$target \
+    extra_env=""
+    [ -n "$best_env" ] && extra_env=$(echo "$best_env" | tr ',' ' ')
+    (cd /mnt/scfx_ly_run && setsid nohup env CUDA_VISIBLE_DEVICES=$g SCFX_WORKER_ID=$wid $cv=$cond $nv=$target $extra_env \
        $PY /mnt/scfx_ly_run/scripts/$script > /mnt/scfx_ly_run/logs/${tag}_${cond}_${wid}.log 2>&1 < /dev/null &)
-    echo "$(date -u) work_queue: GPU $g free -> $cond (gap $best_gap) worker=$wid" | tee -a "$LOG"
+    echo "$(date -u) work_queue: GPU $g free -> $cond (gap $best_gap) worker=$wid ${best_env:+env=$best_env}" | tee -a "$LOG"
     break
   done
   sleep "$POLL"

@@ -23,3 +23,13 @@ prompt_channel.py prompt_channel pc_prompt_add_tedium19_a05 30
 # essentially NO 70-token span of this context is inert. Both failures serve
 # as positive controls that the K/V swap is potent, which is what makes
 # swapout's null meaningful; no further control cell is worth GPU time.
+
+# === Experiment 1: feature causality on the cost-of-effort / replanning axis ===
+# vectors/effort_L26 = SAE decoder columns of the Stage-1 decision-token features
+# the prompt SUPPRESSES (cost framing -> replan, requirement re-framing) minus the
+# ones it ENHANCES (engage with the error, list the next fix). cos with tedium = +0.02,
+# i.e. a different axis from the one that decoupled from prompting.
+#   ablate on baseline -> does removing the replanning axis reproduce the protection?
+#   add on prompt      -> the tug-of-war, this time on the right axis
+prompt_channel.py prompt_channel pc_base_ablate_effort26 20 SCFX_PC_PROMPT=0,SCFX_PC_VECS=effort_L26,SCFX_PC_MODE=ablate,SCFX_PC_LAYER=26
+prompt_channel.py prompt_channel pc_prompt_add_effort26 20 SCFX_PC_PROMPT=1,SCFX_PC_VECS=effort_L26,SCFX_PC_MODE=add,SCFX_PC_LAYER=26,SCFX_PC_ALPHA=1.0
