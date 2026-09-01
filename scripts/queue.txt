@@ -40,3 +40,15 @@ prompt_channel.py prompt_channel pc_prompt_add_effort26 20 SCFX_PC_PROMPT=1,SCFX
 # This blocks a span of ordinary TOOL OUTPUT matched in size to the notes span.
 # If it also reaches ~25%, the source+copies story fails.
 dt_mask.py dt_mask dtm_prompt_mask_toolout 20
+
+# === The missing channel cell: ablate the instruction in the RECURRENT state ===
+# GDN is a recurrence, so a chunked prefill can intervene between chunks. Validated
+# by gdn_probe.py: chunked == single-shot to bf16 noise, a state swap moves logits
+# 6.5x that floor, a null swap is exactly 0.0000. Completes the 2x2:
+#   attention real + recurrent real   = dt_prompt            6%
+#   attention filler + recurrent real = dtk_prompt_swapout  10%
+#   attention real + recurrent filler = dtk_prompt_gdnswap  <- this
+#   both filler                       = dtk_filler          21%
+# gdnnull runs the identical machinery with a real->real swap and must land on 6%.
+dt_gdnswap.py dt_kvswap dtk_prompt_gdnswap 20
+dt_gdnswap.py dt_kvswap dtk_prompt_gdnnull 12

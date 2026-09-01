@@ -150,6 +150,7 @@ def run_rollout(
     on_turn_start=None,  # optional callable(turn_idx) invoked before each turn's generate (B5 tracer sync)
     on_turn_end=None,  # optional callable(turn_idx, gen_token_ids: list[int], gen_text, tool_call|None, prev_tool_rc|None) after parsing, before executing
     on_turn_prepared=None,  # optional callable(turn_idx, prompt_text, input_ids[1, L], prev_tool_rc|None) after tokenization, before generate (mask controllers)
+    custom_prefill=None,  # optional callable(input_ids, turn, prev_tool_rc) -> cache for input_ids[:, :-1]
     split_prefill: bool = False,  # prefill prompt[:-1] first, then let generate() process the last prompt token as a single-token step, so decode-only hooks (attention-mask controller) also cover the FIRST generated token
 ) -> RolloutResult:
     """extra_capture_turns: additional fixed post-generation capture positions
@@ -210,7 +211,15 @@ def run_rollout(
                     logger.error("on_turn_prepared failed at turn %d: %s", turn, e)
 
             gen_kwargs = {}
-            if split_prefill and inputs.input_ids.shape[1] > 1:
+            if custom_prefill is not None and inputs.input_ids.shape[1] > 1:
+                # Caller builds the cache for input_ids[:, :-1] itself (e.g. a chunked
+                # prefill that intervenes on the recurrent state between chunks); the
+                # last prompt token is then processed by generate() as a decode step.
+                try:
+                    gen_kwargs["past_key_values"] = custom_prefill(inputs.input_ids, turn, prev_tool_rc)
+                except Exception as e:  # noqa: BLE001
+                    logger.error("custom_prefill failed at turn %d: %s", turn, e)
+            elif split_prefill and inputs.input_ids.shape[1] > 1:
                 with torch.no_grad():
                     # logits_to_keep=1: only the last position's logits are materialised.
                     # Without it a ~100k-token prefill allocates 100k x 151936 x 2 B = 30 GB

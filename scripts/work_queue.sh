@@ -31,6 +31,7 @@ envvars() {  # script -> "CONDVAR NVAR TAG"
     dt_heads.py)       echo "SCFX_DTH_CONDITION SCFX_DTH_N dth" ;;
     dt_mask.py)        echo "SCFX_DTM_CONDITION SCFX_DTM_N dtm" ;;
     dt_capture.py)     echo "SCFX_DT_CONDITION SCFX_DT_N dt" ;;
+    dt_gdnswap.py)     echo "SCFX_DTK_CONDITION SCFX_DTK_N dtk" ;;
     *) echo "" ;;
   esac
 }
