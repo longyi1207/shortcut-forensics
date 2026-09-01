@@ -66,6 +66,10 @@ REPLAN = " Given the time constraints, let me take a different approach."
 N_POINTS = int(os.environ.get("SCFX_DPC_POINTS", "10"))
 MAX_CTX = int(os.environ.get("SCFX_DPC_MAXCTX", "20000"))
 WHAT = os.environ.get("SCFX_DPC_WHAT", "all")
+# Screen decision points BEFORE spending 184x2 ablations on them: the attribution
+# ratio divides by the gap, so a point with a tiny gap yields nonsense (one point
+# with gap=-0.083 produced a +25.9 attribution) and costs ~12 min to produce.
+GAP_MIN = float(os.environ.get("SCFX_DPC_GAPMIN", "0.5"))
 
 model, tok = load_model(cfg["model"]["recon"], dtype=cfg["model"]["dtype"])
 model.eval()
@@ -192,7 +196,10 @@ for r in rows:
                     idsB = tok(render(messages, None), return_tensors="pt", add_special_tokens=False).input_ids.to(model.device)
                     sA, sB = score(idsA), score(idsB)
                     gap = sA - sB
-                    if abs(gap) > 1e-6 and ctrl:
+                    if abs(gap) < GAP_MIN or not ctrl:
+                        logger.info("%s turn %d ctx=%d gap=%.3f -- SKIPPED (|gap| < %.2f, ratio would be unstable)",
+                                    r["id"], turn, int(idsA.shape[1]), gap, GAP_MIN)
+                    if abs(gap) >= GAP_MIN and ctrl:
                         row = {"rollout": r["id"], "turn": turn, "ctx": int(idsA.shape[1]), "sA": sA, "sB": sB, "gap": gap, "c": {}}
                         for i, (kind, L, hd) in enumerate(COMPS):
                             s_i = ablated_score(idsA, kind, L, hd, span)
