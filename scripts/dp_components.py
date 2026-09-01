@@ -139,6 +139,9 @@ def components():
     if WHAT in ("all", "gdn"):
         for L in LIN:
             out.append(("gdn", L, None))
+    if WHAT in ("attnlayer",):
+        for L in FULL:
+            out.append(("attn", L, None))
     return out
 
 
@@ -148,6 +151,9 @@ def ablated_score(ids, kind, L, head, positions):
     if kind == "head":
         mod, hk = layer.self_attn.o_proj, make_hook("head", positions, head)
         h = mod.register_forward_pre_hook(hk, with_kwargs=True)
+    elif kind == "attn":
+        mod, hk = layer.self_attn, make_hook("attn", positions, None)
+        h = mod.register_forward_hook(hk)
     elif kind == "mlp":
         mod, hk = layer.mlp, make_hook("mlp", positions, None)
         h = mod.register_forward_hook(hk)
