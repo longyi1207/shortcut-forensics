@@ -1,0 +1,25 @@
+# shortcut_forensics work queue -- read continuously by scripts/work_queue.sh.
+# Format: <script.py> <phase> <condition> <target_n>
+# Appending a line here gives the cluster more work from any session; the queue
+# daemon never exits while this file exists, so the GPUs cannot fall idle again
+# just because a stage finished (they did, for ~14 h, on 2026-08-31).
+
+# --- power up the two cells that carry the Stage-4 conclusion (were n=22/20) ---
+dt_kvswap.py dt_kvswap dtk_prompt_swapout 40
+dt_kvswap.py dt_kvswap dtk_filler_swapin 40
+
+# --- text-only control, topped up for symmetry with the causal cells ---
+dt_kvswap.py dt_kvswap dtk_filler 30
+
+# --- dose-response, topped up (alpha=0.5 came out 10/21 vs 10/21, p=1.0) ---
+prompt_channel.py prompt_channel pc_add_tedium19_a05 30
+prompt_channel.py prompt_channel pc_prompt_add_tedium19_a05 30
+
+# REMOVED 2026-09-01: dtk_prompt_swapsys. It is not a valid control either --
+# swapping the tool-call boilerplate at positions 131-200 breaks tool-call
+# FORMATTING, so every rollout ends after ~3 turns (31 s, stop before any
+# commit). Together with swapctrl (which deleted the task requirement) this
+# says something real about the task rather than about my span picking:
+# essentially NO 70-token span of this context is inert. Both failures serve
+# as positive controls that the K/V swap is potent, which is what makes
+# swapout's null meaningful; no further control cell is worth GPU time.
