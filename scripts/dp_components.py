@@ -70,6 +70,10 @@ WHAT = os.environ.get("SCFX_DPC_WHAT", "all")
 # ratio divides by the gap, so a point with a tiny gap yields nonsense (one point
 # with gap=-0.083 produced a +25.9 attribution) and costs ~12 min to produce.
 GAP_MIN = float(os.environ.get("SCFX_DPC_GAPMIN", "0.5"))
+# Decision points from the SAME rollout share its whole history and are therefore
+# correlated; 12 points drawn from 2 rollouts has an effective n near 2, which would
+# make the reported standard errors far too small. Cap the points taken per rollout.
+PER_ROLLOUT = int(os.environ.get("SCFX_DPC_PER_ROLLOUT", "2"))
 
 model, tok = load_model(cfg["model"]["recon"], dtype=cfg["model"]["dtype"])
 model.eval()
@@ -183,10 +187,10 @@ for r in rows:
         break
     t = json.loads((run / r["transcript_path"]).read_text())
     messages = [{"role": "system", "content": SYSTEM_PROMPT}, {"role": "user", "content": ""}]
-    turn, prev_rc = 0, None
+    turn, prev_rc, taken = 0, None, 0
     for e in t[2:]:
         if e.get("role") == "assistant":
-            if prev_rc is not None and prev_rc != 0 and done < N_POINTS:
+            if prev_rc is not None and prev_rc != 0 and done < N_POINTS and taken < PER_ROLLOUT:
                 tA = render(messages, TEDIUM_STRONG)
                 idsA = tok(tA, return_tensors="pt", add_special_tokens=False).input_ids.to(model.device)
                 if idsA.shape[1] <= MAX_CTX:
@@ -210,7 +214,7 @@ for r in rows:
                             row["c"][key] = [(sA - s_i) / gap, (sA - s_c) / gap]
                             if i % 40 == 0:
                                 torch.cuda.empty_cache()
-                        results.append(row); done += 1
+                        results.append(row); done += 1; taken += 1
                         top = sorted(row["c"].items(), key=lambda kv: -(kv[1][0] - kv[1][1]))[:3]
                         logger.info("%s turn %d ctx=%d gap=%.3f | top(instr-ctrl): %s", r["id"], turn, row["ctx"], gap,
                                     ", ".join(f"{k}={v[0] - v[1]:+.2f}" for k, v in top))
