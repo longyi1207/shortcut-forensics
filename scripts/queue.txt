@@ -61,3 +61,19 @@ dt_mask.py dt_mask dtm_prompt_mask_toolout 20
 # gdnnull runs the identical machinery with a real->real swap and must land on 6%.
 dt_gdnswap.py dt_kvswap dtk_prompt_gdnswap 20
 dt_gdnswap.py dt_kvswap dtk_prompt_gdnnull 12
+
+# === the control the dose-matched tug-of-war needs ===
+# effort at alpha=26 took the prompt condition 4% -> 19% (p=0.05) while leaving the
+# baseline at 15%. That only means "the protection lives on THIS axis" if pushing a
+# RANDOM direction equally hard does not do the same. Same layer, same magnitude.
+prompt_channel.py prompt_channel pc_prompt_add_rand26 20 SCFX_PC_PROMPT=1,SCFX_PC_VECS=randdir_L26,SCFX_PC_MODE=add,SCFX_PC_LAYER=26,SCFX_PC_ALPHA=26.0
+
+# === sentence-level: which clause of the instruction does the work? ===
+# The instruction is 5 sentences / 70 tokens. Each cell keeps exactly ONE, so if the
+# protection survives on a single clause we learn how few tokens are actually needed.
+# References already exist: intact prompt 2/53 = 3.8%, no instruction 8/59 = 13.6%.
+prompt_channel.py prompt_channel pc_sent1 20 SCFX_PC_PROMPT=1,SCFX_PC_SENT=1
+prompt_channel.py prompt_channel pc_sent2 20 SCFX_PC_PROMPT=1,SCFX_PC_SENT=2
+prompt_channel.py prompt_channel pc_sent3 20 SCFX_PC_PROMPT=1,SCFX_PC_SENT=3
+prompt_channel.py prompt_channel pc_sent4 20 SCFX_PC_PROMPT=1,SCFX_PC_SENT=4
+prompt_channel.py prompt_channel pc_sent5 20 SCFX_PC_PROMPT=1,SCFX_PC_SENT=5
