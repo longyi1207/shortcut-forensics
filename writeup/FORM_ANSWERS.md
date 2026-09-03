@@ -119,3 +119,91 @@ components interact, so I wouldn't defend the exact number. I'd be most surprise
 sentence-level priming result. It rests on one readout, one instruction, n = 40 paired points, and it
 disagrees with the behavioural cell for a different sentence, so I'd want it replicated before anyone
 acted on it.
+
+---
+
+### Prior mechanistic interpretability experience
+
+No formal mech interp research and no publications in the field. I have been doing it
+self-directed since I left my startup in May 2026, working from reproductions toward my
+own questions.
+
+The clearest artifact is a reproduction of Anthropic's "Emotion Concepts and Their
+Function in a LLM" (April 2026) on Llama-3.2-1B, a model 100x smaller than the one in the
+paper. 30 emotions, mean residual-stream difference vectors denoised by projecting out the
+principal components of neutral text, then validated two ways. A logit lens through the
+unembedding gives clean top tokens (nostalgic reads out as nostalgia, reminis, memories).
+Steering at 2/3 depth moves the target emotion word by +1.2 to +3.2 log units, and 8 of 8
+emotions move in the right direction. Free generation barely shifts at all, so the readout
+reproduces and the behaviour does not. I led the writeup with that gap rather than with
+the number that worked. Code and figures: `code/emotion_vectors`.
+
+Two smaller ones, built to learn techniques rather than to publish. A logit lens and SAE
+feature probe of in-context learning on Pythia. And a pre-registered design testing whether
+cognitive theory of mind and affective empathy are dissociable directions, which also
+reproduces AE Studio's self-other-overlap axis in order to ask whether their deception fix
+costs the model its ToM accuracy. That one has its predictions written down and its first
+phases run; it is waiting on GPU quota.
+
+The submitted project is where I learned the causal side, mostly because I had no choice.
+Qwen3.5-9B is a hybrid of attention and GatedDeltaNet layers, so TransformerLens does not
+support it and every intervention is a forward hook I wrote myself: attention edge masking,
+K/V content swaps at prefill, recurrent state swaps through chunked prefill, per-component
+zero ablation, activation patching, and direction ablation with a random-direction control.
+
+What I have not done: trained an SAE, and no circuit finding on toy models beyond reading.
+
+### Three pieces of evidence, other than the project
+
+I shut down my own startup. IncidentFox was YC-backed, $500K raised, 600+ GitHub stars, and
+our own retrieval evals said the wedge was wrong. Killing a working codebase on evidence is
+the habit research needs.
+
+A SPAR model forensics take-home. Anthropic and UK AISI disagreed publicly about why Claude
+4.5 refuses safety-research tasks. One work ticket, one element varied at a time, 2,339 responses across eight Claude versions. The disputed number was two mechanisms added
+together, so neither side was right.
+
+My undergrad research was EEG and psychophysics, one paper cited 38 times. Dissociation
+designs are how I was trained to think, and ablation is the same move.
+
+### Why Neel's stream specifically
+
+Because the project I just ran is the sort of thing your stream argues for, and I would
+rather have you tell me which parts of it are wrong than keep guessing on my own.
+
+Pragmatic interpretability is already the frame I work in. I did not ask what the circuit
+is. I asked where a real agentic failure lives and whether a monitor would catch it, and the
+result I care about is a negative one about monitoring rather than a diagram. The same goes
+for how I treated probes: I took a promising technique into a realistic case to see if it
+held up, and it did not, at AUROC 0.39 to 0.67.
+
+Model forensics is what I have been doing without the label. The SPAR take-home above is a
+forensics question in exactly that shape: a model did something that looked sketchy, two
+credible organisations disagreed about whether it was misalignment or confusion, and the
+answer was neither. Task gaming is where I went looking for this application's behaviour.
+
+The honest reason, though, is that I need taste and not execution. Most of my results here
+are negative. The effort direction dies to a random-direction control, attention survives
+five separate attempts to implicate it, and the probes do not work. I believe those results
+because they survived their own controls, but I cannot yet tell which one is worth six
+months of someone's life. Lending scholars that judgement is the thing you say you do, and
+it is the thing I am short of. Past scholars apparently find you blunt. I ran a company for
+two years; blunt is the feedback I convert fastest.
+
+### Likelihood of joining the exploration phase (Sept 28 to Oct 30)
+
+Near certain. I left my startup in May 2026 to do AI safety research full time, I have no
+competing employment or study commitments, and nothing is scheduled against those dates.
+
+### Anything else about the project (optional)
+
+Two things a reader might want and the main writeup only implies.
+
+The negative results are the load-bearing ones. The finding I would defend hardest is that
+the prompt and the steering vector are separate mechanisms, because a tug-of-war between
+them shows no interaction at either dose (p = 1.0). Most of the rest of the document is me
+failing to find the carrier in the obvious places, then finding where it actually is.
+
+Roughly 75% of this model is GatedDeltaNet rather than attention, and the standard
+interpretability toolkit does not reach that part at all. That constraint shaped the whole
+project, and I think it generalises to any hybrid or recurrent architecture that ships next.
