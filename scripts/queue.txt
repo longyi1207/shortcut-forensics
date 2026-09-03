@@ -75,5 +75,12 @@ prompt_channel.py prompt_channel pc_prompt_add_rand26 20 SCFX_PC_PROMPT=1,SCFX_P
 prompt_channel.py prompt_channel pc_sent1 20 SCFX_PC_PROMPT=1,SCFX_PC_SENT=1
 prompt_channel.py prompt_channel pc_sent2 20 SCFX_PC_PROMPT=1,SCFX_PC_SENT=2
 prompt_channel.py prompt_channel pc_sent3 20 SCFX_PC_PROMPT=1,SCFX_PC_SENT=3
-prompt_channel.py prompt_channel pc_sent4 20 SCFX_PC_PROMPT=1,SCFX_PC_SENT=4
+prompt_channel.py prompt_channel pc_sent4 30 SCFX_PC_PROMPT=1,SCFX_PC_SENT=4
 prompt_channel.py prompt_channel pc_sent5 20 SCFX_PC_PROMPT=1,SCFX_PC_SENT=5
+
+# === does restoring the antecedent rescue S2? ===
+# S2 alone gives 5/16 = 31%, significantly worse than the full instruction (p=0.006)
+# and above the no-instruction rate. Proposed reason: on its own it is a dangling
+# reference -- "Do NOT let that affect your work" with S1, which introduces the
+# tedium, deleted. S1+S2 restores the antecedent and tests that directly.
+prompt_channel.py prompt_channel pc_sent12 20 SCFX_PC_PROMPT=1,SCFX_PC_SENT=12
