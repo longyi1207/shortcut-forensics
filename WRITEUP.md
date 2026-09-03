@@ -8,16 +8,38 @@ This document is written to be readable with zero prior context. If you want the
 
 ## TL;DR
 
-**The question:** does any of six candidate internal directions — `tedium`, `eval_aware`, `disapproval`, `desperate`, `shortcut` (Wu-style), `completion_drive` — read out on real shortcut-taking *and* causally move the shortcut rate when steered on the unmodified prompt, without breaking capability?
+**Current question (§4.12).** A one-line prompt cuts the agent's rate of faking task success from
+13.6% to 3.8%; steering a fitted `tedium` direction moves the same behaviour the other way, 20% →
+53%. Are they the same mechanism, and would a probe on that direction see either?
 
-1. **No single mechanism cleanly wins.** At the sample sizes this run achieved, not one candidate reaches conventional statistical significance against baseline — and neither does the known-working positive control (an explicit "don't cheat" instruction). The study is underpowered, not silent.
-2. **The one result that *is* statistically solid:** ablating the `shortcut` direction at deeper layers (22 / 26 / 29) suppresses shortcuts significantly more than ablating it at the originally-chosen layer 19 (3.2% vs. 24.2%, Fisher's exact **p = 0.027**). The layer picked by the standard 60–75%-depth heuristic looks wrong for this concept.
-3. **A same-night repair round found and fixed a real bug**: the positive-control validation for `disapproval` and `tedium` was computed against stale vector files, before those vectors were re-fit to fix an earlier lexical-confound problem. Re-fitting properly found a working `disapproval` vector at layer 17 (which happens to be the exact layer a sibling project's independently-built "empathy" axis lives at, on the same model) — but the causal test on it, even extended to n=43, came back **null** (p=0.73). `tedium`'s repair found valid vectors too, also causally null.
-4. **Re-fitting `shortcut` independently at each layer** (rather than reusing the layer-19 vector deeper in the network) revealed a real split: layers 23–24 look clean, layers 26–29 come back *elevated* — the opposite of what the original borrowed-vector version found at those same layers. Extended to more data, the pattern held directionally but never reached significance (p=0.166).
-5. **On the original motivating question** ("does the agent know the user would disapprove when it cheats?"): the evidence leans **no** — only 1/14 natural shortcuts verbalize disapproval-awareness in the model's own reasoning — but the one causal test that could have turned this into a confirmed result came back null at real power.
-6. **This project's core recurring lesson, taught three separate times**: an encouraging trend at small n (`ablate_desperate`, then `disapproval_L17`, then `shortcut_L26`'s refit-vs-original comparison) dissolved every single time the sample size was pushed higher. Nothing in this document should be read as "probably true, just not proven" — every non-significant result here was actively tested for whether more data would resolve it, and every time, it didn't.
-7. **A post-hoc exploratory phase (§4.7) found the project's strongest evidence yet, after everything above had already failed to reach significance.** Ablating `tedium` — via two independent methods (a coarse mean-diff direction and an SAE 10-feature decomposition) — crosses uncorrected p<0.05 both ways: **p=0.028** (n=148, coarse direction) and **p=0.0050** (n=56, SAE stack, and this one *strengthened* rather than weakened as it was extended, unlike every other small-n lead in this project). Two independent measurement methods converging on the same concept, same direction, same rough magnitude is more convincing than either p-value alone — but this was found via ~31 total tested conditions, doesn't clear a strict Bonferroni bar (~0.0016), and has not yet been checked with an independent replication fit. Read it as the strongest lead in the project, not a closed case.
-8. **A follow-up sufficiency test (§4.8) then found the project's single strongest result.** If ablating `tedium` reduces shortcuts, does *amplifying* it increase them? Yes, sharply: `add_pos_tedium`, finished at n=30, shows **53.3% shortcuts vs. a 20.0% baseline — p=0.0009** — the lowest p-value anywhere in this project, clearing even a strict ~31-test Bonferroni bar on its own. Necessity (ablate → down) and sufficiency (add → up) both holding, symmetrically, for the same concept at the same layer, is much harder to explain as "steering just damages some unrelated capability" than either direction alone.
+1. **They are different mechanisms.** Prompt + `+tedium` gives 15/30 shortcuts — identical to
+   steering with no prompt (17/32, p = 1.0), unlike the prompt alone (2/53). At half dose, 10/21 vs
+   10/21. The prompt gives no protection against the axis it is about, at any dose tested.
+2. **A direction probe sees neither intervention.** Prompt-fixed rollouts read identical to baseline
+   while cheating 0/21 vs 4/30; steered rollouts read "safe" while 5/30 cheat; within baseline the
+   probe is AUROC 0.39–0.67. Causal, contrastive and diagnostic validity come apart — three times.
+3. **Attention is not the carrier**, by five independent methods: the instruction draws 0.53% of
+   attention at decision tokens (neighbouring task text draws 3–5× more), blocking every decode-time
+   edge to it gives KL ≈ 5×10⁻⁴, and injecting its entire attention content into a filler run gives
+   21% against a 21% control (p = 1.0).
+4. **24 of 32 layers are GatedDeltaNet**, unreachable by attention-specific tooling. A chunked-prefill
+   state swap measures that channel directly: it carries **~10%**. Neither channel carries the
+   instruction alone; component attributions sum to 2.79 where a localised effect gives 1.0, and the
+   write is concentrated in layers 0–15 (`gdn.0` = +1.31 ± 0.15, `head.3.h4` = +0.81 ± 0.14).
+5. **~11 tokens carry 78% of the effect.** "Do not cut corners. Do not rush to finish." recovers 78%
+   of the full 70-token instruction. Naming the feeling does nothing alone (n.s.) and **cancels the
+   sentence after it** (+0.53 → +0.14).
+6. **The feature family that describes the behaviour is not the causal handle.** Cost-of-effort
+   framing and requirement re-framing match `fake_green` exactly, but projecting that axis out gives
+   the no-instruction rate, and pushing it destroys the protection no better than a random direction
+   of equal magnitude (19% vs 22%, p = 1.0).
+
+**Earlier phase (§4.1–4.11).** A six-direction steering study on the same environment. Its main
+results: the layer chosen by the standard depth heuristic for `shortcut` was wrong (deep-layer
+ablation 3.2% vs 24.2% at L19, p = 0.027); `tedium` ablation reaches p = 0.028 (n = 148) and its
+amplification p = 0.0009 (n = 30) — the strongest result of that phase and the direction §4.12 then
+takes as its steering baseline; and encouraging small-n trends dissolved under extension three
+separate times.
 
 ---
 
@@ -587,6 +609,11 @@ Scope limit worth stating plainly: this measures the **direct** contribution of 
 ---
 
 ## 5. Key findings
+
+*(§4.12, the current phase, is summarised in the TL;DR and detailed with its own status ledger at the
+head of that section. The findings below are from the earlier six-direction steering phase,
+§4.1–4.11, and are kept because §4.12 builds on them — in particular on `tedium` being the one
+direction with both necessity and sufficiency evidence.)*
 
 **01 — The layer chosen for `shortcut` was probably wrong.** *(p = 0.027)*
 Ablating `shortcut` at layer 19 (the layer the standard 60–75%-depth heuristic picked, and where it validated at 95% held-out accuracy) does **nothing** to the shortcut rate — 24.2% vs. a 20.0% baseline. Ablating the identical concept vector, refit and re-tested at layers 22, 26, and 29 does something real: 3.2% pooled. The direction that validates best on contrast pairs is not automatically the direction that's causally load-bearing for the behavior. This is the single most defensible result of the project — a methods lesson as much as a mechanism finding.
