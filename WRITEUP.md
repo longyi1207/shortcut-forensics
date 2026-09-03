@@ -570,6 +570,18 @@ Three things follow. **One short clause carries most of the instruction** — S4
 
 **This readout and the behaviour disagree on S2, and the disagreement is not resolved.** The decision-point measure puts S2 at +0.53 (helpful); the behavioural cell puts S2 alone at 6/17 = 35% shortcuts, worse than giving no instruction at all (13.6%) and significantly worse than the full instruction (p = 0.002, surviving Bonferroni over the 10 sentence tests). Both are recorded. Candidate explanations — the readout scores a single moment while behaviour integrates 80 turns; the readout uses two fixed continuations while real trajectories have many paths; the behavioural arm is only n = 17 — are untested. It is the same shape as the other dissociations in this section: a quantity that tracks the manipulation cleanly at one level need not track the outcome at another.
 
+**The empty cell of the 2×2, filled at decision points: the recurrent channel carries about 10%.** The behavioural version of this cell was void because chunked prefill moved the shortcut rate by itself (`gdnnull`, a real→real no-op, landed at 19% against the prompt's 6%). At a decision point the artefact cancels: both arms run the same chunked prefill of the same context, differing only in whether the GDN state after the instruction chunk is overwritten with filler's or the instruction's own. Over 30 paired points:
+
+| quantity | mean | sign | p |
+|---|---|---|---|
+| instruction's full effect (present vs. absent) | **+1.011** | 29/30 | < 0.0001 |
+| chunking artefact (null swap vs. plain prefill) | **−0.048** | 15/30 | **0.19, n.s.** |
+| recurrent contribution (null vs. filler swap) | **+0.103** | 20/30 | 0.052 |
+
+The artefact that voided the behavioural experiment is **not detectable here** (p = 0.19), which is what the design predicted and what makes the measurement usable. The instruction's contribution to the recurrent state accounts for **≈10% of its decision-time effect**, at marginal significance. So neither channel is the carrier on its own: injecting the full attention content buys nothing (Stage 4 swapin, p = 1.000 against its control), and removing the recurrent contribution costs about a tenth. That is the redundancy picture again, now with the 2×2 complete.
+
+Scope limit worth stating plainly: this measures the **direct** contribution of the instruction's own positions to the recurrent state. It does not capture influence that propagated into later positions during earlier turns — precisely the source-versus-copies distinction Stage 2 raised — so 10% is a floor on the recurrent channel's role, not its total.
+
 **Status: Stages 2, 3a and the Stage-4 causal cells complete; Stage 4b (text-only filler control) and the dose–response running, with the corrected system-prompt control and the size-matched Stage-2 control queued behind them. The in-phase GPU balancer repaired a chain-design flaw on its own: `chain_stage4` gated only on `dth_prompt` and stopped Stage 3a with `dth_baseline` at 4/6, and the balancer relaunched a baseline worker onto the freed GPU 18 minutes later.**
 
 ---
