@@ -554,6 +554,22 @@ The matching tug-of-war arm was botched and is being re-run: `effort_L26` is uni
 
 Four of the five sit at the no-instruction rate (13.6%). Only **S4 — about eleven tokens — holds the full instruction's 3.8%**. The sentences that fail are the ones that *name the feeling* (tedium, boredom) or exhort abstractly (treat with care); the one that works *names the behaviour to avoid*. If this survives to full n it sharpens the whole "how can 0.1% of the context matter" question into "how can 0.01% matter" — and it says something practical about how to write such an instruction. **Heavily underpowered as it stands**: S4 is 0/9, which is not yet distinguishable from the no-instruction arm either (p = 0.59), so this is a pattern, not a result.
 
+**Sentence level, measured at 40 decision points: one clause of ~11 tokens recovers 78% of the effect, and naming the feeling cancels the sentence after it.** The behavioural cells cannot settle this — with references at 4% and 14%, separating a cell near 7% needs n ≈ 150 rollouts — so the effect was measured with the paired decision-point readout instead (logP(engage) − logP(replan), each variant against no instruction at the same point, Wilcoxon over 40 points):
+
+| variant | effect vs. none | share of full | p |
+|---|---|---|---|
+| full instruction (5 sentences, 70 tokens) | **+0.901** | 100% | < 0.0001 |
+| S4 "Do not cut corners. Do not rush to finish." | **+0.704** | **78%** | < 0.0001 |
+| S5 "Boredom is not a reason to do less…" | +0.680 | 75% | < 0.0001 |
+| S2 "Do NOT let that affect your work." | +0.534 | 59% | < 0.0001 |
+| S3 "Treat every single step with full care…" | +0.245 | 27% | 0.0012 |
+| S1 "This task may feel repetitive or tedious." | +0.116 | 13% | 0.097 |
+| S1 + S2 | +0.141 | 16% | 0.087 |
+
+Three things follow. **One short clause carries most of the instruction** — S4 is about eleven tokens against the full line's seventy. **Naming the feeling does nothing on its own** (S1, n.s.). And the dangling-reference hypothesis I offered for S2's behavioural failure is **refuted, in the opposite direction**: restoring the antecedent does not rescue S2, it destroys it (+0.53 alone → +0.14 with S1 prepended). Mentioning the tedium appears to prime it, cancelling three quarters of the effect of the sentence that follows. That S1 sits inside the full instruction without hurting it suggests the later concrete sentences compensate.
+
+**This readout and the behaviour disagree on S2, and the disagreement is not resolved.** The decision-point measure puts S2 at +0.53 (helpful); the behavioural cell puts S2 alone at 6/17 = 35% shortcuts, worse than giving no instruction at all (13.6%) and significantly worse than the full instruction (p = 0.002, surviving Bonferroni over the 10 sentence tests). Both are recorded. Candidate explanations — the readout scores a single moment while behaviour integrates 80 turns; the readout uses two fixed continuations while real trajectories have many paths; the behavioural arm is only n = 17 — are untested. It is the same shape as the other dissociations in this section: a quantity that tracks the manipulation cleanly at one level need not track the outcome at another.
+
 **Status: Stages 2, 3a and the Stage-4 causal cells complete; Stage 4b (text-only filler control) and the dose–response running, with the corrected system-prompt control and the size-matched Stage-2 control queued behind them. The in-phase GPU balancer repaired a chain-design flaw on its own: `chain_stage4` gated only on `dth_prompt` and stopped Stage 3a with `dth_baseline` at 4/6, and the balancer relaunched a baseline worker onto the freed GPU 18 minutes later.**
 
 ---
