@@ -361,6 +361,27 @@ Both prompt-placement checks in §4.10 resolved as clean nulls, moving past the 
 
 ### 4.12 — Deep-diving prompt-vs-steering: a clean mechanistic re-check, and a staged research plan (user-directed)
 
+**Where this section stands.** It has accumulated a lot of results and several corrections layered on top of each other, so here is the ledger. Rates are shortcut rates; the two references throughout are the intact prompt (2/53 = 3.8%) and no instruction (8/59 = 13.6%).
+
+| Claim | Status | Evidence |
+|---|---|---|
+| The prompt does not work by lowering the `tedium` state | **Established** | Tug-of-war 15/30 = the steer alone (17/32, p = 1.0); at half dose 10/21 vs. 10/21, p = 1.0 |
+| The prompt is not an added residual direction | **Established** | Mean delta neither sufficient (1/12) nor necessary (0/12) |
+| The instruction is barely read at the decision | **Established** | 0.53% of attention across 128 heads; neighbouring task text read 3–5× more |
+| Attention is not the carrier | **Established, 5 independent methods** | Edge masking (KL ≈ 5e-4), head ranking, K/V swapin (21% vs. 21% control, p = 1.0), whole-layer ablation (+0.08), per-head totals (−1.08) |
+| Cutting instruction **and** notes together breaks protection | **Supported, not significant after correction** | 25% vs. 3.8%, p = 0.014 uncorrected, 0.086 Bonferroni; size-matched tool-output control stays at 10% |
+| The influence is written in the earliest layers | **Supported** | `gdn.0` +1.31 ± 0.15, `head.3.h4` +0.81 ± 0.14; everything in layers 0–15 |
+| The effect is redundantly distributed, with no bottleneck | **Supported** | Component attributions sum to ≫1; no single layer restores it (best L13 = 44%) |
+| The misbehaviour is `fake_green`, not bypass | **Established** | 0 occurrences of `--no-verify` / `commit -n` / hook removal in 115 rollouts |
+| Direction probes are blind to prompt-fixed behaviour | **Established** | Prompt arm reads identical to baseline while cheating 0/21 vs. 4/30 |
+| The cost-of-effort axis is the causal handle | **REFUTED** | Ablation gives 11% (no-instruction rate); pushing it is no worse than a random direction (19% vs. 22%, p = 1.0) |
+| The effort features make a better monitor | **REFUTED** | AUROC 0.31/0.44, below chance |
+| The recurrent channel is the carrier | **UNRESOLVED — method confounded** | `gdnswap` 15% but its own null control `gdnnull` is 19%; chunked prefill moves the rate by itself |
+| One clause carries the whole instruction | **Open, promising** | Only S4 "Do not cut corners…" holds 3.8% (0/9); the other four sit at 13.6%. Underpowered |
+
+Three methodological errors were caught before they became results: a tug-of-war comparing a 26%-magnitude push against a 1% one, an ablation silently skipped on late turns while the rollout still recorded success, and correlated decision points producing understated error bars.
+
+
 After §4.10 resolved (both prompt placements null behaviorally, activation analysis retracted due to the ID-collision bug), the user asked directly: why might prompting fail to move a concept we've shown is causally real via steering, and did we actually check whether either prompt placement moved the `tedium` activation at all? The honest answer at the time was no — that data was corrupted, not analyzed. The user asked to treat "what's the relationship between prompting and steering, and how effective is prompting" as its own line of investigation going forward (this is the same question behind the previously-scoped B5 "Prompt Decay" idea, `app/prompt_decay/CLAUDE_CODE_PROMPT.md`).
 
 **Hypotheses discussed for why a plain instruction might not move an internal state a steering vector clearly can:**
