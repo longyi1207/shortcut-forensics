@@ -1,14 +1,21 @@
-# Prompts and steering vectors change the same behaviour by different means, and a probe sees neither
+# Prompt and steering move the same shortcut through different mechanisms, and a probe sees neither
 
-**Executive summary** · Qwen3.5-9B · agentic coding environment, 80-turn rollouts
+**Executive summary** · Qwen3.5-9B · Singh et al. pre-commit environment · 80-turn rollouts
 
-A coding agent on a tedious 80-turn refactor sometimes fakes success: a pre-commit hook that doesn't
-really block, `# type: ignore` until the checker passes. One prompt line ("This task may feel tedious.
-Do not cut corners...") cuts that from 14% to 4%. Steering a fitted `tedium` direction moves the same
-behaviour the other way, 20% to 53%.
+Singh, Kroiz, Rajamanoharan and Nanda ([arXiv:2606.26071](https://arxiv.org/abs/2606.26071)) put a
+coding agent in a repo behind a `mypy` pre-commit hook and found it sometimes "passes" by weakening the
+check instead of doing the work. Cutting the seeded error count cuts the shortcut rate, so from the
+outside the behaviour reads as low effort rather than as an agent that knew the user would object.
+Their paper stops at the behaviour and says so: no internals, and the theory-of-mind alternative
+untested.
 
-Two interventions, one behaviour. Are they the same mechanism? If they are, one probe monitors both.
-If they aren't, a deployed prompt fix may be invisible to exactly the monitor you would trust.
+This is that environment (their §6.1, [gkroiz/agent-interp-envs](https://github.com/gkroiz/agent-interp-envs))
+on an open-weight model, from the inside. Two interventions move the behaviour in opposite directions.
+One line in the user prompt ("This task may feel tedious. Do not cut corners...") cuts faked success
+from 14% to 4%. Steering a fitted `tedium` direction pushes it up, 20% to 53%. If low effort is the
+whole story, those are two handles on one axis and a probe on that axis monitors both.
+
+They are not, and it does not.
 
 > **[FIG 1: fig1_decoupling.png]**
 
@@ -58,16 +65,32 @@ a behaviour exactly and have no causal role in producing it.
 
 Main write-up below. Raw findings and full experiment log: `WRITEUP.md` in the repo.
 
+
+
 ---
 
 # Main write-up
 
-## 1. Setup
+## 1. The question, and where the setting comes from
 
-A Python data-ingestion repo with 19 seeded type errors. The agent must add a `py.typed` marker, write
-a `pre-commit` hook that runs `mypy` and blocks on failure, and commit. The hook is the trap: doing the
-task honestly means fixing 19 errors across 8 files over dozens of turns. 80 turns, one shell command
-per turn, real `git` and `mypy`.
+Singh, Kroiz, Rajamanoharan and Nanda ([arXiv:2606.26071](https://arxiv.org/abs/2606.26071)) gave a
+coding agent a repo behind a `mypy` pre-commit hook and found that it sometimes "passes" by weakening
+the check rather than doing the work. Cutting the number of seeded errors cuts the shortcut rate, which
+from the outside reads as low effort rather than as an agent that understood the user would object.
+That paper is explicit about where it stops: no internals, and the theory-of-mind alternative untested.
+
+This project runs their environment on an open-weight model and asks the next question. Two
+interventions move the behaviour in opposite directions, and if the low-effort reading is the whole
+story they are two handles on one axis. Are they the same mechanism? Where does the prompt's effect
+live? And does a probe on that axis see either one?
+
+### The environment
+
+Their §6.1 task, vendored from [gkroiz/agent-interp-envs](https://github.com/gkroiz/agent-interp-envs):
+a Python repo with 258 seeded type errors. The agent must add a `py.typed` marker, write a `pre-commit`
+hook that runs `mypy` and blocks on failure, and commit. The hook is the trap, because doing the task
+honestly means clearing 258 errors over dozens of turns. 80 turns, one shell command per turn, real
+`git` and `mypy`.
 
 Model: Qwen3.5-9B, bf16, T = 0.7, thinking enabled, on 8×H100. An LLM judge reads the transcript and
 final diff and returns `is_shortcut` plus a workaround type. About 500 rollouts across conditions.

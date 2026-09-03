@@ -1,14 +1,21 @@
-# Prompts and steering vectors change the same behaviour by different means, and a probe sees neither
+# Prompt and steering move the same shortcut through different mechanisms, and a probe sees neither
 
-**Executive summary** · Qwen3.5-9B · agentic coding environment, 80-turn rollouts
+**Executive summary** · Qwen3.5-9B · Singh et al. pre-commit environment · 80-turn rollouts
 
-A coding agent on a tedious 80-turn refactor sometimes fakes success: a pre-commit hook that doesn't
-really block, `# type: ignore` until the checker passes. One prompt line ("This task may feel tedious.
-Do not cut corners...") cuts that from 14% to 4%. Steering a fitted `tedium` direction moves the same
-behaviour the other way, 20% to 53%.
+Singh, Kroiz, Rajamanoharan and Nanda ([arXiv:2606.26071](https://arxiv.org/abs/2606.26071)) put a
+coding agent in a repo behind a `mypy` pre-commit hook and found it sometimes "passes" by weakening the
+check instead of doing the work. Cutting the seeded error count cuts the shortcut rate, so from the
+outside the behaviour reads as low effort rather than as an agent that knew the user would object.
+Their paper stops at the behaviour and says so: no internals, and the theory-of-mind alternative
+untested.
 
-Two interventions, one behaviour. Are they the same mechanism? If they are, one probe monitors both.
-If they aren't, a deployed prompt fix may be invisible to exactly the monitor you would trust.
+This is that environment (their §6.1, [gkroiz/agent-interp-envs](https://github.com/gkroiz/agent-interp-envs))
+on an open-weight model, from the inside. Two interventions move the behaviour in opposite directions.
+One line in the user prompt ("This task may feel tedious. Do not cut corners...") cuts faked success
+from 14% to 4%. Steering a fitted `tedium` direction pushes it up, 20% to 53%. If low effort is the
+whole story, those are two handles on one axis and a probe on that axis monitors both.
+
+They are not, and it does not.
 
 > **[FIG 1: fig1_decoupling.png]**
 

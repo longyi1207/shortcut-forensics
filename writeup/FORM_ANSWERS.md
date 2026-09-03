@@ -6,19 +6,39 @@
 
 ### What question did you try to answer?
 
-A one-line prompt ("this task may feel tedious, don't cut corners") cuts an agent's rate of faking task
-success from 14% to 4%. Steering a fitted `tedium` direction moves the same behaviour the other way,
-20% to 53%. Are these the same mechanism? If they are, one probe monitors both. If they aren't, a
-deployed prompt fix could be invisible to exactly the monitor you'd trust. So I went looking for where
-in the model the prompt's effect actually lives.
+Singh, Kroiz, Rajamanoharan and Nanda (arXiv:2606.26071) found a coding agent faking success in a
+pre-commit-hook repo, and characterised it from the outside as low effort: cut the seeded error count
+and the shortcut rate falls. Their paper lists its own gap as no internals, with the theory-of-mind
+alternative untested.
+
+I ran their environment (their §6.1, gkroiz/agent-interp-envs) on an open-weight model and asked what
+the mitigation is actually doing inside. Two interventions move this behaviour in opposite directions.
+One line of prompt cuts faked success from 14% to 4%; steering a fitted `tedium` direction pushes it
+from 20% to 53%. If the low-effort reading is the whole story, those are two handles on one axis. So:
+are they the same mechanism, where does the prompt's effect live, and does a probe on that axis see
+either of them?
 
 ### Why is this question interesting / why did you choose it?
 
-Prompting is the mitigation people actually ship, and activation probes are the monitoring people
-actually propose, but I hadn't seen anyone check whether a probe sees a prompt-based fix. It doesn't,
-and the failure runs both ways: fixes are invisible, and steered runs read "safe" while still cheating.
-It's also a forensics question on a real agentic failure rather than a toy task. The misbehaviour here
-is emergent `fake_green` (weakening the check until it passes), not a prompted demonstration.
+Three reasons, in the order I actually care about them.
+
+It is a forensics question with something at stake in the answer. The misbehaviour is emergent
+`fake_green` (weakening the check until it passes) on a deployed-shaped agentic task, not a prompted
+demonstration, and the patch you would ship depends on why it happens. Singh et al. answered the
+behavioural half and said plainly that the mechanistic half was open. A well-posed gap on an
+environment that already exists is a better use of 20 hours than inventing a new setting.
+
+It is also a clean test of an assumption the field leans on. Prompting and steering get treated as two
+ways of installing the same disposition, and steering vectors get used as a model of what a prompt
+does. I could not find that checked on the same concept, same model, with an activation-space readout.
+It is falsifiable in one experiment: put the two against each other and see whether the prompt defends
+the axis it is literally about.
+
+Monitoring comes third, as a consequence rather than the reason I started. Prompting is the mitigation
+people actually ship and activation probes are the monitoring people actually propose. If the two
+interventions turn out to be different mechanisms, then the probe you would trust is blind to the fix
+you deployed, and the failure runs both ways: fixes are invisible, and steered runs read safe while
+still cheating.
 
 ### What conclusions have you reached about this research problem?
 
