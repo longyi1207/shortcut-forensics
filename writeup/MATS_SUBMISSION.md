@@ -54,7 +54,8 @@ pure transformer, which is the main reason to want it replicated on one. *(Fig 4
 GatedDeltaNet, with no attention weights and no per-token K/V, so attention-specific methods cover 25%
 of the stack. That is true of this whole model generation (Qwen3-Next, Kimi Linear, Nemotron 3, Ling).
 Exploiting the recurrence, I chunk the prefill and swap the GDN state between chunks to measure that
-channel directly. It carries about **10%** of the effect. Neither channel carries the instruction
+channel directly. It carries about **10%** of the effect, at the edge of detection (p = 0.052,
+bootstrap 1% to 18%). Neither channel carries the instruction
 alone, and no single layer restores it (best: 44%). *(Fig 3, 4)*
 
 **5.** About 11 tokens carry 78% of the effect, and naming the feeling backfires. Keeping only "Do not
@@ -255,8 +256,11 @@ contribution to the recurrent channel is removed. The chunked prefill reproduces
 noise, a real swap moves logits 6.5 times that floor, and a null (real to real) swap is exactly 0.0000.
 
 Measured at decision points against the null swap, so that any effect of chunking is common to both
-arms, the recurrent channel carries +0.103 of the instruction's +1.011, about **10%** (Fig 4, right).
-The chunking term itself is undetectable at this readout (−0.048, p = 0.19).
+arms, the recurrent channel carries +0.103 of the instruction's +1.011, about **10%** (Fig 4, right). This
+one sits at the edge of detection: Wilcoxon p = 0.052 across 30 decision points, and a
+rollout-clustered bootstrap puts the share anywhere between 1% and 18%. The chunking term itself is
+undetectable at this readout (0.048, p = 0.19), which is what the null swap was for. Read the 10% as an
+order of magnitude rather than a measurement.
 
 Neither channel carries the instruction on its own.
 
@@ -286,8 +290,10 @@ layers 0 to 15. By type, 24 GDN blocks total +1.29, 32 MLPs +0.35, and all 128 a
 −1.08: individual heads rank high but most are slightly negative and cancel. At matched granularity,
 ablating whole attention layers sums to +0.08.
 
-Attributions sum to +2.79 where a localised effect would give 1.0, and no single layer restores the
-effect when patched (best: L13, 44%). The influence is redundant and overlapping, with no bottleneck.
+The attributions do not partition the effect. `gdn.0` alone scores +1.31 where the whole instruction
+scores 1.0, and the top five components sum to +3.62, so components interact rather than divide a fixed
+budget between them. No single layer restores the effect when patched either (best: L13, 44%). The
+influence is redundant and overlapping, with no bottleneck.
 
 ## 7. Which words do the work
 

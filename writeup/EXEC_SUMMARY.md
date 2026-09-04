@@ -54,7 +54,8 @@ pure transformer, which is the main reason to want it replicated on one. *(Fig 4
 GatedDeltaNet, with no attention weights and no per-token K/V, so attention-specific methods cover 25%
 of the stack. That is true of this whole model generation (Qwen3-Next, Kimi Linear, Nemotron 3, Ling).
 Exploiting the recurrence, I chunk the prefill and swap the GDN state between chunks to measure that
-channel directly. It carries about **10%** of the effect. Neither channel carries the instruction
+channel directly. It carries about **10%** of the effect, at the edge of detection (p = 0.052,
+bootstrap 1% to 18%). Neither channel carries the instruction
 alone, and no single layer restores it (best: 44%). *(Fig 3, 4)*
 
 **5.** About 11 tokens carry 78% of the effect, and naming the feeling backfires. Keeping only "Do not
