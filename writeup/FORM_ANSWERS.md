@@ -116,9 +116,14 @@ positions, not influence already propagated into later positions.
 
 ### LLM use (which tools, what you checked, surprise-if-wrong per part)
 
-Claude Code as an agent throughout, writing experiment runners, analysis scripts and infrastructure and
-driving the cluster. I directed the research: the question, which experiment answers it, which controls
-are needed, and the interpretation.
+Two different LLMs, doing two different jobs. Claude, through Claude Code, as an agent writing
+experiment runners, analysis scripts and infrastructure, driving the cluster, and drafting the
+write-up. An Azure OpenAI model at temperature 0 as the judge that produces every `is_shortcut` label.
+The judge is the load-bearing one, because it is a measurement instrument rather than an assistant and
+every behavioural number in this project depends on it.
+
+I directed the research: the question, the environment, which experiment answers it, which controls are
+needed, and the interpretation. `SPEC.md` pre-registers RQ1/RQ3/RQ4 and was written before any data.
 
 Every intervention has an explicit mechanism check that I read and re-ran rather than trusting a
 passing test. Attention masking verified as exactly 0.0000 span mass at all 8 full-attention layers
@@ -132,13 +137,29 @@ rollout still recorded success. Checking vector norms before believing a compari
 tug-of-war pitting a 26%-of-residual push against a 1% one. And capping decision points per rollout
 fixed error bars computed as if correlated points were independent.
 
+On the judge specifically, here is what I checked and what I did not. I cross-checked its labels
+against a judge-independent command scan, which is how I know the two rollouts it calls `disable_hook`
+are not hook removals: `--no-verify`, `git commit -n`, `chmod -x` and `rm` on the hook occur zero times
+in 115 rollouts, so those two must be hooks written so they do not block. That reconciles, and it is
+the basis for saying the cheat lives in file content. What I did not do is the human spot-check my own
+spec calls for (`n_human_spotcheck: 30`). No human rater has independently verified a sample of the
+judge's labels in this run, so every behavioural rate here inherits whatever bias the judge has. I
+would not call the behavioural numbers fully validated until that is done.
+
+Checking the drafted write-up against the run artifacts is also how I found two errors in my own draft:
+a seeded type-error count that was simply wrong (19, against `target_errors: 258` in the config), and a
+claim that every judged shortcut was `fake_green`, which my own workaround-type table contradicts. Both
+are corrected above. I mention them because they are the failure mode this question is asking about,
+and they were caught by reading the numbers rather than by rereading the prose.
+
 On surprise-if-wrong: I'd be least surprised to be right about the decoupling and about attention not
 being the carrier, since five independent methods agree and each has its own control. I'd be more
 surprised about the `gdn.0` attribution, where one component exceeding the whole effect means
 components interact, so I wouldn't defend the exact number. I'd be most surprised about the
 sentence-level priming result. It rests on one readout, one instruction, n = 40 paired points, and it
 disagrees with the behavioural cell for a different sentence, so I'd want it replicated before anyone
-acted on it.
+acted on it. Cutting across all of it, the judge is the single dependency I would most want a second
+pair of eyes on.
 
 ---
 
