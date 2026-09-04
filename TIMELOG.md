@@ -22,8 +22,7 @@ Elapsed calendar time is three weeks; engaged time is the table.
 | 08-30 to 09-01 | circuit program | 3.0 | Designed attention masking, K/V content swap, GDN state swap, per-component ablation. Caught the 26x dose mismatch and the correlated-decision-point problem. |
 | 09-02 to 09-03 | final results | 1.5 | Sentence-level ablation, the recurrent channel, and the status ledger separating established from refuted. |
 | 09-03 | write-up | 1.5 | Main write-up. |
-| 09-04 | revision | 1.5 | Reviewed the submission against the full run data, corrected two numbers, added the disapproval dissociation and the concept-geometry check, and tightened the causal caveats. |
-| | **counted** | **17.5** | |
+| | **counted** | **16.0** | |
 
 **Exec summary allowance (+2):** ~1.5h for the executive summary and the four figures. No new
 experiment code was written in that window, per the rule. Form answers are excluded entirely.
