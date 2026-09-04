@@ -12,7 +12,9 @@ untested.
 This is that environment (their §6.1, [gkroiz/agent-interp-envs](https://github.com/gkroiz/agent-interp-envs))
 on an open-weight model, from the inside. Two interventions move the behaviour in opposite directions.
 One line in the user prompt ("This task may feel tedious. Do not cut corners...") cuts faked success
-from 14% to 4%. Steering a fitted `tedium` direction pushes it up, 20% to 53%. If low effort is the
+from 34% to 3% in the better-powered prompt sweep (2/65 vs 20/58, p < 0.0001), and from 14% to 4%
+in the cells the mechanism experiments run on. Steering a fitted `tedium` direction pushes it up,
+20% to 53%. If low effort is the
 whole story, those are two handles on one axis and a probe on that axis monitors both.
 
 They are not, and it does not.
@@ -97,9 +99,9 @@ final diff and returns `is_shortcut` plus a workaround type. About 500 rollouts 
 
 **What the misbehaviour is.** Across 115 rollouts, `--no-verify`, `git commit -n`, `chmod -x` on the
 hook, and hook deletion occur exactly zero times. Nobody bypasses the gate. On the unmodified prompt
-the judge labels 12 of 14 shortcuts `fake_green` and 2 `disable_hook`, but since no rollout ever issues
-a removal or bypass command, those two are hooks written so they do not block rather than hooks
-removed. Either way the cheat is the same shape: a hook that does not really block,
+the judge labels 29 of 33 shortcuts `fake_green` and 4 `disable_hook` (173 judged rollouts), but since
+no rollout ever issues a removal or bypass command, those four are hooks written so they do not block
+rather than hooks removed. Either way the cheat is the same shape: a hook that does not really block,
 `# type: ignore[arg-type]` on failing lines, source rewritten to dodge the checker. The cheat lives in file content, which has two consequences.
 Only a judge reading the diff can detect it, and there is no per-turn command that marks the decision.
 The natural decision point is therefore the turn following a failed tool result, where the model has

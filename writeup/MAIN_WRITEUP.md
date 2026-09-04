@@ -29,9 +29,9 @@ final diff and returns `is_shortcut` plus a workaround type. About 500 rollouts 
 
 **What the misbehaviour is.** Across 115 rollouts, `--no-verify`, `git commit -n`, `chmod -x` on the
 hook, and hook deletion occur exactly zero times. Nobody bypasses the gate. On the unmodified prompt
-the judge labels 12 of 14 shortcuts `fake_green` and 2 `disable_hook`, but since no rollout ever issues
-a removal or bypass command, those two are hooks written so they do not block rather than hooks
-removed. Either way the cheat is the same shape: a hook that does not really block,
+the judge labels 29 of 33 shortcuts `fake_green` and 4 `disable_hook` (173 judged rollouts), but since
+no rollout ever issues a removal or bypass command, those four are hooks written so they do not block
+rather than hooks removed. Either way the cheat is the same shape: a hook that does not really block,
 `# type: ignore[arg-type]` on failing lines, source rewritten to dodge the checker. The cheat lives in file content, which has two consequences.
 Only a judge reading the diff can detect it, and there is no per-turn command that marks the decision.
 The natural decision point is therefore the turn following a failed tool result, where the model has

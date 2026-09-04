@@ -12,7 +12,9 @@ untested.
 This is that environment (their §6.1, [gkroiz/agent-interp-envs](https://github.com/gkroiz/agent-interp-envs))
 on an open-weight model, from the inside. Two interventions move the behaviour in opposite directions.
 One line in the user prompt ("This task may feel tedious. Do not cut corners...") cuts faked success
-from 14% to 4%. Steering a fitted `tedium` direction pushes it up, 20% to 53%. If low effort is the
+from 34% to 3% in the better-powered prompt sweep (2/65 vs 20/58, p < 0.0001), and from 14% to 4%
+in the cells the mechanism experiments run on. Steering a fitted `tedium` direction pushes it up,
+20% to 53%. If low effort is the
 whole story, those are two handles on one axis and a probe on that axis monitors both.
 
 They are not, and it does not.
