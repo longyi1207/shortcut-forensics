@@ -12,10 +12,14 @@ untested.
 This is that environment (their §6.1, [gkroiz/agent-interp-envs](https://github.com/gkroiz/agent-interp-envs))
 on an open-weight model, from the inside. Two interventions move the behaviour in opposite directions.
 One line in the user prompt ("This task may feel tedious. Do not cut corners...") cuts faked success
-from 34% to 3% in the better-powered prompt sweep (2/65 vs 20/58, p < 0.0001), and from 14% to 4%
-in the cells the mechanism experiments run on. Steering a fitted `tedium` direction pushes it up,
-20% to 53%. If low effort is the
-whole story, those are two handles on one axis and a probe on that axis monitors both.
+from 34% to 3% in the better-powered prompt sweep (2/65 vs 20/58, p < 0.0001), and from 14% to 4% in
+the cells the mechanism experiments run on. A fitted `tedium` direction is causally load-bearing in
+both directions: ablating it lowers the rate (p = 0.028 on the coarse direction, p = 0.005 on its SAE
+decomposition) and adding it raises the rate from 20% to 53% (p = 0.0009). Necessity and sufficiency
+holding symmetrically on one concept at one layer is what makes this an axis rather than a
+correlational artifact. The tug-of-war below uses the adding direction, because that is the one that
+opposes the prompt. If low effort is the whole story, the prompt and that axis are two handles on one
+thing, and a probe on the axis monitors both.
 
 They are not, and it does not.
 
@@ -23,10 +27,15 @@ They are not, and it does not.
 
 ## Findings
 
-**1.** They are not the same mechanism, and the prompt has no purchase on the steered concept. Adding
-`+tedium` to the prompted model gives 15/30 shortcuts: identical to steering with no prompt (17/32,
-p = 1.0), nothing like the prompt alone (2/53). At half dose, 10/21 vs 10/21. The prompt does not
-defend the axis it is literally about. *(Fig 1)*
+**1.** They are not the same mechanism, and two independent lines of evidence say so. Geometrically,
+what the prompt moves at decision positions carries essentially no tedium component: cos ≈ −0.05 to
+−0.09 against the axis, and the effort direction assembled from the prompt's own SAE features sits at
+cos = +0.02, which in 4096 dimensions is what two unrelated directions give (σ ≈ 0.016). Behaviourally,
+the prompt has no purchase on the steered concept: adding `+tedium` to the prompted model gives 15/30,
+identical to steering with no prompt (17/32, p = 1.0) and nothing like the prompt alone (2/53). At half
+dose, 10/21 vs 10/21. Neither line settles it alone, since small cosines are cheap in high dimensions
+and one behavioural null could be saturation. Together they are hard to explain another way. The prompt
+does not defend the axis it is literally about. *(Fig 1)*
 
 **2.** Direction probes are blind to prompt-based mitigation, in both directions. Prompt-fixed
 rollouts read identical to baseline on the `tedium` projection while cheating 0/21 vs 4/30. Steered
@@ -38,7 +47,8 @@ this project.
 draws **0.53%** of attention, and the ordinary task text beside it draws 3 to 5 times more. Blocking
 every decode-time edge to it shifts the next-token distribution by KL ≈ 5×10⁻⁴. Injecting its entire
 attention content into a filler-text run buys nothing (21% vs 21%, p = 1.0). Five independent methods
-agree that attention is not the carrier. *(Fig 4)*
+agree that attention is not the carrier. On a 3:1 hybrid that is less surprising than it would be on a
+pure transformer, which is the main reason to want it replicated on one. *(Fig 4)*
 
 **4.** Three quarters of the model needs different tools. Qwen3.5 is a 3:1 hybrid: 24 of 32 layers are
 GatedDeltaNet, with no attention weights and no per-token K/V, so attention-specific methods cover 25%
@@ -122,6 +132,30 @@ seconds per measurement rather than 50 minutes, and a continuous quantity rather
 event, which is what makes §5 to §7 statistically possible: at base rates of 4% vs 14%, separating a
 condition near 7% behaviourally needs about 150 rollouts.
 
+### The alternative their paper flagged
+
+Before asking how the mitigation works, the other explanation for the behaviour is worth closing off.
+If the agent knew the user would object and weakened the check anyway, `disapproval` should behave the
+way `tedium` does. It does not, at any stage.
+
+| | `tedium` | `disapproval` |
+|---|---|---|
+| mentioned in the chain of thought on shortcut rollouts | 100% | 7.1% |
+| contrast-pair direction (held-out / lexical-scramble) | 100% / 65%, pass | 90% / 50%, pass |
+| readout AUC, shortcut vs honest | 0.759 | 0.489, chance |
+| causal effect on the rate | both ways (p = 0.005 ablating, p = 0.0009 adding) | null at n = 43 (p = 0.732) |
+
+Both directions pass the same gates, so this is not a failure to build the vector, and the `+α` test
+ran at an L17 vector that passes the positive control their paper says it lacked. The direction is real
+and validated, and it does nothing here.
+
+The two are also not independent, which makes the dissociation sharper rather than weaker. Their cosine
+is +0.13, about 8 times the 0.016 that two unrelated directions give in 4096 dimensions, so this is not
+a case of testing two axes that happen to have nothing to do with each other: they overlap measurably,
+and only one of them moves behaviour. (Concept directions fitted from generated contrast pairs share
+some linguistic structure by construction, so the overlap should be read as an upper bound on shared
+representational content.) §8 says why the null should not be generalised.
+
 ## 2. The prompt and the steering vector are different mechanisms
 
 The prompt works: 2/53 = **3.8%** against 8/59 = **13.6%** with no instruction, pooled across phases.
@@ -134,6 +168,15 @@ provides no protection against this direction at any dose tested.
 
 Nor is the prompt an added direction. Its mean residual delta at decision positions is neither
 sufficient (baseline plus Δh: 1/12) nor necessary (prompt minus Δh: 0/12, protection intact).
+
+What this does and does not license. The two steered arms differ only in whether the prompt is present,
+so whatever a 26%-of-norm push does generically is common to both and cancels; what is left is the
+prompt's own contribution, and it is zero. That a random direction at the same magnitude takes the
+prompted model to 22% (§4) shows the protection is fragile in general, but it is exactly why the
+controlled comparison is the steered pair rather than the prompt-alone cell. The claim is about how
+this mitigation is implemented, not a general claim that prompting and steering are separate systems.
+The sharp version is narrower: the prompt names tedium, works, and offers no defence whatever of the
+tedium axis. The concept an instruction talks about is not the concept it operates on.
 
 ## 3. Why this matters for monitoring
 
@@ -181,6 +224,12 @@ is fragile to any large perturbation at L26, not to this axis in particular.
 The same features also fail as a monitor (AUROC 0.31 at L26, 0.44 at L31). A feature set can describe a
 behaviour exactly and have no causal role in producing it.
 
+These features are correlational by construction, since they come from contrasting prompted against
+unprompted activations at the same positions, and both causal tests fail. What this project cannot do
+is separate the two readings that remain: they may be downstream of the decision, or a parallel
+correlate of it driven by something further upstream. Ruling out "cause" is not the same as
+establishing "effect", and nothing here should be read as claiming the latter.
+
 ## 5. Where the influence lives, and the 75% of the model that needs new tools
 
 At the decision, nothing reads the instruction. Replaying each decision turn with eager attention to
@@ -210,6 +259,15 @@ arms, the recurrent channel carries +0.103 of the instruction's +1.011, about **
 The chunking term itself is undetectable at this readout (−0.048, p = 0.19).
 
 Neither channel carries the instruction on its own.
+
+This is the finding most contingent on the architecture, and it cuts against one of the headlines. In a
+model that routes three quarters of its depth through recurrent state rather than attention, finding
+that attention masking does not remove the effect is less surprising than the same result would be on a
+pure transformer, where attention might well be the carrier. Two things keep it from being an artifact
+of the hybrid. The recurrent channel only carries about 10%, so the effect is not hiding there either.
+And the remaining influence is written early into the residual stream and read locally at the decision,
+which is a claim about representation rather than about routing, and representational claims travel
+across architectures better than routing ones do.
 
 > **[FIG 4: fig4_channels.png]**
 
@@ -256,6 +314,14 @@ quarters of the following sentence's effect.
 
 One model, one task, one instruction wording. Generalisation is untested and is the first thing to run
 next.
+
+The disapproval null is about this model, not about models. Three reasons not to carry it further. A
+null at n = 43 does not exclude a small effect. Absence of verbalised disapproval is weak evidence
+about internals, and the task-gaming work found final outputs that mislead with nothing planned in the
+chain of thought. And a 9B model may lack the theory of mind for "the user would disapprove" to be an
+available consideration at all, which is a capability floor rather than a fact about alignment. A
+frontier model that does represent it and cheats anyway is a different phenomenon, and this setup could
+not have detected it.
 
 Rare-event power. At 4% vs 14% base rates, separating a condition near 7% needs about 150 rollouts.
 Behavioural cells at n ≈ 20 cannot be decisive. This motivated the decision-point readout, but the

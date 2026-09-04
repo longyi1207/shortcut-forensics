@@ -12,10 +12,14 @@ untested.
 This is that environment (their §6.1, [gkroiz/agent-interp-envs](https://github.com/gkroiz/agent-interp-envs))
 on an open-weight model, from the inside. Two interventions move the behaviour in opposite directions.
 One line in the user prompt ("This task may feel tedious. Do not cut corners...") cuts faked success
-from 34% to 3% in the better-powered prompt sweep (2/65 vs 20/58, p < 0.0001), and from 14% to 4%
-in the cells the mechanism experiments run on. Steering a fitted `tedium` direction pushes it up,
-20% to 53%. If low effort is the
-whole story, those are two handles on one axis and a probe on that axis monitors both.
+from 34% to 3% in the better-powered prompt sweep (2/65 vs 20/58, p < 0.0001), and from 14% to 4% in
+the cells the mechanism experiments run on. A fitted `tedium` direction is causally load-bearing in
+both directions: ablating it lowers the rate (p = 0.028 on the coarse direction, p = 0.005 on its SAE
+decomposition) and adding it raises the rate from 20% to 53% (p = 0.0009). Necessity and sufficiency
+holding symmetrically on one concept at one layer is what makes this an axis rather than a
+correlational artifact. The tug-of-war below uses the adding direction, because that is the one that
+opposes the prompt. If low effort is the whole story, the prompt and that axis are two handles on one
+thing, and a probe on the axis monitors both.
 
 They are not, and it does not.
 
@@ -23,10 +27,15 @@ They are not, and it does not.
 
 ## Findings
 
-**1.** They are not the same mechanism, and the prompt has no purchase on the steered concept. Adding
-`+tedium` to the prompted model gives 15/30 shortcuts: identical to steering with no prompt (17/32,
-p = 1.0), nothing like the prompt alone (2/53). At half dose, 10/21 vs 10/21. The prompt does not
-defend the axis it is literally about. *(Fig 1)*
+**1.** They are not the same mechanism, and two independent lines of evidence say so. Geometrically,
+what the prompt moves at decision positions carries essentially no tedium component: cos ≈ −0.05 to
+−0.09 against the axis, and the effort direction assembled from the prompt's own SAE features sits at
+cos = +0.02, which in 4096 dimensions is what two unrelated directions give (σ ≈ 0.016). Behaviourally,
+the prompt has no purchase on the steered concept: adding `+tedium` to the prompted model gives 15/30,
+identical to steering with no prompt (17/32, p = 1.0) and nothing like the prompt alone (2/53). At half
+dose, 10/21 vs 10/21. Neither line settles it alone, since small cosines are cheap in high dimensions
+and one behavioural null could be saturation. Together they are hard to explain another way. The prompt
+does not defend the axis it is literally about. *(Fig 1)*
 
 **2.** Direction probes are blind to prompt-based mitigation, in both directions. Prompt-fixed
 rollouts read identical to baseline on the `tedium` projection while cheating 0/21 vs 4/30. Steered
@@ -38,7 +47,8 @@ this project.
 draws **0.53%** of attention, and the ordinary task text beside it draws 3 to 5 times more. Blocking
 every decode-time edge to it shifts the next-token distribution by KL ≈ 5×10⁻⁴. Injecting its entire
 attention content into a filler-text run buys nothing (21% vs 21%, p = 1.0). Five independent methods
-agree that attention is not the carrier. *(Fig 4)*
+agree that attention is not the carrier. On a 3:1 hybrid that is less surprising than it would be on a
+pure transformer, which is the main reason to want it replicated on one. *(Fig 4)*
 
 **4.** Three quarters of the model needs different tools. Qwen3.5 is a 3:1 hybrid: 24 of 32 layers are
 GatedDeltaNet, with no attention weights and no per-token K/V, so attention-specific methods cover 25%
