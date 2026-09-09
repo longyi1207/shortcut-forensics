@@ -18,10 +18,14 @@ both directions: ablating it lowers the rate (p = 0.028 on the coarse direction,
 decomposition) and adding it raises the rate from 20% to 53% (p = 0.0011). Necessity and sufficiency
 holding symmetrically on one concept at one layer is what makes this an axis rather than a
 correlational artifact. The tug-of-war below uses the adding direction, because that is the one that
-opposes the prompt. If low effort is the whole story, the prompt and that axis are two handles on one
-thing, and a probe on the axis monitors both.
+opposes the prompt.
 
-They are not, and it does not.
+So there are two ways to move this behaviour, and the low-effort reading predicts they are the same
+one underneath. If it is right, the prompt works by lowering the tedium state, and a probe watching
+that state should therefore see both the steering and the prompt's fix.
+
+Neither prediction survives. The prompt does not work through that axis, and the probe sees neither
+intervention.
 
 > **[FIG 1: fig1_decoupling.png]**
 
