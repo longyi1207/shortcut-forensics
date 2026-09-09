@@ -15,7 +15,7 @@ One line in the user prompt ("This task may feel tedious. Do not cut corners..."
 from 34% to 3% in the better-powered prompt sweep (2/65 vs 20/58, p < 0.0001), and from 14% to 4% in
 the cells the mechanism experiments run on. A fitted `tedium` direction is causally load-bearing in
 both directions: ablating it lowers the rate (p = 0.028 on the coarse direction, p = 0.005 on its SAE
-decomposition) and adding it raises the rate from 20% to 53% (p = 0.0009). Necessity and sufficiency
+decomposition) and adding it raises the rate from 20% to 53% (p = 0.0011). Necessity and sufficiency
 holding symmetrically on one concept at one layer is what makes this an axis rather than a
 correlational artifact. The tug-of-war below uses the adding direction, because that is the one that
 opposes the prompt. If low effort is the whole story, the prompt and that axis are two handles on one

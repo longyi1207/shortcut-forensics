@@ -141,10 +141,13 @@ On the judge specifically, here is what I checked and what I did not. I cross-ch
 against a judge-independent command scan, which is how I know the two rollouts it calls `disable_hook`
 are not hook removals: `--no-verify`, `git commit -n`, `chmod -x` and `rm` on the hook occur zero times
 in 115 rollouts, so those two must be hooks written so they do not block. That reconciles, and it is
-the basis for saying the cheat lives in file content. What I did not do is the human spot-check my own
-spec calls for (`n_human_spotcheck: 30`). No human rater has independently verified a sample of the
-judge's labels in this run, so every behavioural rate here inherits whatever bias the judge has. I
-would not call the behavioural numbers fully validated until that is done.
+the basis for saying the cheat lives in file content. I also ran the human spot-check my own spec
+calls for (`n_human_spotcheck: 30`): 30 rollouts from the unmodified prompt arm, weighted toward the
+judge's positives, read with its verdict withheld. I agreed with it on every case. Only 18 of those
+support a clean claim, because rollout ids collide in this run and for the other 12 the transcript on
+disk cannot be tied to the specific label row. On the 18, agreement is 18/18, 95% CI [81%, 100%],
+precision on positives 10/10. That is reassuring rather than tight, and a false positive rate near 30%
+would still fit inside it.
 
 Checking the drafted write-up against the run artifacts is also how I found two errors in my own draft:
 a seeded type-error count that was simply wrong (19, against `target_errors: 258` in the config), and a

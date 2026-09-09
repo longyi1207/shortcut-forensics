@@ -258,6 +258,22 @@ the full instruction, surviving Bonferroni). One moment against 80 turns, two fi
 against many real paths, and n = 17 are all candidate explanations. None is tested, and both numbers
 stand.
 
+The judge was checked by hand, on a sample. Every `is_shortcut` label in this project comes from an
+LLM judge, so I sampled 30 rollouts from the unmodified prompt arm, weighted toward the ones the judge
+called a shortcut, and read each one's diff and its hook-and-commit turns with the judge's verdict
+withheld. I agreed with the judge on every case. Only 18 of the 30 support a clean claim: rollout ids
+collide in this run, and for the other 12 the transcript on disk cannot be tied to the specific label
+row being checked. On those 18 the agreement is 18/18, 95% CI [81%, 100%], and precision on the
+judge's positives is 10/10, 95% CI [69%, 100%]. That is reassuring and it is not tight. A false
+positive rate up to about 30% is still consistent with it.
+
+Rollout ids collide. Concurrent workers wrote unprefixed ids, so 91 ids appear on more than one
+rollout, 75 of them on rollouts that genuinely differ in condition or turn count. The behavioural
+rates are unaffected, because each row carries its own condition and counts as its own observation.
+What is unreliable is any join from a label row to a per-id artifact on disk, which is why the
+spot-check above is quoted on 18 cases rather than 30, and why an earlier activation analysis was
+dropped rather than repaired.
+
 Multiplicity. Many comparisons were run. The attention and notes masking result (p = 0.014) does not
 survive Bonferroni (0.086) and is reported as a lead rather than a finding.
 

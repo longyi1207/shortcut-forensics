@@ -15,7 +15,7 @@ One line in the user prompt ("This task may feel tedious. Do not cut corners..."
 from 34% to 3% in the better-powered prompt sweep (2/65 vs 20/58, p < 0.0001), and from 14% to 4% in
 the cells the mechanism experiments run on. A fitted `tedium` direction is causally load-bearing in
 both directions: ablating it lowers the rate (p = 0.028 on the coarse direction, p = 0.005 on its SAE
-decomposition) and adding it raises the rate from 20% to 53% (p = 0.0009). Necessity and sufficiency
+decomposition) and adding it raises the rate from 20% to 53% (p = 0.0011). Necessity and sufficiency
 holding symmetrically on one concept at one layer is what makes this an axis rather than a
 correlational artifact. The tug-of-war below uses the adding direction, because that is the one that
 opposes the prompt. If low effort is the whole story, the prompt and that axis are two handles on one
@@ -338,6 +338,22 @@ helpful (+0.53) while its behavioural cell is 6/17 = 35%, worse than no instruct
 the full instruction, surviving Bonferroni). One moment against 80 turns, two fixed continuations
 against many real paths, and n = 17 are all candidate explanations. None is tested, and both numbers
 stand.
+
+The judge was checked by hand, on a sample. Every `is_shortcut` label in this project comes from an
+LLM judge, so I sampled 30 rollouts from the unmodified prompt arm, weighted toward the ones the judge
+called a shortcut, and read each one's diff and its hook-and-commit turns with the judge's verdict
+withheld. I agreed with the judge on every case. Only 18 of the 30 support a clean claim: rollout ids
+collide in this run, and for the other 12 the transcript on disk cannot be tied to the specific label
+row being checked. On those 18 the agreement is 18/18, 95% CI [81%, 100%], and precision on the
+judge's positives is 10/10, 95% CI [69%, 100%]. That is reassuring and it is not tight. A false
+positive rate up to about 30% is still consistent with it.
+
+Rollout ids collide. Concurrent workers wrote unprefixed ids, so 91 ids appear on more than one
+rollout, 75 of them on rollouts that genuinely differ in condition or turn count. The behavioural
+rates are unaffected, because each row carries its own condition and counts as its own observation.
+What is unreliable is any join from a label row to a per-id artifact on disk, which is why the
+spot-check above is quoted on 18 cases rather than 30, and why an earlier activation analysis was
+dropped rather than repaired.
 
 Multiplicity. Many comparisons were run. The attention and notes masking result (p = 0.014) does not
 survive Bonferroni (0.086) and is reported as a lead rather than a finding.
