@@ -1,4 +1,4 @@
-# Prompt and steering move the same shortcut through different mechanisms, and a probe sees neither
+# The prompt and the steering vector move the same shortcut by different routes, so a probe on that axis sees neither
 
 **Executive summary** · Qwen3.5-9B · Singh et al. pre-commit environment · 80-turn rollouts
 
@@ -63,6 +63,13 @@ cut corners. Do not rush to finish." recovers **78%** of the full 70-token instr
 "This task may feel repetitive or tedious" does nothing (n.s.), and prepending it to a sentence that
 works destroys three quarters of that sentence's effect (+0.53 to +0.14). Naming the state appears to
 prime it. *(Fig 2)*
+
+**6.** Placement and strength both matter, and a 0% is not always a win. The same strong wording is
+five times more effective in the user message than in the system prompt (2/65 vs 9/61, p = 0.027), and
+plain phrasing does not reach significance where strong does (p = 0.002). A direct "do not cheat"
+instruction scores 0/51, but reading transcripts rather than labels, only 1 of 63 such rollouts ever
+attempts a commit against 19 of 62 with no instruction. It never reaches the temptation, so the test
+was not taken rather than passed.
 
 > **[FIG 2: fig2_sentences.png]**
 

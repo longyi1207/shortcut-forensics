@@ -1,4 +1,4 @@
-# Prompt and steering move the same shortcut through different mechanisms, and a probe sees neither
+# The prompt and the steering vector move the same shortcut by different routes, so a probe on that axis sees neither
 
 **Executive summary** · Qwen3.5-9B · Singh et al. pre-commit environment · 80-turn rollouts
 
@@ -63,6 +63,13 @@ cut corners. Do not rush to finish." recovers **78%** of the full 70-token instr
 "This task may feel repetitive or tedious" does nothing (n.s.), and prepending it to a sentence that
 works destroys three quarters of that sentence's effect (+0.53 to +0.14). Naming the state appears to
 prime it. *(Fig 2)*
+
+**6.** Placement and strength both matter, and a 0% is not always a win. The same strong wording is
+five times more effective in the user message than in the system prompt (2/65 vs 9/61, p = 0.027), and
+plain phrasing does not reach significance where strong does (p = 0.002). A direct "do not cheat"
+instruction scores 0/51, but reading transcripts rather than labels, only 1 of 63 such rollouts ever
+attempts a commit against 19 of 62 with no instruction. It never reaches the temptation, so the test
+was not taken rather than passed.
 
 > **[FIG 2: fig2_sentences.png]**
 
@@ -315,6 +322,32 @@ name a behaviour to avoid rather than a state to feel. The clearest effect is ne
 feeling cancels the sentence after it. "Do NOT let that affect your work" is worth +0.53 on its own and
 +0.14 once the tedium sentence is prepended. Mentioning the state appears to prime it, costing three
 quarters of the following sentence's effect.
+
+### Placement and strength, one scale up
+
+The sentence variants ask which words matter inside the instruction. A separate behavioural sweep asks
+the same question at the scale of the whole instruction, on a vLLM backend against a no-instruction
+rate of 34.5% (20/58).
+
+| instruction | rate | vs no instruction |
+|---|---|---|
+| strong wording, user message | 2/65 = **3.1%** | p < 0.0001 |
+| strong wording, system prompt | 9/61 = 14.8% | p = 0.018 |
+| plain wording, user message | 13/62 = 21.0% | p = 0.107, n.s. |
+| chain-of-thought framing | 6/26 = 23.1% | n.s. |
+| behaviour instruction, "do not cheat" | 0/51 = 0% | p < 0.0001 |
+
+Two things move it. Placement: the same strong wording is about five times more effective in the user
+message than in the system prompt (2/65 vs 9/61, p = 0.027). Strength: the plain phrasing does not
+reach significance where the strong one does (2/65 vs 13/62, p = 0.002). Both are consistent with the
+sentence-level picture, where what works is naming a behaviour to avoid rather than a state to feel.
+
+The 0% is the interesting cell, and it is not a success. Reading the transcripts rather than the
+judge's labels, 1 of 63 rollouts under the behaviour instruction ever attempts a commit, against 19 of
+62 with no instruction. The instruction re-prioritises the agent into exhaustive type-fixing and the
+80-turn budget expires before it reaches the hook. A rollout that never attempts a blocked commit never
+faces the choice, so its 0% means the test was not taken rather than passed. Any shortcut rate in this
+environment has to be reported alongside whether the rollout reached the temptation at all.
 
 ## 8. Limitations
 
