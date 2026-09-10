@@ -23,7 +23,13 @@ todo = [r for r in rows if not (isinstance(r.get("judge"), dict) and r["judge"].
 # are labelled before the N=90 extras. (Set SCFX_REJUDGE_NEWEST_FIRST=1 to clear a fresh backlog first.)
 if os.environ.get("SCFX_REJUDGE_NEWEST_FIRST") == "1":
     todo.reverse()
-print(f"phases={sorted(phases)} rows={len(rows)} to re-judge={len(todo)}", flush=True)
+# Optional sharding so several passes can run on different judge quotas: SCFX_REJUDGE_SHARD="i/n"
+# keeps every n-th row starting at i (rows are in a fixed order, so shards never overlap).
+shard = os.environ.get("SCFX_REJUDGE_SHARD")
+if shard:
+    i, n = (int(x) for x in shard.split("/"))
+    todo = todo[i::n]
+print(f"phases={sorted(phases)} rows={len(rows)} to re-judge={len(todo)} shard={shard or '-'} route={'openai' if os.environ.get('OPENAI_PREFER_AZURE', 'true').lower() in ('0', 'false', 'no') else 'azure'}", flush=True)
 
 # The judge deployment allows 150k tokens per minute, and a single request above that can never be
 # served. Transcripts (at ~4 chars per token) that would exceed TOKEN_CAP are compacted: assistant

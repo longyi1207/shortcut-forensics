@@ -44,6 +44,8 @@ HF_CELLS = [
 ]
 REJUDGE_PHASES = ["prompt_sweep_vllm", "signed_pack", "prompt_channel"]  # ok rows whose judge call died on a 429
 REJUDGE_SIDE = f"{RUN}/outputs/20260821-launch/rejudge.jsonl"
+# (shard, extra env): shard 0 on the Azure deployment (150K TPM), shard 1 on direct OpenAI (200K TPM), same model
+REJUDGE_SHARDS = [("0/2", {}), ("1/2", {"OPENAI_PREFER_AZURE": "false", "OPENAI_MODEL": "gpt-5.4-mini"})]
 RESERVED_FILE = f"{LOGDIR}/reserved_gpus"  # whitespace-separated GPU indices the HF pool must leave alone
 BASE_ENV = {"HF_HOME": "/mnt/scfx_ly_cache", "PYTHONUNBUFFERED": "1", "PATH": os.environ.get("PATH", "")}
 state = {"pd_target": 60, "pt_target": 60, "unhealthy": {g: 0 for g in SERVERS}}
@@ -186,11 +188,15 @@ def tick():
                 launch({**env, "SCFX_WORKER_ID": f"{name}{g}"}, args, f"hf_{name}{g}", gpu=g)
                 busy[g] = f"{name}{g}"
                 break
-    # 4. judge casualties: one sequential rejudge pass whenever ok rows lack a verdict
+    # 4. judge casualties: two sequential rejudge passes, one per judge quota (Azure deployment and
+    #    direct OpenAI, same model), each on its own shard of the unjudged rows
     unjudged = len(c.get("_unjudged", set()))
-    rejudging = any("rejudge_phase.py" in cmd for _, cmd, _ in ps)
-    if unjudged and not rejudging:
-        launch({}, ["scripts/rejudge_phase.py", *REJUDGE_PHASES], "rejudge")
+    running_shards = {env.get("SCFX_REJUDGE_SHARD") for _, cmd, env in ps if "rejudge_phase.py" in cmd}
+    rejudging = bool(running_shards)
+    if unjudged:
+        for shard, extra in REJUDGE_SHARDS:
+            if shard not in running_shards:
+                launch({"SCFX_REJUDGE_SHARD": shard, **extra}, ["scripts/rejudge_phase.py", *REJUDGE_PHASES], f"rejudge_{shard[0]}")
     status = {
         "time": time.strftime("%Y-%m-%d %H:%M:%S"), "unjudged": unjudged, "rejudging": rejudging, "servers": {g: health(p) for g, p in SERVERS.items()},
         "pd_target": state["pd_target"], "pt_target": state["pt_target"],
