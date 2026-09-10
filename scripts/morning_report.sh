@@ -11,7 +11,7 @@ mkdir -p outputs/20260821-launch/phase4
 rsync -az -e "$SSHE" "$SSH_USER@$SSH_HOST:$R/phase4/dp_*" outputs/20260821-launch/phase4/
 rsync -az -e "$SSHE" "$SSH_USER@$SSH_HOST:$R/rollouts.jsonl" outputs/20260821-launch/rollouts.jsonl
 rsync -az -e "$SSHE" "$SSH_USER@$SSH_HOST:$R/rejudge.jsonl" outputs/20260821-launch/rejudge.jsonl || true
-OUT=writeup/RESULTS_$(date +%Y-%m-%d).md
+OUT=writeup/RESULTS_$(date -u +%Y-%m-%d).md
 {
   echo "# Prompt vs direction: results pulled $(date -u '+%Y-%m-%d %H:%MZ')"
   echo; echo "## 1. Behaviour under each concept's prompt line (vLLM, same-night baseline)"; echo '```'
