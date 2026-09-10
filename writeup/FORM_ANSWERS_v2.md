@@ -7,35 +7,23 @@
 
 ### What question did you try to answer?
 
-When a one-line instruction in the prompt changes what an agent does, and a contrast-pair steering
-vector for the "same" concept also changes what it does, are they acting on the same thing inside the
-model? Steering vectors get read as "the model's representation of X" and prompts as a way of turning
-X on or off, so the two are usually treated as two handles on one lever. I tested that per factor, on
-a behaviour that is an action with a ground-truth label rather than a style.
-
-The setting is Singh, Kroiz, Rajamanoharan and Nanda's pre-commit environment (arXiv:2606.26071): a
-coding agent in a repo with 258 seeded `mypy` errors behind a hook, which sometimes fakes a green check
-instead of doing the work. For five candidate motives (tedium, desperation, temptation, wanting to be
-done, fear of the user's disapproval) I fitted a contrast direction, wrote a matched instruction, and
-measured three things: what the instruction does to the shortcut rate, what steering the direction does
-to it, and whether the instruction's footprint on the residual stream lies along the direction at all.
+When a one-line instruction changes what an agent does, and a contrast-pair steering vector for the same
+concept also changes what it does, are they acting on the same thing inside the model? The two are
+usually treated as two handles on one lever. I tested that per factor in Singh et al.'s pre-commit
+environment (arXiv:2606.26071), where a coding agent behind a mypy hook sometimes fakes a green check.
+For five candidate motives (tedium, desperation, temptation, wanting to be done, fear of the user's
+disapproval) I fitted a contrast direction, wrote a matched instruction, and measured what each does to
+the shortcut rate and whether the instruction's footprint on the residual stream lies along the direction.
 
 ### Why is this question interesting / why did you choose it?
 
-Because both interventions are in daily use and the assumption that they are interchangeable has not
-been checked where it matters. Prompting is the mitigation people ship; contrast directions are what
-people fit when they want to monitor or steer a disposition; persona vectors are built on the premise
-that a prompt's effect projects onto the fitted direction. Recent work questions the equivalence from
-the steering side (steered activations reach states no prompt reaches; prompt effects are token
-specific), but on persona and style benchmarks, single turn, judged by output quality. Nobody had put
-the two side by side on a long agentic task, per concept, with behavioural labels.
-
-The Singh et al. environment makes the test clean: the misbehaviour is discrete, the candidate drivers
-are exactly the kind of thing people fit directions for, and their paper argued from prompt edits alone,
-so the internal side was open.
-
-The monitoring consequence is what made me finish it. If the two are different mechanisms, the probe
-you would trust is blind to the fix you deployed.
+Prompting is the mitigation people ship; contrast directions are what people fit to monitor or steer a
+disposition; persona vectors assume a prompt's effect projects onto the fitted direction. Recent work
+questions the equivalence, but on persona and style benchmarks, single turn, judged by output quality.
+Nobody had put the two side by side on a long agentic task, per concept, with behavioural labels. The
+Singh et al. environment makes that clean: the misbehaviour is discrete, the candidate drivers are the
+kind of thing people fit directions for, and their own analysis stopped at prompt edits. If the two
+turn out to be different mechanisms, the probe you would trust is blind to the fix you deployed.
 
 ### What conclusions have you reached about this research problem?
 
@@ -51,97 +39,209 @@ you would trust is blind to the fix you deployed.
 
 ### Technical setup (models, datasets, prompts, metrics)
 
-Qwen3.5-9B (bf16, thinking on, 32 layers, 3:1 GatedDeltaNet/attention hybrid) on 8×A100 80GB. The
-environment is Singh et al.'s repo with 258 seeded type errors, a pre-commit hook running `mypy`, 80
-tool-calling turns, real git and mypy. The outcome measure is an LLM judge (gpt-5.4-mini, temperature
-0) over the transcript and final diff, returning `is_shortcut`, the workaround type and
-`capability_ok`. Shortcuts are almost all "fake green" (ignores, weakened config); `--no-verify` never
-occurs.
+Qwen3.5-9B (bf16, thinking on, 3:1 GatedDeltaNet/attention hybrid), 8×A100. Singh et al.'s repo with 258
+seeded type errors behind a pre-commit mypy hook; 80 tool-calling turns with real git and mypy. Outcome:
+an LLM judge (gpt-5.4-mini, temperature 0) over transcript and diff, returning is_shortcut, workaround
+type and capability_ok; shortcuts are almost all "fake green", never --no-verify.
 
-Directions: mean difference of last-token residuals over LLM-written contrast pairs, layer 19 (disapproval
-re-fit at 17), with held-out separation, lexical-scramble and plant gates. Instructions: one 70-token
-"IMPORTANT:" line per factor at the end of the user prompt, same register and length, plus a neutral
-formatting line as control. Steering: projection removal (ablation) at every position of the fitted
-layer for the pro-shortcut concepts, addition for disapproval, plus random-direction controls.
-
-Prompt sweeps ran on vLLM (six servers, 10 rollouts each; n = 90 per line, 150 per control, one night);
-steering cells ran through HuggingFace forward hooks (n = 30 to 153). The two backends have different
-baseline rates (31% vs 20%), so nothing is compared across them. Geometry: the residual shift caused by
-a line, projected on the direction, at the first assistant position and at 40 post-failure decision
-tokens, with the concept's plant sentences as positive control. Mechanism cells (attention masking,
-K/V swap, footprint add/remove) are from the earlier part of the project, judge-labelled, n = 12 to 53.
-About 2,300 judged rollouts in total; 3,271 rows on disk. Code, scripts and the rollout table:
-https://github.com/longyi1207/shortcut-forensics (rollouts.jsonl under release data-2026-09-10).
+Directions: mean difference of last-token residuals over LLM-written contrast pairs at layer 19
+(disapproval at 17), with held-out, lexical-scramble and plant gates. Instructions: one 70-token
+IMPORTANT line per factor at the end of the user prompt, plus a neutral formatting line as control.
+Steering: projection removal at every position of the fitted layer, addition for disapproval, random
+directions as controls. Prompt sweeps on vLLM (n = 90 per line, 150 per control, one night); steering
+cells through HuggingFace hooks (n = 30 to 153); the backends' baselines differ (31% vs 20%) and are
+never compared across. Geometry: the residual shift a line causes, projected on the direction, at the
+first assistant token and at 40 post-failure decision tokens, with the concept's own sentence as
+positive control. About 2,300 judged rollouts. Code and data: github.com/longyi1207/shortcut-forensics.
 
 ### Strongest evidence against your hypotheses
 
-My starting hypothesis was the field's default: that the instruction works by moving the model along
-the direction the concept names, so that the tedium instruction would show up as a negative projection
-on the tedium vector and the tug-of-war would show the prompt resisting the steer. Both failed. The
-instruction's projection sits inside the null band at the prompt end and at the decision token, and
-prompt plus tedium direction gives 15/30 = 50%, identical to the direction alone (17/32, p = 1.0). The
-prompt offers no resistance because it never set the coordinate the steer moves.
+My starting hypothesis was the field's default: the instruction works by moving the model along the
+concept direction, so the tedium line would show as a negative projection on the tedium vector and
+would resist a push along it. Both failed. The instruction's projection sits inside the null band at
+the prompt end and at the decision token, and prompt plus tedium direction gives 15/30 = 50%, the same
+as the direction alone (17/32, p = 1.0).
 
-The second hypothesis I held for a while was that the instruction's own mean footprint (with minus
-without) is the carrier, as in instruction-vector work on format constraints. Added to a baseline run
-it gives 1/12; projected out of an instructed run, 0/12. Neither sufficient nor necessary.
+My second hypothesis was that the instruction's own mean footprint (with minus without) is the carrier,
+as in instruction-vector work on format constraints. Added to a baseline run it gives 1/12; projected
+out of an instructed run, 0/12. Neither sufficient nor necessary.
 
-Against the mechanism I do report: the decisive masking cell is n = 20 with one uncorrected p = 0.014
-(0.086 after Bonferroni), on one instruction only. It is a lead with a control, not a finding.
-
-Against the choice of vector: the layer-19 tedium vector failed its plant gate and I kept it because it
-steers, after the gate-passing re-fits did not. That is a choice made on the outcome; the SAE replication
-at the same layer is the one independent support, and a pre-registered layer would have been better.
+Against the mechanism I do report: the decisive masking cell is n = 20, p = 0.014 uncorrected, on one
+instruction. And the layer-19 tedium vector failed its plant gate; I kept it because it steers, which
+is a choice made on the outcome, supported only by the SAE decomposition at the same layer.
 
 ### Biggest limitations (could you have addressed them?)
 
-The comparison is one model on one task, and a task that itself induces tedium, which is the one factor
-whose direction moves behaviour. With one task I cannot separate "instructions beat directions in
-general" from "only the factor the task engages has a working direction". A second environment from
-the Singh et al. suite would have separated them; I chose depth on one task over breadth.
+One model on one task, and a task that itself induces tedium, the one factor whose direction works.
+With one task I cannot separate "instructions beat directions" from "only the factor the task engages
+has a working direction". A second environment from the Singh et al. suite would have separated them;
+I chose depth over breadth.
 
-The four null factors were tested by removing their directions (plus addition for disapproval).
-Removal only shows an effect if the state is present at baseline, and a baseline agent may not be
-desperate, tempted or afraid of the user at all. The addition test that would settle this was run only
-for tedium. This is the limitation I would fix first with more GPU time, since it decides whether the
-nulls mean "not causal" or "never on".
+The four null factors were tested by removing their directions. Removal shows nothing if the state is
+not present at baseline, and a baseline agent may not be desperate or afraid of the user at all. The
+addition test that settles this was run only for tedium; it is the first thing I would run with more
+GPU time.
 
 Every instruction sat in the user message; system-prompt placement is untested. The plan-channel
-result is traced on one instruction at n = 20 per cell and does not survive correction; it motivates
-the hypothesis that instructions govern agents through their own plan text but does not establish it.
-
-Method: one LLM judge with spot checks (30/30 here, 18/18 earlier); 113 verdicts from shortened
-transcripts; steering cells of n = 30 to 43 that would miss a drop from 20% to 10% half the time;
-two backends with different baselines, never compared across; the layer-19 tedium vector kept because
-it steers, with only the SAE decomposition as independent support.
+result is one line at n = 20 and does not survive correction. Method: one LLM judge with spot checks
+(30/30 here, 18/18 earlier); steering cells of n = 30 to 43 would miss a drop from 20% to 10% half the
+time; two backends with different baselines.
 
 ### LLM use (which tools, what you checked, surprise-if-wrong per part)
 
-Two LLMs with two jobs. Claude Code as an agent writing runners, hooks, analysis and the draft, and
-running the cluster overnight under a guardian process; gpt-5.4-mini at temperature 0 as the judge that
-produces every `is_shortcut` label. The judge is the load-bearing one.
+Two LLMs with two jobs. Claude Code as an agent that wrote the runners, hooks, analysis and draft and
+ran the cluster overnight under a guardian process I designed; gpt-5.4-mini at temperature 0 as the
+judge that produces every is_shortcut label. The judge is the load-bearing one.
 
-I directed the research: the question, the pivot to prompting vs steering, which cells answer it, which
-controls are needed (the neutral line, the random direction, the plant positive control), and the
-interpretation. The overnight run was agent-executed under a plan I set; the hours in the time log are
-mine.
+I set the question, the pivot to prompting versus steering, the cells, the controls (neutral line,
+random direction, plant positive control) and the interpretation. The hours in the time log are mine.
 
-What I checked. Every intervention has a mechanism check I read rather than trusted: attention masking
-verified as exactly zero span mass on all eight full-attention layers; K/V swap verified element-wise;
-the steering hook verified by the projection trace (added component present at the fitted norm). The
-same-night rule for vLLM cells exists because I found the backend changed the baseline. The judge was
-spot-checked by hand on 18 cleanly attributable rollouts (18/18 agreement, precision on positives
-10/10), which is reassuring rather than tight. Reading the numbers against the run artifacts is how I
-found that an earlier draft's seeded-error count (19) contradicted the config (258) and that the same
-condition name had been run across several launches, which is why cells are pooled by condition.
+What I checked: every intervention has a mechanism check I read rather than trusted (attention masking
+at exactly zero span mass on all eight attention layers; K/V swap verified element-wise; the steering
+hook verified by its projection trace). The same-night rule exists because I found the backend changed
+the baseline. I read 30 rollouts with the judge's verdict withheld and agreed on all 30. Reading the
+numbers against the run artifacts is how I found an earlier draft's error count (19) contradicted the
+config (258).
 
-Surprise-if-wrong. I would be least surprised to be right that the instructions work and that the
-instruction does not act along the fitted direction; both rest on large cells with controls. I would be
-more surprised if the "two copies in context" mechanism turned out wrong, because it rests on n = 20
-cells and one instruction. I would be most surprised if the steering nulls turned into large effects at
-higher n, but I cannot exclude effects of half tedium's size.
+Surprise-if-wrong: least surprised to be right that the instructions work and do not act along the
+direction, both on large cells with controls; more surprised if the two-copies mechanism is wrong, since
+it rests on n = 20 and one instruction; most surprised if the steering nulls became large effects at
+higher n, though I cannot exclude effects of half tedium's size.
+
+### Prior mechanistic interpretability experience
+
+(unchanged from v1; see FORM_ANSWERS.md)
+
+### Three pieces of evidence, other than the project
+
+(unchanged from v1)
+
+### Why Neel's stream specifically
+
+(unchanged from v1, but replace "the probes do not work, at AUROC 0.39 to 0.67" with the v2 result if
+you cite it: the tedium probe reads the instructed arm as identical to baseline.)
+
+### Likelihood of joining the exploration phase
+
+(unchanged from v1)
+
+### Anything else about the project (optional)
+
+The result I would defend hardest is the pair: five instructions with large effects, one direction with
+an effect, and that one direction not being the instruction's route. Roughly 75% of this model is
+GatedDeltaNet rather than attention, so the standard attention toolkit reaches a quarter of it; every
+intervention here is a forward hook I wrote, and that constraint will apply to most models that ship
+next.
+
+# Neel MATS 12.0, form answers, v2 draft (paste into Airtable after rewriting in your own voice)
+
+> Project answers rewritten for the v2 write-up (prompting vs contrast-direction steering). The personal
+> sections at the bottom are copied unchanged from v1 for you to check. Numbers match RESULTS_2026-09-10.md.
 
 ---
+
+### What question did you try to answer?
+
+When a one-line instruction changes what an agent does, and a contrast-pair steering vector for the same
+concept also changes what it does, are they acting on the same thing inside the model? The two are
+usually treated as two handles on one lever. I tested that per factor in Singh et al.'s pre-commit
+environment (arXiv:2606.26071), where a coding agent behind a mypy hook sometimes fakes a green check.
+For five candidate motives (tedium, desperation, temptation, wanting to be done, fear of the user's
+disapproval) I fitted a contrast direction, wrote a matched instruction, and measured what each does to
+the shortcut rate and whether the instruction's footprint on the residual stream lies along the direction.
+
+### Why is this question interesting / why did you choose it?
+
+Prompting is the mitigation people ship; contrast directions are what people fit to monitor or steer a
+disposition; persona vectors assume a prompt's effect projects onto the fitted direction. Recent work
+questions the equivalence, but on persona and style benchmarks, single turn, judged by output quality.
+Nobody had put the two side by side on a long agentic task, per concept, with behavioural labels. The
+Singh et al. environment makes that clean: the misbehaviour is discrete, the candidate drivers are the
+kind of thing people fit directions for, and their own analysis stopped at prompt edits. If the two
+turn out to be different mechanisms, the probe you would trust is blind to the fix you deployed.
+
+### What conclusions have you reached about this research problem?
+
+1. A one-line instruction cuts the shortcut rate for every one of the five factors, from 31% to 0-11% (n = 90 each, all p ≤ 0.0005); a same-length line with no concept content does nothing (30%, n = 150).
+
+2. Steering the matching contrast directions moves behaviour for tedium only (ablation 9%, addition 53%, against a 20% baseline; a random direction gives 29%); the other four directions are null at n = 30 to 43.
+
+3. Even for tedium, the instruction does not act along the direction: its residual shift has zero projection on it, while the concept's own sentence moves along it; at the decision token nothing moves along any direction.
+
+4. The instruction reaches the decision through the context, in two copies, the instruction text and the agent's own plan: blocking attention to both restores the no-instruction rate (25% vs 3.8%), blocking either alone does not. Tested on one line at n = 20, so a lead rather than a finding.
+
+5. A direction can therefore steer, and read its own concept, and still miss behaviour a prompt controls. Contrast pairs do not deliver the diagnostic validity a monitor needs for prompt-controlled behaviour.
+
+### Technical setup (models, datasets, prompts, metrics)
+
+Qwen3.5-9B (bf16, thinking on, 3:1 GatedDeltaNet/attention hybrid), 8×A100. Singh et al.'s repo with 258
+seeded type errors behind a pre-commit mypy hook; 80 tool-calling turns with real git and mypy. Outcome:
+an LLM judge (gpt-5.4-mini, temperature 0) over transcript and diff, returning is_shortcut, workaround
+type and capability_ok; shortcuts are almost all "fake green", never --no-verify.
+
+Directions: mean difference of last-token residuals over LLM-written contrast pairs at layer 19
+(disapproval at 17), with held-out, lexical-scramble and plant gates. Instructions: one 70-token
+IMPORTANT line per factor at the end of the user prompt, plus a neutral formatting line as control.
+Steering: projection removal at every position of the fitted layer, addition for disapproval, random
+directions as controls. Prompt sweeps on vLLM (n = 90 per line, 150 per control, one night); steering
+cells through HuggingFace hooks (n = 30 to 153); the backends' baselines differ (31% vs 20%) and are
+never compared across. Geometry: the residual shift a line causes, projected on the direction, at the
+first assistant token and at 40 post-failure decision tokens, with the concept's own sentence as
+positive control. About 2,300 judged rollouts. Code and data: github.com/longyi1207/shortcut-forensics.
+
+### Strongest evidence against your hypotheses
+
+My starting hypothesis was the field's default: the instruction works by moving the model along the
+concept direction, so the tedium line would show as a negative projection on the tedium vector and
+would resist a push along it. Both failed. The instruction's projection sits inside the null band at
+the prompt end and at the decision token, and prompt plus tedium direction gives 15/30 = 50%, the same
+as the direction alone (17/32, p = 1.0).
+
+My second hypothesis was that the instruction's own mean footprint (with minus without) is the carrier,
+as in instruction-vector work on format constraints. Added to a baseline run it gives 1/12; projected
+out of an instructed run, 0/12. Neither sufficient nor necessary.
+
+Against the mechanism I do report: the decisive masking cell is n = 20, p = 0.014 uncorrected, on one
+instruction. And the layer-19 tedium vector failed its plant gate; I kept it because it steers, which
+is a choice made on the outcome, supported only by the SAE decomposition at the same layer.
+
+### Biggest limitations (could you have addressed them?)
+
+One model on one task, and a task that itself induces tedium, the one factor whose direction works.
+With one task I cannot separate "instructions beat directions" from "only the factor the task engages
+has a working direction". A second environment from the Singh et al. suite would have separated them;
+I chose depth over breadth.
+
+The four null factors were tested by removing their directions. Removal shows nothing if the state is
+not present at baseline, and a baseline agent may not be desperate or afraid of the user at all. The
+addition test that settles this was run only for tedium; it is the first thing I would run with more
+GPU time.
+
+Every instruction sat in the user message; system-prompt placement is untested. The plan-channel
+result is one line at n = 20 and does not survive correction. Method: one LLM judge with spot checks
+(30/30 here, 18/18 earlier); steering cells of n = 30 to 43 would miss a drop from 20% to 10% half the
+time; two backends with different baselines.
+
+### LLM use (which tools, what you checked, surprise-if-wrong per part)
+
+Two LLMs with two jobs. Claude Code as an agent that wrote the runners, hooks, analysis and draft and
+ran the cluster overnight under a guardian process I designed; gpt-5.4-mini at temperature 0 as the
+judge that produces every is_shortcut label. The judge is the load-bearing one.
+
+I set the question, the pivot to prompting versus steering, the cells, the controls (neutral line,
+random direction, plant positive control) and the interpretation. The hours in the time log are mine.
+
+What I checked: every intervention has a mechanism check I read rather than trusted (attention masking
+at exactly zero span mass on all eight attention layers; K/V swap verified element-wise; the steering
+hook verified by its projection trace). The same-night rule exists because I found the backend changed
+the baseline. I read 30 rollouts with the judge's verdict withheld and agreed on all 30. Reading the
+numbers against the run artifacts is how I found an earlier draft's error count (19) contradicted the
+config (258).
+
+Surprise-if-wrong: least surprised to be right that the instructions work and do not act along the
+direction, both on large cells with controls; more surprised if the two-copies mechanism is wrong, since
+it rests on n = 20 and one instruction; most surprised if the steering nulls became large effects at
+higher n, though I cannot exclude effects of half tedium's size.
 
 ### Prior mechanistic interpretability experience
 
