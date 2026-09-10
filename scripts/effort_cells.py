@@ -40,7 +40,9 @@ CELLS = {
     "prompt intact (pooled)": {("b5_prompt_decay", "b5_prompt"), ("dt_capture", "dt_prompt"), ("dt_mask", "dtm_prompt")},
     "no instruction (pooled)": {("b5_prompt_decay", "b5_baseline"), ("dt_capture", "dt_baseline"), ("dt_mask", "dtm_baseline")},
     "baseline + ABLATE effort": {("prompt_channel", "pc_base_ablate_effort26")},
-    "prompt + ADD effort": {("prompt_channel", "pc_prompt_add_effort26")},
+    "prompt + ADD effort (a=26, matched)": {("prompt_channel", "pc_prompt_add_effort26_a26")},
+    "no prompt + ADD effort (a=26)": {("prompt_channel", "pc_base_add_effort26_a26")},
+    "[underdosed a=1, retired] prompt+add": {("prompt_channel", "pc_prompt_add_effort26")},
     "[tedium axis] prompt + ADD tedium a=1": {("prompt_channel", "pc_prompt_add_tedium19")},
     "[tedium axis] ADD tedium a=1, no prompt": {("signed_pack", "add_pos_tedium")},
 }
@@ -62,7 +64,8 @@ print("\n--- does ablating the replanning axis reproduce the prompt's protection
 f("baseline + ABLATE effort", "no instruction (pooled)")
 f("baseline + ABLATE effort", "prompt intact (pooled)")
 print("\n--- the tug-of-war, on the right axis ---")
-f("prompt + ADD effort", "prompt intact (pooled)")
-f("prompt + ADD effort", "no instruction (pooled)")
+f("prompt + ADD effort (a=26, matched)", "prompt intact (pooled)")
+f("prompt + ADD effort (a=26, matched)", "no prompt + ADD effort (a=26)")
+f("no prompt + ADD effort (a=26)", "no instruction (pooled)")
 print("\n(for contrast, the same test on the tedium axis gave prompt+add = 15/30 vs prompt 0/21, p<0.001,")
 print(" i.e. the prompt offered no resistance at all)")

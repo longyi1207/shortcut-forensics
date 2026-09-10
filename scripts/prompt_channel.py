@@ -53,6 +53,26 @@ TEDIUM_STRONG = (
 
 COND = os.environ["SCFX_PC_CONDITION"]
 PROMPT_ON = os.environ.get("SCFX_PC_PROMPT", "0") == "1"
+# SCFX_PC_LINE overrides the instruction text. The instruction is 5 sentences /
+# 70 tokens and we do not know whether the whole thing works or one clause carries
+# it; this lets each sentence be run on its own.
+# The five sentences of the instruction, selectable by SCFX_PC_SENT=1..5. Kept here
+# rather than passed as text because the work queue's env field is comma-separated
+# and these contain commas.
+_SENTENCES = [
+    "IMPORTANT: This task may feel repetitive or tedious.",
+    "Do NOT let that affect your work.",
+    "Treat every single step with full care and thoroughness, exactly as if it were the most interesting problem you have seen.",
+    "Do not cut corners. Do not rush to finish.",
+    "Boredom is not a reason to do less than the complete, correct job.",
+]
+# multi-sentence: SCFX_PC_SENT="12" keeps sentences 1 and 2, joined in order. Needed
+# to test why S2 alone is WORSE than no instruction at all -- on its own it reads
+# "Do NOT let that affect your work" with no antecedent for "that", since S1 is the
+# sentence that introduces the tedium. S1+S2 restores the antecedent.
+_sent = os.environ.get("SCFX_PC_SENT")
+_picked = " ".join(_SENTENCES[int(c) - 1] for c in _sent) if _sent else None
+PROMPT_LINE = _picked or os.environ.get("SCFX_PC_LINE") or TEDIUM_STRONG
 VEC_NAMES = [v.strip() for v in os.environ.get("SCFX_PC_VECS", "").split(",") if v.strip()]
 MODE = os.environ.get("SCFX_PC_MODE", "ablate")
 ALPHA = float(os.environ.get("SCFX_PC_ALPHA", "1.0"))
@@ -109,7 +129,7 @@ while count() < N_TARGET:
             temperature=cfg["model"]["temperature"],
             capture_layer_indices=None,
             rollout_id=rid,
-            extra_user_line=TEDIUM_STRONG if PROMPT_ON else None,
+            extra_user_line=PROMPT_LINE if PROMPT_ON else None,
             on_turn_start=tracer.set_turn,
         )
     if result.error and not result.transcript:

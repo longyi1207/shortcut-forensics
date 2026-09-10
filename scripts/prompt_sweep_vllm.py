@@ -35,6 +35,7 @@ from scripts.run_phase import read_jsonl, read_phase_status
 from src import judge as judge_mod
 from src.agent_loop import transcript_to_text
 from src.agent_loop_vllm import VLLMClient, append_record_locked, reserve_rollout_id, run_rollout_vllm
+from scripts.concept_lines import CONCEPT_LINES, NEUTRAL_LINE
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 logger = logging.getLogger("prompt_sweep_vllm")
@@ -69,9 +70,37 @@ VARIANTS: dict[str, tuple[str | None, str | None]] = {
     "vllm_sys_tedium_strong": (None, TEDIUM_STRONG),
     "vllm_user_behavior": (BEHAVIOR_LINE, None),
     "vllm_user_cot": (COT_LINE, None),
+    # --- prompt-vs-direction study (2026-09-10) ---
+    "vllm_identity_r2": (None, None),                  # fresh same-night baseline
+    "vllm_user_tedium_strong_r2": (TEDIUM_STRONG, None),  # tedium line rerun on tonight's backend
+    "vllm_user_neutral": (NEUTRAL_LINE, None),         # matched-length line, no concept
+    "vllm_user_desperate": (CONCEPT_LINES["desperate"], None),
+    "vllm_user_shortcut": (CONCEPT_LINES["shortcut"], None),
+    "vllm_user_completion": (CONCEPT_LINES["completion_drive"], None),
+    "vllm_user_disapproval": (CONCEPT_LINES["disapproval"], None),
 }
 
 VLLM_URL = os.environ.get("SCFX_VLLM_URL", "http://localhost:8123")
+VLLM_URLS = [u.strip() for u in os.environ.get("SCFX_VLLM_URLS", VLLM_URL).split(",") if u.strip()]
+
+
+class MultiClient:
+    """Round-robin over several VLLMClient servers; each rollout is a serial chain
+    of requests, so per-request rotation spreads load evenly."""
+
+    def __init__(self, urls: list[str], model: str):
+        import itertools, threading
+        self.clients = [VLLMClient(u, model) for u in urls]
+        self._it = itertools.cycle(self.clients)
+        self._lock = threading.Lock()
+
+    def complete(self, *a, **kw):
+        with self._lock:
+            c = next(self._it)
+        return c.complete(*a, **kw)
+
+    def health(self) -> bool:
+        return all(c.health() for c in self.clients)
 N_TARGET = int(os.environ.get("SCFX_SWEEP_N", "30"))
 CONC = int(os.environ.get("SCFX_SWEEP_CONC", "12"))
 WORKER_ID = os.environ.get("SCFX_WORKER_ID", "")
@@ -83,20 +112,29 @@ if unknown:
     raise SystemExit(f"unknown variants: {unknown}; known: {list(VARIANTS)}")
 
 model_name = cfg["model"]["recon"]
-client = VLLMClient(VLLM_URL, model_name)
+client = MultiClient(VLLM_URLS, model_name)
 if not client.health():
-    raise SystemExit(f"vLLM server at {VLLM_URL} not healthy")
+    raise SystemExit(f"vLLM servers at {VLLM_URLS} not all healthy")
 tokenizer = AutoTokenizer.from_pretrained(model_name, trust_remote_code=True)
 winning = read_phase_status(run_dir, 1)["winning_variant"]
 errors_log = run_dir / "incidents" / "judge_errors.jsonl"
 logger.info("sweep: variants=%s n=%d conc=%d prefix=%s", variant_keys, N_TARGET, CONC, ID_PREFIX)
 
 
+_count_cache: dict = {"t": 0.0, "v": {}}
+
+
 def count(condition: str) -> int:
-    return sum(
-        1 for r in read_jsonl(run_dir / "rollouts.jsonl")
-        if r.get("phase") == PHASE and r.get("condition") == condition and r.get("status") == "ok"
-    )
+    """Counts every variant in one pass over rollouts.jsonl, cached for 10 s --
+    the file is large and the loop polls every variant every 15 s."""
+    now = time.time()
+    if now - _count_cache["t"] > 10:
+        v: dict = {}
+        for r in read_jsonl(run_dir / "rollouts.jsonl"):
+            if r.get("phase") == PHASE and r.get("status") == "ok":
+                v[r.get("condition")] = v.get(r.get("condition"), 0) + 1
+        _count_cache["t"], _count_cache["v"] = now, v
+    return _count_cache["v"].get(condition, 0)
 
 
 def one_rollout(condition: str) -> dict:
