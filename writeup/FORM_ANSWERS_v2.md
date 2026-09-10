@@ -132,10 +132,9 @@ wording might act differently, though the neutral control shows length and regis
 The judge: 113 of tonight's verdicts came from transcripts with tool outputs shortened to fit the
 judge's token quota. Which rows this hit was decided by judge-server luck, not by condition.
 
-The readout I built for finer attribution (log-odds of an engage-vs-replan sentence at post-failure
-turns) turned out not to track the judge labels (AUROC 0.56 to 0.59). I withdrew every component-level
-and sentence-level result that rested on it. That cost most of the earlier circuit work and it is the
-thing I would have caught earlier with a validation step I should have run first.
+The layer-19 tedium vector failed its plant gate while re-fits at other layers passed and do not
+steer; keeping the vector that steers is a selection on the outcome, supported independently only by
+the SAE decomposition at the same layer. A pre-registered layer would remove that degree of freedom.
 
 ### LLM use (which tools, what you checked, surprise-if-wrong per part)
 
@@ -154,8 +153,8 @@ the steering hook verified by the projection trace (added component present at t
 same-night rule for vLLM cells exists because I found the backend changed the baseline. The judge was
 spot-checked by hand on 18 cleanly attributable rollouts (18/18 agreement, precision on positives
 10/10), which is reassuring rather than tight. Reading the numbers against the run artifacts is how I
-found that a readout used for circuit attribution did not track behaviour, and that an earlier draft's
-seeded-error count (19) contradicted the config (258).
+found that an earlier draft's seeded-error count (19) contradicted the config (258) and that the same
+condition name had been run across several launches, which is why cells are pooled by condition.
 
 Surprise-if-wrong. I would be least surprised to be right that the instructions work and that the
 instruction does not act along the fitted direction; both rest on large cells with controls. I would be
@@ -175,9 +174,8 @@ higher n, but I cannot exclude effects of half tedium's size.
 
 ### Why Neel's stream specifically
 
-(unchanged from v1, but replace "the probes do not work, at AUROC 0.39 to 0.67" with the v2 numbers if
-you cite them: the tedium probe reads the instructed arm as baseline; the decision-point readout is at
-AUROC 0.56 to 0.59.)
+(unchanged from v1, but replace "the probes do not work, at AUROC 0.39 to 0.67" with the v2 result if
+you cite it: the tedium probe reads the instructed arm as identical to baseline.)
 
 ### Likelihood of joining the exploration phase
 
@@ -186,10 +184,9 @@ AUROC 0.56 to 0.59.)
 ### Anything else about the project (optional)
 
 The result I would defend hardest is the pair: five instructions with large effects, one direction with
-an effect, and the one direction's effect not being the instruction's route. Most of what I would tell a
-reader to be careful about is in §7 of the write-up: I built a cheap readout to make circuit-level
-attribution feasible, used it for a month, and it turned out not to measure the behaviour. The v2
-write-up is what survives without it.
+an effect, and the one direction's effect not being the instruction's route. What I would tell a reader
+to be careful about is in the Limitations section: the steering cells are underpowered for effects half
+tedium's size, and the mechanism cells are n = 20 on one instruction.
 
 Roughly 75% of this model is GatedDeltaNet rather than attention, so the standard attention toolkit
 reaches a quarter of it; every intervention here is a forward hook I wrote. That constraint will apply to

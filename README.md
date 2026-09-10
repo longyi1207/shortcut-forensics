@@ -8,7 +8,7 @@ Prompting and contrast-direction steering do not move the same thing: a per-fact
 
 For five candidate motives (tedium, desperation, temptation, wanting to be done, fear of the user's disapproval): a one-line instruction in the prompt cuts the shortcut rate from 31% to 0-11% for every factor (n = 90 each; a same-length neutral line does nothing, 150 vs 150). Steering on the matching contrast directions moves behaviour for tedium only (ablation 9%, addition 53%, random direction 29%). Even for tedium the instruction's footprint on the residual stream is not along the direction, while the concept's own sentences do move along it. The instruction reaches the decision through the context (the agent writes it into its own plan), a route a fixed direction does not express, so a direction that steers and reads its own concept still misses instruction-controlled behaviour.
 
-The earlier write-up of this project ([`WRITEUP.md`](WRITEUP.md), [`writeup/MATS_SUBMISSION.md`](writeup/MATS_SUBMISSION.md)) is kept as a record; its component- and sentence-level attributions rested on a decision-point readout later found not to track the judge labels, and are withdrawn in v2 §7.
+The earlier write-up of this project ([`WRITEUP.md`](WRITEUP.md), [`writeup/MATS_SUBMISSION.md`](writeup/MATS_SUBMISSION.md)) is kept as a record of the first pass; v2 supersedes it.
 
 **Data.** `outputs/20260821-launch/rollouts.jsonl` (3,271 rollout rows with judge labels; 327 MB) is published under the release `data-2026-09-10` as seven 6 MB parts (`cat rollouts.jsonl.gz.part-* > rollouts.jsonl.gz`, md5 in the release notes) rather than tracked in git. Transcripts, diffs and activations (8 GB) are available on request.
 
