@@ -49,7 +49,8 @@ HF_CELLS = [
 REJUDGE_PHASES = ["prompt_sweep_vllm", "signed_pack", "prompt_channel"]  # ok rows whose judge call died on a 429
 REJUDGE_SIDE = f"{RUN}/outputs/20260821-launch/rejudge.jsonl"
 # (shard, extra env): shard 0 on the Azure deployment (150K TPM), shard 1 on direct OpenAI (200K TPM), same model
-REJUDGE_SHARDS = [("0/2", {}), ("1/2", {"OPENAI_PREFER_AZURE": "false", "OPENAI_MODEL": "gpt-5.4-mini"})]
+# The direct-OpenAI route ran out of account credits at 12:12 UTC after 37 verdicts; single Azure pass again.
+REJUDGE_SHARDS = [("0/1", {})]
 RESERVED_FILE = f"{LOGDIR}/reserved_gpus"  # whitespace-separated GPU indices the HF pool must leave alone
 BASE_ENV = {"HF_HOME": "/mnt/scfx_ly_cache", "PYTHONUNBUFFERED": "1", "PATH": os.environ.get("PATH", "")}
 state = {"pd_target": 60, "pt_target": 60, "unhealthy": {g: 0 for g in SERVERS}}
@@ -109,7 +110,9 @@ def counts() -> dict:
         for line in open(REJUDGE_SIDE):
             if line.strip():
                 try:
-                    c.get("_unjudged", set()).discard(json.loads(line)["id"])
+                    r = json.loads(line)
+                    if isinstance(r.get("judge"), dict) and r["judge"].get("is_shortcut") is not None:
+                        c.get("_unjudged", set()).discard(r["id"])
                 except Exception:
                     pass
     return c

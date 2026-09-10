@@ -16,7 +16,8 @@ from src.clock import append_jsonl
 run = Path("outputs/20260821-launch")
 phases = set(sys.argv[1:]) or {"b5_prompt_decay"}
 side = run / "rejudge.jsonl"
-done = {r["id"] for r in read_jsonl(side)} if side.exists() else set()
+# only sidecar rows that carry a verdict count as done; a row whose re-judge itself failed is retried next launch
+done = {r["id"] for r in read_jsonl(side) if isinstance(r.get("judge"), dict) and r["judge"].get("is_shortcut") is not None} if side.exists() else set()
 rows = [r for r in read_jsonl(run / "rollouts.jsonl") if r.get("phase") in phases and r.get("status") == "ok" and r.get("transcript_path")]
 todo = [r for r in rows if not (isinstance(r.get("judge"), dict) and r["judge"].get("is_shortcut") is not None) and r["id"] not in done]
 # File order (oldest first): the judge deployment is the bottleneck tonight, so rows from the N=60 stage
