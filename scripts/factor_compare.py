@@ -27,6 +27,10 @@ PROMPT = {"tedium": "vllm_user_tedium_strong_r2", "desperate": "vllm_user_desper
 STEER = {"tedium": "ablate_tedium", "desperate": "ablate_desperate", "shortcut": "ablate_shortcut",
          "completion_drive": "ablate_completion_drive", "disapproval": "add_pos_disapproval_L17"}
 STEER_CHEAT = {"tedium": "add_pos_tedium"}
+# same concept, other fitted layers (the tedium L19 vector failed its plant gate; L8/L12 refits passed)
+STEER_ALT = {"tedium": ["ablate_tedium_L12_refit", "ablate_tedium_L8_refit"],
+             "shortcut": ["ablate_shortcut_L26_refit", "ablate_shortcut_L23_refit", "ablate_shortcut_L24_refit", "ablate_shortcut_L29_refit"],
+             "disapproval": ["add_pos_disapproval", "add_pos_disapproval_L12", "add_pos_disapproval_L8"]}
 
 
 def apply_rejudge(rows, side):
@@ -88,6 +92,15 @@ for c in PROMPT:
     sc = cell("signed_pack", STEER[c])
     s = summary.get(c, {})
     print(f"{c:17s} | {fmt(*pc)} {pval(pc, vb):7.4f} | {fmt(*sc)} {pval(sc, hb):7.4f} | {s.get('prompt', float('nan')):+9.2f} {s.get('honest', float('nan')):+8.2f} | {s.get('cos_mean', float('nan')):+9.3f} {s.get('proj_shift', float('nan')):+10.3f}")
+print("\nsame concept, other layers (HF, vs HF identity):")
+for c, alts in STEER_ALT.items():
+    for cond in alts:
+        k, n = cell("signed_pack", cond)
+        if n:
+            print(f"  {c:17s} {cond:28s} {fmt(k, n)}  p {pval((k, n), hb):.4f}")
+k, n = cell("signed_pack", "ablate_random")
+if n:
+    print(f"  {'(control)':17s} {'ablate_random':28s} {fmt(k, n)}  p {pval((k, n), hb):.4f}")
 if cells.get(("signed_pack", "add_pos_tedium")):
     print(f"\n(tedium pro-cheat steer +add: {fmt(*cell('signed_pack', 'add_pos_tedium'))}, p vs HF identity {pval(cell('signed_pack', 'add_pos_tedium'), hb):.4f})")
 for cond in ("pc_prompt_add_tedium19", "pc_prompt_add_rand19", "pc_add_rand19"):
