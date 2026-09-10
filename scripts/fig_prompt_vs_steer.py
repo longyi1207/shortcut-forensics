@@ -83,7 +83,8 @@ def rate(key):
 
 # ---------- figure 1: behaviour ----------
 vb, hb = rate(VLLM_BASE), rate(HF_BASE)
-fig, ax = plt.subplots(figsize=(9.5, 4.2))
+lows, highs = [], []
+fig, ax = plt.subplots(figsize=(9.5, 4.6))
 x = np.arange(len(FACTORS))
 w = 0.36
 for off, src, base, color, label in ((-w / 2, PROMPT, vb, "#1f77b4", "prompt line (vLLM) − same-night vLLM baseline"),
@@ -97,7 +98,9 @@ for off, src, base, color, label in ((-w / 2, PROMPT, vb, "#1f77b4", "prompt lin
         d = p - base[0]
         ax.bar(i + off, d, w, color=color, alpha=0.85, label=label if i == 0 else None)
         ax.errorbar(i + off, d, yerr=[[d - (lo - base[0])], [(hi - base[0]) - d]], fmt="none", ecolor="k", capsize=3, lw=1)
-        ax.text(i + off, d + (0.01 if d >= 0 else -0.025), f"{p:.0%}\nn={n}", ha="center", va="bottom" if d >= 0 else "top", fontsize=7)
+        top = hi - base[0] if d >= 0 else lo - base[0]
+        ax.text(i + off, top + (0.01 if d >= 0 else -0.01), f"{p:.0%}\nn={n}", ha="center", va="bottom" if d >= 0 else "top", fontsize=7)
+        lows.append(lo - base[0]); highs.append(hi - base[0])
 nb = rate(NEUTRAL)
 if nb[3]:
     ax.axhline(nb[0] - vb[0], color="#1f77b4", ls=":", lw=1, label=f"neutral line − vLLM baseline ({nb[0]:.0%}, n={nb[3]})")
@@ -110,7 +113,9 @@ ax.set_xticklabels([f.replace("_", "\n") for f in FACTORS])
 ax.set_ylabel("Δ shortcut rate vs own-backend baseline")
 ax.set_title(f"Prompting vs contrast-direction steering, per factor   "
              f"(vLLM baseline {vb[0]:.0%} n={vb[3]};  HF baseline {hb[0]:.0%} n={hb[3]})", fontsize=10)
-ax.legend(fontsize=7.5, loc="lower left")
+ax.legend(fontsize=7.5, loc="upper left")
+if lows:
+    ax.set_ylim(min(lows) - 0.09, max(highs + [0.05]) + 0.16)
 fig.tight_layout()
 fig.savefig(figs / "prompt_vs_steer.png", dpi=160)
 print("wrote", figs / "prompt_vs_steer.png")
