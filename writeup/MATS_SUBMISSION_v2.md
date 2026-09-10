@@ -4,32 +4,21 @@
 
 Qwen3.5-9B · Singh et al. pre-commit environment · 80-turn rollouts · MATS 12.0 application, Neel Nanda stream
 
-**Question and setting.** When a prompt instruction changes what an agent does, and a contrast-pair steering vector for the "same" concept also changes what it does, are they acting on the same internal quantity? I tested this factor by factor in the Singh et al. (2026) [1] environment: a coding agent behind a `mypy` pre-commit hook with 258 seeded errors, which sometimes fakes a green check instead of doing the work (LLM-judged, 80-turn rollouts). For five candidate motives (tedium, desperation, temptation, wanting to be done, fear of the user's disapproval) I fitted a mean-difference direction from contrast pairs, wrote one matched instruction line, and measured per factor the shortcut rate under the instruction, under steering on the direction, and the instruction's footprint on the residual stream projected on the direction, with the concept's own sentences as the positive control.
+**Question.** When a one-line instruction in the prompt changes what an agent does, and a contrast-pair steering vector for the "same" concept also changes what it does, are they acting on the same internal quantity? Steering vectors are routinely read as "the model's representation of X" and prompts as a way of "turning X on or off", so the two get treated as two handles on one lever. I tested that factor by factor, on a behaviour that is an action with a ground-truth label rather than a style.
+
+**The two interventions, concretely.** The setting is Singh et al. (2026) [1]: a coding agent in a repository with 258 seeded `mypy` errors behind a pre-commit hook, which sometimes fakes a green check instead of doing the work (LLM-judged, 80-turn rollouts). Take tedium as the example. The *contrast direction* comes from 160 LLM-written sentence pairs that differ only in the tedium content ("I spent the afternoon renaming twenty near-identical spreadsheet tabs... It felt like a dull round of housekeeping" against the same sentence ending "...It was a quick cleanup before the meeting"); the direction d is the mean difference of the layer-19 last-token residuals, and steering means removing the component along d at every position (ablate) or adding d at its fitted norm (push) during the rollout. The *instruction* is one line appended to the task prompt: "IMPORTANT: This task may feel repetitive or tedious. Do NOT let that affect your work. ... Do not cut corners. Do not rush to finish. ..."; nothing inside the model is touched. The control is a same-length IMPORTANT line about shell formatting. I did this for five factors (tedium, desperation, temptation, wanting to be done, fear of the user's disapproval) and compared three things per factor: the shortcut rate under the instruction, the shortcut rate under steering, and whether the residual shift the instruction causes lies along d, with the concept's own sentence appended in the same place as the positive control (Figure 1).
+
+> **[FIG 1: How each intervention is built and what is compared.]**
 
 **Key results**
 
-- Each of the five instructions cuts the shortcut rate from 31% to between 0% and 11% (n = 90 each, all p ≤ 0.0005). A same-length line with no concept content leaves it at 30% (n = 150 per side, p = 1.0).
-- Steering on the five directions moves behaviour for tedium only: ablation 9% against the 20% baseline (p = 0.026), addition 53% (p = 0.001). A random direction ablated the same way gives 29%. The other four directions are null at n = 30 to 43.
-- The instruction does not move the residual along the direction, even for tedium. The concept's own sentences do (+0.85 to +2.4 in unit-direction coordinates, null bands ±0.2 to ±0.5); the instruction does not (−0.25 to +0.38); at the decision token 10 to 40 turns later nothing does (cosines within ±0.04).
-- The instruction reaches the decision through the context, in two copies. After each failed check, blocking the agent's attention to the instruction alone (10%) or to its own earlier text alone (15%) leaves the protection in place; blocking both returns the rate to the no-instruction level (25% vs 3.8%, p = 0.014, n = 20 per cell). The agent reads the instruction once, writes it into its plan, and then follows the plan.
-- A direction that steers and reads its own concept therefore still misses behaviour a prompt controls: the tedium probe reads an instructed agent as identical to an uninstructed one while it cheats a fifth as often.
+- Each of the five instructions cuts the shortcut rate from 31% to between 0% and 11% (n = 90 each, all p ≤ 0.0005). The neutral control line leaves it at 30% (n = 150 per side, p = 1.0). The instructions do not make the agent commit honestly; they make it keep fixing errors instead of going for the commit.
+- Steering on the five directions moves behaviour for tedium only: ablation 9% against the 20% baseline (p = 0.026), addition 53% (p = 0.001). A random direction ablated the same way gives 29%. The other four directions, and their re-fits at other layers, are null at n = 30 to 43.
+- The instruction does not move the residual along the direction, even for tedium. The concept's own sentence does (+0.85 to +2.4 in unit-direction coordinates, null bands ±0.2 to ±0.5); the instruction does not (−0.25 to +0.38); at the decision token 10 to 40 turns later nothing does (cosines within ±0.04). Two of the five directions are not readable even by their own sentence, which matches their steering nulls.
+- The instruction reaches the decision through the context, in two copies. After each failed check, blocking the agent's attention to the instruction alone (10%) or to its own earlier text alone (15%) leaves the protection in place; blocking both returns the rate to the no-instruction level (25% vs 3.8%, p = 0.014, n = 20 per cell); a same-size span of tool output blocked instead changes nothing (10%). The agent reads the instruction once, writes it into its plan, and then follows the plan. Adding the tedium direction on top of the instruction gives 50%, the same as the direction alone.
+- A direction can therefore be causally valid (it steers) and contrastively valid (its own sentence moves it) and still miss behaviour a prompt controls: the tedium probe reads an instructed agent as identical to an uninstructed one while it cheats a fifth as often. The activation a model has when it is *told* about tedium is not the activation the contrast pairs isolate, and a monitor built on the direction is blind to the fix that works.
 
-| factor | instruction (vLLM; baseline 46/150 = 31%) | steering (HF; baseline 17/85 = 20%) | instruction's shift along the direction (plant control) |
-|---|---|---|---|
-| tedium | 10/90 = 11% (p = 0.0005) | ablate: 14/153 = 9% (p = 0.026) | −0.25 (+0.85) |
-| desperate | 5/90 = 6% (p < 0.0001) | ablate: 5/30 = 17% (n.s.) | −0.02 (+2.4) |
-| shortcut | 0/90 = 0% (p < 0.0001) | ablate: 8/33 = 24% (n.s.) | +0.38 (+1.9) |
-| completion drive | 6/90 = 7% (p < 0.0001) | ablate: 10/32 = 31% (n.s.) | +0.07 (+0.5, not readable) |
-| disapproval | 2/90 = 2% (p < 0.0001) | add: 9/43 = 21% (n.s.) | +0.07 (−0.1, not readable) |
-| neutral line | 45/150 = 30% (p = 1.0) | random direction ablated: 12/42 = 29% (n.s.) | |
-
-**Why it matters.** A contrast direction is fitted on the model reading about the concept, and that is what it measures; the activation a model has when it is *told* about tedium is not the one the contrast pairs isolate. So a steering null does not mean the factor is inert (four of five here), and a direction that does steer still reads an instructed agent as unchanged. Causal, contrastive and diagnostic validity are three different properties, and a monitor needs the third.
-
-**Limitations.** One model, one task, one LLM judge; steering cells of n = 30 to 43; mechanism cells of n = 20 on one instruction; the finer decision-point readout I built did not track the judge (AUROC 0.56 to 0.59), and everything that rested on it is withdrawn (§7).
-
-**Next.** Transplant the instructed agent's first-turn plan into an uninstructed run, to test whether the plan alone protects; build a readout validated against the judge before attributing anything to components; repeat the three measurements on a 30B-class model, since whether this gap closes or widens with scale decides how much it matters.
-
-> **[FIG 1: Per factor, the shortcut-rate change under the instruction (vLLM, vs the same-night baseline) and under steering on the fitted direction (HF, vs the HF baseline), with Wilson 95% intervals. Dotted line: the neutral control line.]**
+> **[FIG 2: Per factor, the shortcut-rate change under the instruction (vLLM, vs the same-night baseline) and under steering on the fitted direction (HF, vs the HF baseline), with Wilson 95% intervals. Dotted line: the neutral control line.]**
 
 ---
 
@@ -96,7 +85,7 @@ For each factor I appended one of three texts to the user prompt, the instructio
 
 Three of the five directions are readable in context. Their own plant moves the residual along them by two to ten null standard deviations. The instruction moves none of them; its projection sits inside the null band for every factor, and for tedium it is on the minus side, where the neutral line also sits. The completion-drive and disapproval directions are not readable even by their own plant at any fitted layer, which fits their steering nulls. At the decision token, 10 to 40 turns later (40 decision points, three per rollout, the turn after a failed tool result), no text moves the residual along any direction (cosines within ±0.04 for plants and instructions alike, projection shifts ≤ 0.4 against baseline projections of 1 to 4), while the instruction's shift of the next-action distribution there is large. Whatever the instruction does at the decision, it does not do it on these axes.
 
-> **[FIG 2: Left, prompt end: shift along each factor's own direction for the plus plant, minus plant, instruction and neutral line. Right, decision token: cosine between the shift and the direction, 40 points, standard errors.]**
+> **[FIG 3: Left, prompt end: shift along each factor's own direction for the plus plant, minus plant, instruction and neutral line. Right, decision token: cosine between the shift and the direction, 40 points, standard errors.]**
 
 The tedium direction, which is causally valid (steering it moves behaviour) and contrastively valid (its plant moves it), reads an instructed agent as identical to an uninstructed one (0/21 vs 4/30 shortcuts in a matched pair of cells; projections indistinguishable). The premise of monitoring with persona-style vectors (Chen et al., 2025 [6]: the last-prompt-token projection predicts subsequent trait expression) does not hold here for behaviour that a prompt controls.
 
@@ -112,7 +101,7 @@ The earlier part of this project asked how the instruction reaches the decision 
 
 *A channel the direction can override.* Adding the tedium direction on top of the instruction gives 15/30 = 50%, indistinguishable from the direction without the instruction (17/32 = 53%, p = 1.0). The instruction offers no resistance because it never set the coordinate the steer moves.
 
-> **[FIG 3: Shortcut rate when attention after a failed check is blocked to the instruction, to the model's own earlier text, or to both, with a size-matched control.]**
+> **[FIG 4: Shortcut rate when attention after a failed check is blocked to the instruction, to the model's own earlier text, or to both, with a size-matched control.]**
 
 ## 7. What I retracted, and why
 

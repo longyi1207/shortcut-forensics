@@ -6,7 +6,7 @@ import base64, html, pathlib, re
 import sys
 # v2 build: python to_gdoc_v2.py MATS_SUBMISSION_v2.md MATS_SUBMISSION_v2.html
 SRC, DST = (sys.argv[1], sys.argv[2]) if len(sys.argv) > 2 else ("MATS_SUBMISSION_v2.md", "MATS_SUBMISSION_v2.html")
-FIGS = {"FIG 1": "figs/prompt_vs_steer.png", "FIG 2": "figs/geometry.png", "FIG 3": "figs/channels.png"}
+FIGS = {"FIG 1": "figs/schematic.png", "FIG 2": "figs/prompt_vs_steer.png", "FIG 3": "figs/geometry.png", "FIG 4": "figs/channels.png"}
 md = pathlib.Path(SRC).read_text()
 
 
