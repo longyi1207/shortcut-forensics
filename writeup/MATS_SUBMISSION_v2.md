@@ -10,7 +10,7 @@ Qwen3.5-9B · Singh et al. pre-commit environment · 80-turn rollouts · MATS 12
 
 I did this for five factors (tedium, desperation, temptation, wanting to be done, fear of the user's disapproval) and compared three things per factor: the shortcut rate under the instruction, the shortcut rate under steering, and whether the residual shift the instruction causes lies along d, with the concept's own sentence appended in the same place as the positive control (Figure 1).
 
-> **[FIG 1: How the two interventions are built, using tedium as the example, and the three comparisons made for every factor. A: the contrast direction is the mean difference of layer-19 last-token residuals over 160 sentence pairs that differ only in the tedium content; steering removes or adds that direction at every position during the rollout. B: the instruction is one line appended to the task prompt, with nothing inside the model touched. C: the shortcut rate under each, and whether the residual shift the instruction causes lies along the direction, with the concept's own sentence as the positive control.]**
+> **[FIG 1: How the two interventions are built, using tedium as the example (A: the contrast direction and how it is steered; B: the instruction line), and the three comparisons made for every factor (C).]**
 
 **Key results**
 
