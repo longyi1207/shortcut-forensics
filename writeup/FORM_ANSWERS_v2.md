@@ -62,7 +62,7 @@ Selection. Accepted into SPAR Fall 2026; top 5% in [AIAF, full name].
 
 ### Why are you interested in Neel's stream specifically?
 
-I have been working independently on pragmatic interpretability and model forensics, and this project is that kind of question: not "what is the circuit" but "would a monitor catch a real agentic failure". What I lack is not execution but taste, knowing which of several defensible results is worth months of work. That judgement is what the stream lends, and a tight feedback loop with blunt reviews is how I learn fastest.
+I have learned much of what I know about this field from your papers and write-ups, and this project is built on one of them. So far I have only had the "what": the methods and the results. Working with you would give me the "why" and the "how", the reasoning behind which questions are worth asking and which results to trust, and that is the part I cannot get from reading. For where I want to go, this is the best learning opportunity I can see.
 
 ### What is the likelihood you will join Neel's training program (Sept 28 - Oct 30) if accepted?
 
