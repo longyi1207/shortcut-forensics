@@ -13,7 +13,7 @@ R=/mnt/scfx_ly_run/outputs/20260821-launch
 L=outputs/20260821-launch
 mkdir -p "$L" outputs/vm_logs
 echo "== rsync $R -> $L (incremental)"
-rsync -az --info=progress2 -e "$SSHE" "$SSH_USER@$SSH_HOST:$R/" "$L/"
+rsync -az -e "$SSHE" "$SSH_USER@$SSH_HOST:$R/" "$L/"
 echo "== rsync /mnt/scfx_logs -> outputs/vm_logs"
 rsync -az -e "$SSHE" "$SSH_USER@$SSH_HOST:/mnt/scfx_logs/" outputs/vm_logs/
 rsync -az -e "$SSHE" "$SSH_USER@$SSH_HOST:/mnt/scfx_ly_run/logs/" outputs/vm_logs/run_logs/
