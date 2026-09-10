@@ -37,12 +37,12 @@ while i < len(lines):
             rows.append([c.strip() for c in lines[i].strip("|").split("|")]); i += 1
         th = "".join(f'<th style="border:1px solid #ccc;padding:5px 8px;background:#f4f3f0;text-align:left">{inline(c)}</th>' for c in hdr)
         tb = "".join("<tr>" + "".join(f'<td style="border:1px solid #ccc;padding:5px 8px">{inline(c)}</td>' for c in r) + "</tr>" for r in rows)
-        out.append(f'<table style="border-collapse:collapse;font-size:10pt;margin:10pt 0">{("<tr>" + th + "</tr>")}{tb}</table>')
+        out.append(f'<table style="border-collapse:collapse;font-size:9.5pt;margin:10pt 0;line-height:1.35">{("<tr>" + th + "</tr>")}{tb}</table>')
         continue
     if ln.startswith("# "):
-        out.append(f'<h1 style="font-size:17pt;margin:18pt 0 6pt">{inline(ln[2:])}</h1>')
+        out.append(f'<h1 style="font-size:18pt;line-height:1.25;margin:20pt 0 8pt">{inline(ln[2:])}</h1>')
     elif ln.startswith("## "):
-        out.append(f'<h2 style="font-size:13pt;margin:16pt 0 5pt">{inline(ln[3:])}</h2>')
+        out.append(f'<h2 style="font-size:13.5pt;margin:18pt 0 6pt">{inline(ln[3:])}</h2>')
     elif ln.strip() == "---":
         out.append('<hr style="border:none;border-top:1px solid #ddd;margin:16pt 0">')
     elif ln.startswith("> "):
@@ -51,10 +51,10 @@ while i < len(lines):
         buf = [ln]
         while i + 1 < len(lines) and lines[i + 1].strip() and not re.match(r"^(#|\||>|---)", lines[i + 1]):
             i += 1; buf.append(lines[i])
-        out.append(f'<p style="margin:7pt 0;line-height:1.45">{inline(" ".join(x.strip() for x in buf))}</p>')
+        out.append(f'<p style="margin:8pt 0;line-height:1.55">{inline(" ".join(x.strip() for x in buf))}</p>')
     i += 1
 
 pathlib.Path(DST).write_text(
-    '<div style="font-family:Georgia,serif;font-size:11pt;color:#111;max-width:680px">'
+    '<div style="font-family:-apple-system,\'Helvetica Neue\',Arial,sans-serif;font-size:11pt;color:#1a1a1a;max-width:700px;line-height:1.5">'
     + "\n".join(out) + "</div>")
 print("wrote", DST)
