@@ -2,7 +2,7 @@
 
 ## Executive summary
 
-Qwen3.5-9B · Singh et al. pre-commit environment · 80-turn rollouts · MATS 12.0 application, Neel Nanda stream
+Qwen3.5-9B · Singh et al. pre-commit environment · 80-turn rollouts · MATS 12.0 application, Neel Nanda stream · code and data: github.com/longyi1207/shortcut-forensics
 
 **Question.** When a one-line instruction in the prompt changes what an agent does, and a contrast-pair steering vector for the "same" concept also changes what it does, are they acting on the same internal quantity? Steering vectors are routinely read as "the model's representation of X" and prompts as a way of "turning X on or off", so the two get treated as two handles on one lever. I tested that factor by factor, on a behaviour with a ground-truth label.
 
