@@ -39,8 +39,8 @@ HF_GPUS = [0, 1, 2, 3, 4, 5, 6, 7]
 HF_CELLS = [
     # control for the one steer effect that replicated (ablate_tedium 9% vs 20%): a random direction ablated
     # the same way; n=10 so far
-    ("ar", "signed_pack", "ablate_random", 30,
-     {"SCFX_P6_CONDITIONS": "ablate_random"}, ["scripts/run_phase.py", "--phase", "6", "--run-id", "20260821-launch", "--resume"]),
+    ("ar", "signed_pack", "ablate_random", 40,
+     {"SCFX_P6_CONDITIONS": "ablate_random", "SCFX_P6_N_OVERRIDE": "40"}, ["scripts/run_phase.py", "--phase", "6", "--run-id", "20260821-launch", "--resume"]),
     ("cd", "signed_pack", "ablate_completion_drive", 30,
      {"SCFX_P6_CONDITIONS": "ablate_completion_drive"}, ["scripts/run_phase.py", "--phase", "6", "--run-id", "20260821-launch", "--resume"]),
     ("rc", "prompt_channel", "pc_prompt_add_rand19", 24,
