@@ -29,6 +29,10 @@ URLS = ",".join(f"http://127.0.0.1:{p}" for p in SERVERS.values())
 PD_VARIANTS = ["vllm_identity_r2", "vllm_user_neutral", "vllm_user_desperate", "vllm_user_shortcut",
                "vllm_user_completion", "vllm_user_disapproval"]
 PT_VARIANTS = ["vllm_user_tedium_strong_r2"]
+# Third sweep: the two control cells every prompt comparison is measured against, taken further once
+# the concept lines are done. Runs at 10 slots while pd is alive, 60 once pd has exited.
+PB_VARIANTS = ["vllm_identity_r2", "vllm_user_neutral"]
+PB_TARGET = 150
 TARGET_STEPS = [60, 90]
 HF_GPUS = [4, 5]
 # (cell name, phase for counting, condition, target, launcher env, script args)
@@ -127,7 +131,7 @@ def launch_server(gpu: int):
 
 # rollouts in flight per sweep; the total must keep every server's live contexts inside its KV cache
 # (75k-token contexts late in a rollout; the cache thrashed at 20 rollouts per server)
-CONC = {"pd": int(os.environ.get("SCFX_CONC_PD", "50")), "pt": int(os.environ.get("SCFX_CONC_PT", "10"))}
+CONC = {"pd": int(os.environ.get("SCFX_CONC_PD", "50")), "pt": int(os.environ.get("SCFX_CONC_PT", "10")), "pb": 10}
 
 
 def sweep_env(variants: list, n: int, wid: str) -> dict:
@@ -172,6 +176,21 @@ def tick():
                 continue  # finished for the night
         if not running and all_healthy and any(n < target for n in got.values()):
             launch(sweep_env(variants, target, wid), ["scripts/prompt_sweep_vllm.py"], f"sweep_{wid}")
+    # 2b. control-cell sweep (pb): 10 slots beside pd, 60 alone; relaunched at the wider width once pd exits
+    pd_running = any("prompt_sweep_vllm.py" in cmd and env.get("SCFX_WORKER_ID") == "pd" for _, cmd, env in ps)
+    pb_procs = [(pid, env) for pid, cmd, env in ps if "prompt_sweep_vllm.py" in cmd and env.get("SCFX_WORKER_ID") == "pb"]
+    pb_need = any(c.get(("prompt_sweep_vllm", v), 0) < PB_TARGET for v in PB_VARIANTS)
+    want_conc = 10 if pd_running else 60
+    if pb_need and all_healthy:
+        if pb_procs and not pd_running and pb_procs[0][1].get("SCFX_SWEEP_CONC") == "10":
+            for pid, _ in pb_procs:
+                subprocess.run(["kill", str(pid)])
+            log("pb: pd has exited; relaunching the control sweep at 60 slots")
+            time.sleep(5)
+            pb_procs = []
+        if not pb_procs:
+            CONC["pb"] = want_conc
+            launch(sweep_env(PB_VARIANTS, PB_TARGET, "pb"), ["scripts/prompt_sweep_vllm.py"], "sweep_pb")
     # 3. HF workers: one per GPU, first unmet cell in priority order
     busy = {}
     for pid, cmd, env in ps:
@@ -201,6 +220,7 @@ def tick():
         "time": time.strftime("%Y-%m-%d %H:%M:%S"), "unjudged": unjudged, "rejudging": rejudging, "servers": {g: health(p) for g, p in SERVERS.items()},
         "pd_target": state["pd_target"], "pt_target": state["pt_target"],
         "vllm": {v: c.get(("prompt_sweep_vllm", v), 0) for v in PD_VARIANTS + PT_VARIANTS},
+        "pb_target": PB_TARGET,
         "hf": {cond: c.get((phase, cond), 0) for _, phase, cond, _, _, _ in HF_CELLS},
         "hf_busy": {str(g): w for g, w in busy.items()}, "reserved": sorted(held),
         "sweeps_running": sorted({env.get("SCFX_WORKER_ID", "?") for _, cmd, env in ps if "prompt_sweep_vllm.py" in cmd}),
