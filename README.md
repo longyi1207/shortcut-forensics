@@ -10,7 +10,7 @@ For five candidate motives (tedium, desperation, temptation, wanting to be done,
 
 The earlier write-up of this project ([`WRITEUP.md`](WRITEUP.md), [`writeup/MATS_SUBMISSION.md`](writeup/MATS_SUBMISSION.md)) is kept as a record; its component- and sentence-level attributions rested on a decision-point readout later found not to track the judge labels, and are withdrawn in v2 §7.
 
-**Data.** `outputs/20260821-launch/rollouts.jsonl` (3,271 rollout rows with judge labels; 327 MB) is published as the release asset `data-2026-09-10` rather than tracked in git. Transcripts, diffs and activations (8 GB) are available on request.
+**Data.** `outputs/20260821-launch/rollouts.jsonl` (3,271 rollout rows with judge labels; 327 MB) is published under the release `data-2026-09-10` as seven 6 MB parts (`cat rollouts.jsonl.gz.part-* > rollouts.jsonl.gz`, md5 in the release notes) rather than tracked in git. Transcripts, diffs and activations (8 GB) are available on request.
 
 ## Layout
 

@@ -97,7 +97,7 @@ a line, projected on the direction, at the first assistant position and at 40 po
 tokens, with the concept's plant sentences as positive control. Mechanism cells (attention masking,
 K/V swap, footprint add/remove) are from the earlier part of the project, judge-labelled, n = 12 to 53.
 About 2,300 judged rollouts in total; 3,271 rows on disk. Code, scripts and the rollout table:
-https://github.com/longyi1207/shortcut-forensics (rollouts.jsonl as a release asset).
+https://github.com/longyi1207/shortcut-forensics (rollouts.jsonl under release data-2026-09-10).
 
 ### Strongest evidence against your hypotheses
 
