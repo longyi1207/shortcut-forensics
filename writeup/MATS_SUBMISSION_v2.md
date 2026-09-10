@@ -119,7 +119,11 @@ Stolfo et al. (2025) [8] build instruction vectors as with-minus-without activat
 
 ## 8. Limitations and open questions
 
-The study is one model on one task with one judge; the steering cells are less well powered than the prompt cells (§4), and the mechanism cells are n = 20 on one instruction (§6). Beyond that, the results raise six questions they do not answer.
+The study is one model on one task with one judge; the steering cells are less well powered than the prompt cells (§4), and the mechanism cells are n = 20 on one instruction (§6).
+
+Two limits sit in the design rather than the sample. First, "not the same thing" here means "not the same linear direction, at the positions measured, with the steering recipe used". A shared cause that is nonlinear, spread over several directions, or present only at particular moments would be invisible to this test. The directions themselves are fitted on sentences about tedium; the positive control shows they read text about tedium, not that the model has a state of being tedious, and the design cannot establish that it does. Second, the plan channel is almost certainly a trained behaviour, since post-training teaches models to restate a task and follow their plan. The results show that the plan carries the instruction, not how the instruction becomes a plan, whether the plan is followed as a plan or only as more tokens in context, or whether it can be manipulated, for instance by text injected into the agent's notes. Those need base-versus-instruct comparisons or training interventions, not more rollouts.
+
+Beyond that, the results raise six questions they do not answer.
 
 *1. Does the picture change with scale?* On a 9B model, instructions have zero projection on the concept directions. Two trends pull in opposite directions as models grow: instruction following gets more reliable, and concept representations get more linear. One possibility is a transition at some scale where the model internalises "do not let tedium affect you" as a state, the instruction begins to project on the tedium direction, and persona-vector monitoring starts to work for prompted behaviour. The other is that the plan channel dominates further and directions matter less. Which one holds decides whether the present result is a 9B fact or a general one. The experiment is the same three measurements at 9B, 30B and 70B or above.
 
