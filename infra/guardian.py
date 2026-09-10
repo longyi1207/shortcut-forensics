@@ -24,13 +24,13 @@ RUN = "/mnt/scfx_ly_run"
 LOGDIR = "/mnt/scfx_logs"
 PY = f"{RUN}/.venv/bin/python"
 ROLLOUTS = f"{RUN}/outputs/20260821-launch/rollouts.jsonl"
-SERVERS = {0: 8123, 1: 8124, 2: 8125}
+SERVERS = {0: 8123, 1: 8124, 2: 8125, 3: 8126, 6: 8129, 7: 8130}  # port = 8123 + gpu (infra/launch_vllm.sh)
 URLS = ",".join(f"http://127.0.0.1:{p}" for p in SERVERS.values())
 PD_VARIANTS = ["vllm_identity_r2", "vllm_user_neutral", "vllm_user_desperate", "vllm_user_shortcut",
                "vllm_user_completion", "vllm_user_disapproval"]
 PT_VARIANTS = ["vllm_user_tedium_strong_r2"]
 TARGET_STEPS = [60, 90]
-HF_GPUS = [3, 4, 5, 6, 7]
+HF_GPUS = [4, 5]
 # (cell name, phase for counting, condition, target, launcher env, script args)
 HF_CELLS = [
     ("cd", "signed_pack", "ablate_completion_drive", 30,
@@ -123,8 +123,13 @@ def launch_server(gpu: int):
     log(f"relaunched vllm server on GPU {gpu}")
 
 
+# rollouts in flight per sweep; the total must keep every server's live contexts inside its KV cache
+# (75k-token contexts late in a rollout; the cache thrashed at 20 rollouts per server)
+CONC = {"pd": int(os.environ.get("SCFX_CONC_PD", "50")), "pt": int(os.environ.get("SCFX_CONC_PT", "10"))}
+
+
 def sweep_env(variants: list, n: int, wid: str) -> dict:
-    return {"SCFX_VLLM_URLS": URLS, "SCFX_SWEEP_N": str(n), "SCFX_SWEEP_CONC": "48" if wid == "pd" else "12",
+    return {"SCFX_VLLM_URLS": URLS, "SCFX_SWEEP_N": str(n), "SCFX_SWEEP_CONC": str(CONC[wid]),
             "SCFX_WORKER_ID": wid, "SCFX_SWEEP_VARIANTS": ",".join(variants)}
 
 
