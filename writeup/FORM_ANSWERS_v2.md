@@ -91,16 +91,41 @@ line). Most surprised if the steering nulls turned into large effects at higher 
 
 ### Prior mechanistic interpretability experience
 
-(unchanged from v1; see FORM_ANSWERS.md)
+No publications in the field; self-directed since May 2026, working from reproductions toward my own
+questions. The clearest artifact is a reproduction of Anthropic's emotion-vector work on Llama-3.2-1B:
+30 mean-difference emotion directions, validated by logit lens and by steering (8 of 8 emotions move the
+right way, +1.2 to +3.2 log units on the target word), where the readout reproduced and free generation
+barely moved, and I led the write-up with that gap (`code/emotion_vectors`). Two smaller pieces: a logit
+lens and SAE feature probe of in-context learning on Pythia, and a pre-registered design testing whether
+cognitive theory of mind and affective empathy are separable directions. The submitted project is where
+I learned the causal side: Qwen3.5 is an attention/GatedDeltaNet hybrid that TransformerLens does not
+support, so every intervention (attention edge masking, K/V swaps, recurrent-state swaps, direction
+ablation with random controls) is a forward hook I wrote. Not done yet: trained an SAE; circuit finding
+on toy models beyond reading.
 
 ### Three pieces of evidence, other than the project
 
-(unchanged from v1)
+Engineering. Before research I worked in IT consulting, then as an infrastructure engineer, then as CTO
+of a YC-backed AI startup (IncidentFox, $500K raised, 600+ GitHub stars). This project needed that:
+hooks on a hybrid architecture no library supports, and an eight-GPU pipeline run overnight with a
+guardian process that recovered from its own failures.
+
+Taste. I read the literature for what matters rather than what is new, and I drop results that do not
+survive their controls; most of this project's early leads died that way. In college I did an
+interpretability project on attention, my first contact with the field.
+
+Selection. Accepted into SPAR, and ranked in the top 5% of AIAF.
 
 ### Why Neel's stream specifically
 
-(unchanged from v1, but replace "the probes do not work, at AUROC 0.39 to 0.67" with the v2 result if
-you cite it: the tedium probe reads the instructed arm as identical to baseline.)
+Because the project I just ran is the kind of work the stream argues for, and I would rather have you
+tell me which parts are wrong than keep guessing alone. Pragmatic interpretability is already my frame:
+I did not ask what the circuit is, I asked whether a monitor would catch a real agentic failure, and the
+result I care about is a negative one about monitoring. Model forensics is what I have been doing
+without the label. The honest reason is that I need taste more than execution: I can build the
+experiment and run its controls, but I cannot yet tell which of several defensible results is worth six
+months of someone's life. That judgement is what you say you lend scholars, and blunt is the feedback I
+convert fastest.
 
 ### Likelihood of joining the exploration phase
 
