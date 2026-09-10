@@ -34,8 +34,10 @@ sentence does; the instruction has zero projection, at the prompt and at the dec
 4. The instruction reaches the decision through the context, twice over: the instruction text and the
 plan the agent wrote from it. Block both and cheating returns (25% vs 3.8%); block either and it does
 not. One line, n = 20, so a lead.
-5. A direction can steer, and read its own concept, and still not see behaviour a prompt controls.
-That is the property a monitor needs, and contrast pairs do not give it.
+5. The tedium direction passes both tests people use to trust a direction: steering it changes
+behaviour, and text about tedium moves the model along it. It still fails as a monitor. An agent that
+was told not to cut corners reads exactly like one that was not, while cheating five times less. A
+monitor has to see that change, and a contrast-pair direction does not.
 
 ### Technical setup (models, datasets, prompts, metrics)
 
