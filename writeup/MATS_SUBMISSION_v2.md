@@ -133,6 +133,6 @@ One model, one task, one judge. The steering cells (n = 30–43) can miss effect
 3. G. Heyman, F. Vandeputte. Steer Like the LLM: Activation Steering that Mimics Prompting. ICML 2026; arXiv:2605.03907.
 4. D. Kang, Z. Liu, N. Ma, Y. Huang, Z. Tan, M. Jiang. Prompt-Activation Duality: Improving Activation Steering via Attention-Level Interventions. arXiv:2605.10664, 2026.
 5. J. Braun, C. Eickhoff, D. Krueger, S. A. Bahrainian, D. Krasheninnikov. Understanding (Un)Reliability of Steering Vectors in Language Models. arXiv:2505.22637, 2025.
-6. R. Chen et al. Persona Vectors: Monitoring and Controlling Character Traits in Language Models. arXiv:2507.21509, 2025.
+6. R. Chen, A. Arditi, H. Sleight, O. Evans, J. Lindsey. Persona Vectors: Monitoring and Controlling Character Traits in Language Models. arXiv:2507.21509, 2025.
 7. A. Mehta, A. Datta. Plans Don't Persist: Why Context Management Is Load Bearing for LLM Agents. arXiv:2606.22953, 2026.
 8. A. Stolfo, V. Balachandran, S. Yousefi, E. Horvitz, B. Nushi. Improving Instruction-Following in Language Models through Activation Steering. ICLR 2025; arXiv:2410.12877.
