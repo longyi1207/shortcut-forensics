@@ -42,6 +42,8 @@ HF_CELLS = [
      {"SCFX_PC_CONDITION": "pc_add_rand19", "SCFX_PC_PROMPT": "0", "SCFX_PC_N": "16", "SCFX_PC_VECS": "randdir_tedium19",
       "SCFX_PC_MODE": "add", "SCFX_PC_LAYER": "19", "SCFX_PC_ALPHA": "1.0"}, ["scripts/prompt_channel.py"]),
 ]
+REJUDGE_PHASES = ["prompt_sweep_vllm", "signed_pack", "prompt_channel"]  # ok rows whose judge call died on a 429
+REJUDGE_SIDE = f"{RUN}/outputs/20260821-launch/rejudge.jsonl"
 RESERVED_FILE = f"{LOGDIR}/reserved_gpus"  # whitespace-separated GPU indices the HF pool must leave alone
 BASE_ENV = {"HF_HOME": "/mnt/scfx_ly_cache", "PYTHONUNBUFFERED": "1", "PATH": os.environ.get("PATH", "")}
 state = {"pd_target": 60, "pt_target": 60, "unhealthy": {g: 0 for g in SERVERS}}
@@ -73,7 +75,7 @@ def procs():
             continue
         try:
             cmd = open(f"/proc/{pid}/cmdline", "rb").read().replace(b"\0", b" ").decode(errors="ignore")
-            if not any(k in cmd for k in ("prompt_sweep_vllm.py", "prompt_channel.py", "run_phase.py", "vllm serve")):
+            if not any(k in cmd for k in ("prompt_sweep_vllm.py", "prompt_channel.py", "run_phase.py", "vllm serve", "rejudge_phase.py")):
                 continue
             env = dict(kv.split("=", 1) for kv in open(f"/proc/{pid}/environ", "rb").read().decode(errors="ignore").split("\0") if "=" in kv)
             out.append((int(pid), cmd, env))
@@ -95,6 +97,15 @@ def counts() -> dict:
             if r.get("status") == "ok":
                 k = (r.get("phase"), r.get("condition"))
                 c[k] = c.get(k, 0) + 1
+                if r.get("phase") in REJUDGE_PHASES and not (isinstance(r.get("judge"), dict) and r["judge"].get("is_shortcut") is not None):
+                    c.setdefault("_unjudged", set()).add(r["id"])
+    if os.path.exists(REJUDGE_SIDE):
+        for line in open(REJUDGE_SIDE):
+            if line.strip():
+                try:
+                    c.get("_unjudged", set()).discard(json.loads(line)["id"])
+                except Exception:
+                    pass
     return c
 
 
@@ -170,8 +181,13 @@ def tick():
                 launch({**env, "SCFX_WORKER_ID": f"{name}{g}"}, args, f"hf_{name}{g}", gpu=g)
                 busy[g] = f"{name}{g}"
                 break
+    # 4. judge casualties: one sequential rejudge pass whenever ok rows lack a verdict
+    unjudged = len(c.get("_unjudged", set()))
+    rejudging = any("rejudge_phase.py" in cmd for _, cmd, _ in ps)
+    if unjudged and not rejudging:
+        launch({}, ["scripts/rejudge_phase.py", *REJUDGE_PHASES], "rejudge")
     status = {
-        "time": time.strftime("%Y-%m-%d %H:%M:%S"), "servers": {g: health(p) for g, p in SERVERS.items()},
+        "time": time.strftime("%Y-%m-%d %H:%M:%S"), "unjudged": unjudged, "rejudging": rejudging, "servers": {g: health(p) for g, p in SERVERS.items()},
         "pd_target": state["pd_target"], "pt_target": state["pt_target"],
         "vllm": {v: c.get(("prompt_sweep_vllm", v), 0) for v in PD_VARIANTS + PT_VARIANTS},
         "hf": {cond: c.get((phase, cond), 0) for _, phase, cond, _, _, _ in HF_CELLS},
@@ -179,7 +195,7 @@ def tick():
         "sweeps_running": sorted({env.get("SCFX_WORKER_ID", "?") for _, cmd, env in ps if "prompt_sweep_vllm.py" in cmd}),
     }
     json.dump(status, open(f"{LOGDIR}/status.json", "w"), indent=1)
-    log("status " + json.dumps({k: status[k] for k in ("servers", "pd_target", "vllm", "hf", "hf_busy", "sweeps_running")}))
+    log("status " + json.dumps({k: status[k] for k in ("servers", "pd_target", "vllm", "hf", "hf_busy", "reserved", "sweeps_running", "unjudged")}))
 
 
 if __name__ == "__main__":
