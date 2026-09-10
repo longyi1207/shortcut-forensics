@@ -12,7 +12,7 @@ md = pathlib.Path(SRC).read_text()
 
 def img(name):
     b = base64.b64encode(pathlib.Path(FIGS[name]).read_bytes()).decode()
-    return f'<p style="margin:14pt 0"><img src="data:image/png;base64,{b}" style="width:100%;max-width:660px"></p>'
+    return f'<p style="margin:14pt 0"><img src="data:image/png;base64,{b}" style="width:100%;max-width:540px"></p>'
 
 
 def inline(t):
