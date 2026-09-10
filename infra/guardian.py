@@ -43,11 +43,11 @@ HF_CELLS = [
      {"SCFX_P6_CONDITIONS": "ablate_random", "SCFX_P6_N_OVERRIDE": "40"}, ["scripts/run_phase.py", "--phase", "6", "--run-id", "20260821-launch", "--resume"]),
     ("cd", "signed_pack", "ablate_completion_drive", 30,
      {"SCFX_P6_CONDITIONS": "ablate_completion_drive"}, ["scripts/run_phase.py", "--phase", "6", "--run-id", "20260821-launch", "--resume"]),
-    ("rc", "prompt_channel", "pc_prompt_add_rand19", 24,
-     {"SCFX_PC_CONDITION": "pc_prompt_add_rand19", "SCFX_PC_PROMPT": "1", "SCFX_PC_N": "24", "SCFX_PC_VECS": "randdir_tedium19",
-      "SCFX_PC_MODE": "add", "SCFX_PC_LAYER": "19", "SCFX_PC_ALPHA": "1.0"}, ["scripts/prompt_channel.py"]),
     ("ra", "prompt_channel", "pc_add_rand19", 16,
      {"SCFX_PC_CONDITION": "pc_add_rand19", "SCFX_PC_PROMPT": "0", "SCFX_PC_N": "16", "SCFX_PC_VECS": "randdir_tedium19",
+      "SCFX_PC_MODE": "add", "SCFX_PC_LAYER": "19", "SCFX_PC_ALPHA": "1.0"}, ["scripts/prompt_channel.py"]),
+    ("rc", "prompt_channel", "pc_prompt_add_rand19", 24,
+     {"SCFX_PC_CONDITION": "pc_prompt_add_rand19", "SCFX_PC_PROMPT": "1", "SCFX_PC_N": "24", "SCFX_PC_VECS": "randdir_tedium19",
       "SCFX_PC_MODE": "add", "SCFX_PC_LAYER": "19", "SCFX_PC_ALPHA": "1.0"}, ["scripts/prompt_channel.py"]),
 ]
 REJUDGE_PHASES = ["prompt_sweep_vllm", "signed_pack", "prompt_channel"]  # ok rows whose judge call died on a 429
