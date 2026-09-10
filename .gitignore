@@ -16,3 +16,4 @@ outputs/20260821-launch/activations/
 outputs/20260821-launch/diffs/
 outputs/20260821-launch/judge_raw/
 outputs/vm_logs/
+outputs/20260821-launch/rollouts.jsonl
