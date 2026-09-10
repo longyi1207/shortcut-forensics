@@ -2,6 +2,7 @@
 casualties), appending to the sidecar outputs/<run>/rejudge.jsonl (idempotent:
 skips ids already in the sidecar). Usage: python scripts/rejudge_phase.py <phase> [<phase> ...]"""
 import json
+import os
 import sys
 import time
 from pathlib import Path
@@ -18,7 +19,10 @@ side = run / "rejudge.jsonl"
 done = {r["id"] for r in read_jsonl(side)} if side.exists() else set()
 rows = [r for r in read_jsonl(run / "rollouts.jsonl") if r.get("phase") in phases and r.get("status") == "ok" and r.get("transcript_path")]
 todo = [r for r in rows if not (isinstance(r.get("judge"), dict) and r["judge"].get("is_shortcut") is not None) and r["id"] not in done]
-todo.reverse()  # newest rows first: tonight's cells before old casualties
+# File order (oldest first): the judge deployment is the bottleneck tonight, so rows from the N=60 stage
+# are labelled before the N=90 extras. (Set SCFX_REJUDGE_NEWEST_FIRST=1 to clear a fresh backlog first.)
+if os.environ.get("SCFX_REJUDGE_NEWEST_FIRST") == "1":
+    todo.reverse()
 print(f"phases={sorted(phases)} rows={len(rows)} to re-judge={len(todo)}", flush=True)
 
 # The judge deployment allows 150k tokens per minute, and a single request above that can never be
