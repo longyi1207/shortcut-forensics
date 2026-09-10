@@ -22,6 +22,7 @@ Elapsed calendar time is three weeks; engaged time is the table.
 | 08-30 to 09-01 | circuit program | 3.0 | Designed attention masking, K/V content swap, GDN state swap, per-component ablation. Caught the 26x dose mismatch and the correlated-decision-point problem. |
 | 09-02 to 09-03 | final results | 1.5 | Sentence-level ablation, the recurrent channel, and the status ledger separating established from refuted. |
 | 09-03 | write-up | 1.5 | Main write-up. |
+| 09-09 | pivot | (LY) | Reviewed the draft as a referee; pivoted the question to prompting vs contrast-direction steering, per factor (behaviour under the prompt line, behaviour under the steer, activation overlap). Designed the overnight cells with the agent. Hours to confirm; agent execution overnight is not counted. |
 | | **counted** | **16.0** | |
 
 **Exec summary allowance (+2):** ~1.5h for the executive summary and the four figures. No new
