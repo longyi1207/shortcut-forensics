@@ -24,7 +24,7 @@ RUN = "/mnt/scfx_ly_run"
 LOGDIR = "/mnt/scfx_logs"
 PY = f"{RUN}/.venv/bin/python"
 ROLLOUTS = f"{RUN}/outputs/20260821-launch/rollouts.jsonl"
-SERVERS = {0: 8123, 1: 8124, 2: 8125, 3: 8126, 6: 8129, 7: 8130}  # port = 8123 + gpu (infra/launch_vllm.sh)
+SERVERS = {}  # vLLM stage finished 13:30 UTC (all prompt cells at target); port = 8123 + gpu when set
 URLS = ",".join(f"http://127.0.0.1:{p}" for p in SERVERS.values())
 PD_VARIANTS = ["vllm_identity_r2", "vllm_user_neutral", "vllm_user_desperate", "vllm_user_shortcut",
                "vllm_user_completion", "vllm_user_disapproval"]
@@ -34,9 +34,13 @@ PT_VARIANTS = ["vllm_user_tedium_strong_r2"]
 PB_VARIANTS = ["vllm_identity_r2", "vllm_user_neutral"]
 PB_TARGET = 150
 TARGET_STEPS = [60, 90]
-HF_GPUS = [4, 5]
+HF_GPUS = [0, 1, 2, 3, 4, 5, 6, 7]
 # (cell name, phase for counting, condition, target, launcher env, script args)
 HF_CELLS = [
+    # control for the one steer effect that replicated (ablate_tedium 9% vs 20%): a random direction ablated
+    # the same way; n=10 so far
+    ("ar", "signed_pack", "ablate_random", 30,
+     {"SCFX_P6_CONDITIONS": "ablate_random"}, ["scripts/run_phase.py", "--phase", "6", "--run-id", "20260821-launch", "--resume"]),
     ("cd", "signed_pack", "ablate_completion_drive", 30,
      {"SCFX_P6_CONDITIONS": "ablate_completion_drive"}, ["scripts/run_phase.py", "--phase", "6", "--run-id", "20260821-launch", "--resume"]),
     ("rc", "prompt_channel", "pc_prompt_add_rand19", 24,
@@ -162,8 +166,8 @@ def tick():
             time.sleep(5)
             launch_server(g)
             state["unhealthy"][g] = 0
-    # 2. sweeps
-    for wid, variants, tkey in (("pd", PD_VARIANTS, "pd_target"), ("pt", PT_VARIANTS, "pt_target")):
+    # 2. sweeps (only while vLLM servers are part of the plan)
+    for wid, variants, tkey in ((("pd", PD_VARIANTS, "pd_target"), ("pt", PT_VARIANTS, "pt_target")) if SERVERS else ()):
         target = state[tkey]
         got = {v: c.get(("prompt_sweep_vllm", v), 0) for v in variants}
         running = any("prompt_sweep_vllm.py" in cmd and env.get("SCFX_WORKER_ID") == wid for _, cmd, env in ps)
@@ -184,7 +188,7 @@ def tick():
     pb_procs = [(pid, env) for pid, cmd, env in ps if "prompt_sweep_vllm.py" in cmd and env.get("SCFX_WORKER_ID") == "pb"]
     pb_need = any(c.get(("prompt_sweep_vllm", v), 0) < PB_TARGET for v in PB_VARIANTS)
     want_conc = 10 if pd_running else 60
-    if pb_need and all_healthy:
+    if pb_need and all_healthy and SERVERS:
         if pb_procs and not pd_running and pb_procs[0][1].get("SCFX_SWEEP_CONC") == "10":
             for pid, _ in pb_procs:
                 subprocess.run(["kill", str(pid)])
