@@ -13,7 +13,7 @@ Both interventions are in use, and the assumption that they are interchangeable 
 ### What conclusions have you reached about this research problem?
 
 1. Every one of the five instructions cuts the cheating rate, from 31% to 0-11% (n = 90 each). A same-length line with no concept content does nothing (30%, n = 150).
-2. Steering works for one direction, tedium (ablate 9%, add 53%, baseline 20%, random direction 29%). The other four are null at n = 30 to 43.
+2. Steering works for one direction, tedium (ablate 9%, add 53%, baseline 20%, random direction 25%). The other four are null at n = 30 to 43.
 3. Even for tedium, the instruction does not move the model along the direction. The concept's own sentence does; the instruction has zero projection, at the prompt and at the decision.
 4. The instruction reaches the decision through the context, twice over: the instruction text and the plan the agent wrote from it. Block both and cheating returns (25% vs 3.8%); block either and it does not. One instruction, n = 20, so a lead rather than a finding.
 5. So a direction can steer, and read its own concept, and still not see behaviour a prompt controls. That is the property a monitor needs, and contrast-pair directions do not give it.
