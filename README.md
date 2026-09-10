@@ -1,12 +1,16 @@
 # Shortcut Forensics
 
-MATS 12.0 / Neel Nanda Winter 2027 application experiment: **what internal direction (if any) drives naturalistic coding-agent shortcuts, and can you move it on the original prompt with the sign-appropriate intervention?**
+Prompting and contrast-direction steering do not move the same thing: a per-factor test on an agentic shortcut task (Qwen3.5-9B in the Singh et al. pre-commit environment). MATS 12.0 application, Neel Nanda stream.
 
-**Status: experiment complete.** See [`WRITEUP.md`](WRITEUP.md) for the full account — setup, methodology, every phase's results, findings, and open questions. This README is a quick orientation; the writeup is the real document.
+**Read first:** [`writeup/MATS_SUBMISSION_v2.md`](writeup/MATS_SUBMISSION_v2.md) (the submission; executive summary on top). Result tables regenerated from the data: [`writeup/RESULTS_2026-09-10.md`](writeup/RESULTS_2026-09-10.md). What ran and what broke on the final night: [`writeup/NIGHT_LOG_2026-09-10.md`](writeup/NIGHT_LOG_2026-09-10.md). Figures: [`writeup/figs/`](writeup/figs/).
 
 ## TL;DR
 
-On `Qwen/Qwen3.5-9B`, in a pre-commit-hook coding environment, none of six pre-registered candidate mechanisms (tedium, eval-awareness, disapproval, desperation, Wu-style shortcut, completion-drive) reached statistical significance as a cause of shortcut-taking in the original confirmatory analysis — including a known-working positive control, confirming the study was underpowered rather than genuinely null throughout. A same-night repair round found and fixed a stale-vector bug affecting two other concepts, but the properly-repaired causal tests, even extended to real power, also came back null. A **post-hoc exploratory phase** then found the project's strongest evidence, in two stages: ablating `tedium` reduces the shortcut rate via two independent methods (p=0.028 coarse direction, p=0.0050 SAE decomposition), and a follow-up sufficiency test found that *amplifying* the same direction sharply increases it (`add_pos_tedium`, n=30, 53.3% vs. 20.0% baseline, **p=0.0009** — the project's strongest result, clearing even a strict multiple-comparisons bar on its own). Necessity and sufficiency both holding, symmetrically, for the same concept at the same layer is hard to explain as generic capability damage. It hasn't been independently replicated from a fresh data split, so it's reported as strong exploratory evidence, not a fully closed discovery. Full findings, numbers, and the honest read on all of it is in [`WRITEUP.md`](WRITEUP.md).
+For five candidate motives (tedium, desperation, temptation, wanting to be done, fear of the user's disapproval): a one-line instruction in the prompt cuts the shortcut rate from 31% to 0-11% for every factor (n = 90 each; a same-length neutral line does nothing, 150 vs 150). Steering on the matching contrast directions moves behaviour for tedium only (ablation 9%, addition 53%, random direction 29%). Even for tedium the instruction's footprint on the residual stream is not along the direction, while the concept's own sentences do move along it. The instruction reaches the decision through the context (the agent writes it into its own plan), a route a fixed direction does not express, so a direction that steers and reads its own concept still misses instruction-controlled behaviour.
+
+The earlier write-up of this project ([`WRITEUP.md`](WRITEUP.md), [`writeup/MATS_SUBMISSION.md`](writeup/MATS_SUBMISSION.md)) is kept as a record; its component- and sentence-level attributions rested on a decision-point readout later found not to track the judge labels, and are withdrawn in v2 §7.
+
+**Data.** `outputs/20260821-launch/rollouts.jsonl` (3,271 rollout rows with judge labels; 327 MB) is published as the release asset `data-2026-09-10` rather than tracked in git. Transcripts, diffs and activations (8 GB) are available on request.
 
 ## Layout
 
@@ -20,7 +24,7 @@ On `Qwen/Qwen3.5-9B`, in a pre-commit-hook coding environment, none of six pre-r
 | [`src/`](src/) | Direction fitting, steering, judging, agent loop, hooks |
 | [`scripts/`](scripts/) | Phase runner (`run_phase.py`), VM controller, and same-night repair scripts |
 | [`infra/`](infra/) | GPU VM bring-up / Azure config |
-| [`outputs/20260821-launch/`](outputs/20260821-launch/) | **Full run artifacts** — rollouts, transcripts, activations, fitted vectors, judge outputs, every phase's results. Included in full for reproducibility, not gitignored. |
+| [`outputs/20260821-launch/`](outputs/20260821-launch/) | Run artifacts tracked in git: fitted vectors, phase summaries, judge outputs; the rollout table is a release asset, transcripts and activations are not in git (see Data above). Original text: rollouts, transcripts, activations, fitted vectors, judge outputs, every phase's results. Included in full for reproducibility, not gitignored. |
 | [`TIMELOG.md`](TIMELOG.md) | Neel 20h accounting |
 
 ## Compute
