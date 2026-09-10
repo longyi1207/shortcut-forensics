@@ -130,7 +130,7 @@ CONC = {"pd": int(os.environ.get("SCFX_CONC_PD", "50")), "pt": int(os.environ.ge
 
 def sweep_env(variants: list, n: int, wid: str) -> dict:
     return {"SCFX_VLLM_URLS": URLS, "SCFX_SWEEP_N": str(n), "SCFX_SWEEP_CONC": str(CONC[wid]),
-            "SCFX_WORKER_ID": wid, "SCFX_SWEEP_VARIANTS": ",".join(variants)}
+            "SCFX_WORKER_ID": wid, "SCFX_SWEEP_VARIANTS": ",".join(variants), "SCFX_LLM_RETRY_S": "90"}
 
 
 def tick():

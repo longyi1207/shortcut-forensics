@@ -83,10 +83,16 @@ class TransientLLMError(Exception):
     """429 / timeout / connection error — safe to retry."""
 
 
+# Retry window for 429/connection errors. Default 10 min per the SPEC failure table. Rollout workers
+# set SCFX_LLM_RETRY_S low (their thread is a generation slot; a lost verdict is recovered by
+# scripts/rejudge_phase.py); the rejudge pass keeps the long window.
+_RETRY_S = int(os.environ.get("SCFX_LLM_RETRY_S", "600"))
+
+
 @retry(
     retry=retry_if_exception_type(TransientLLMError),
     wait=wait_exponential(multiplier=2, min=2, max=60),
-    stop=stop_after_delay(600),  # cap 10 min, per SPEC failure table
+    stop=stop_after_delay(_RETRY_S),
     reraise=True,
 )
 def chat(
