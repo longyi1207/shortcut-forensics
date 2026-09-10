@@ -10,6 +10,7 @@ R=/mnt/scfx_ly_run/outputs/20260821-launch
 mkdir -p outputs/20260821-launch/phase4
 rsync -az -e "$SSHE" "$SSH_USER@$SSH_HOST:$R/phase4/dp_*" outputs/20260821-launch/phase4/
 rsync -az -e "$SSHE" "$SSH_USER@$SSH_HOST:$R/rollouts.jsonl" outputs/20260821-launch/rollouts.jsonl
+rsync -az -e "$SSHE" "$SSH_USER@$SSH_HOST:$R/rejudge.jsonl" outputs/20260821-launch/rejudge.jsonl || true
 OUT=writeup/RESULTS_$(date +%Y-%m-%d).md
 {
   echo "# Prompt vs direction: results pulled $(date -u '+%Y-%m-%d %H:%MZ')"
@@ -23,5 +24,8 @@ OUT=writeup/RESULTS_$(date +%Y-%m-%d).md
   python3 scripts/dp_plant_layers_analysis.py; echo '```'
   echo; echo "## 5. Does the decision-point readout track the judge label?"; echo '```'
   python3 scripts/dp_readout_analysis.py; echo '```'
+  echo; echo "## 6. Figures"; echo '```'
+  python3 scripts/fig_prompt_vs_steer.py 2>&1 | grep -v "UserWarning\|ax.legend"; echo '```'
+  echo; echo "![behaviour](figs/prompt_vs_steer.png)"; echo; echo "![geometry](figs/geometry.png)"
 } > "$OUT" 2>&1
 echo "wrote $OUT"
