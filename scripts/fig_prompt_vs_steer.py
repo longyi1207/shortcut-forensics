@@ -69,7 +69,7 @@ for r in rows:
     if not judged(r):
         continue
     key = (r["phase"], r["condition"])
-    if r["phase"] == "prompt_sweep_vllm" and not r["id"].startswith(("rvpd", "rvpt")):
+    if r["phase"] == "prompt_sweep_vllm" and not r["id"].startswith(("rvpd", "rvpt", "rvpb")):
         continue  # only tonight's vLLM cells: the old vLLM build had a different baseline
     cells[key][1] += 1
     cells[key][0] += int(bool(r["judge"]["is_shortcut"]))

@@ -15,7 +15,7 @@ OUT=writeup/RESULTS_$(date -u +%Y-%m-%d).md
 {
   echo "# Prompt vs direction: results pulled $(date -u '+%Y-%m-%d %H:%MZ')"
   echo; echo "## 1. Behaviour under each concept's prompt line (vLLM, same-night baseline)"; echo '```'
-  python3 scripts/sweep_analysis.py --min-id-prefix rvpd,rvpt; echo '```'
+  python3 scripts/sweep_analysis.py --min-id-prefix rvpd,rvpt,rvpb; echo '```'
   echo; echo "## 2. Per factor: prompting vs direction steering vs activation overlap"; echo '```'
   python3 scripts/factor_compare.py; echo '```'
   echo; echo "## 3. Decision-point grid per concept (readout proxy, tug-of-war, geometry)"; echo '```'

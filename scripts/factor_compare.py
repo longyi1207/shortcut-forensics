@@ -65,7 +65,7 @@ for r in _rows:
     key = (r.get("phase"), r.get("condition"))
     cells[key][1] += 1
     cells[key][0] += int(bool(r["judge"]["is_shortcut"]))
-    if r.get("phase") == "prompt_sweep_vllm" and r["id"].startswith(("rvpd", "rvpt")):
+    if r.get("phase") == "prompt_sweep_vllm" and r["id"].startswith(("rvpd", "rvpt", "rvpb")):
         k2 = (r.get("phase"), r.get("condition") + "@tonight")
         cells[k2][1] += 1
         cells[k2][0] += int(bool(r["judge"]["is_shortcut"]))
