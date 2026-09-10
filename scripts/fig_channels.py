@@ -5,9 +5,9 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
-cells = [("no instruction", 8, 59, "#7f7f7f"), ("instruction intact", 2, 53, "#1f77b4"),
-         ("mask attention to\ninstruction", 2, 20, "#2ca02c"), ("mask attention to\nown earlier notes", 3, 20, "#2ca02c"),
-         ("mask both", 5, 20, "#d62728"), ("mask same-size span\nof tool output (control)", 2, 21, "#9467bd")]
+cells = [("no instruction\nin the prompt", 8, 59, "#7f7f7f"), ("instruction present,\nnothing blocked", 2, 53, "#1f77b4"),
+         ("agent cannot read\nthe instruction", 2, 20, "#2ca02c"), ("agent cannot read\nits own earlier notes", 3, 20, "#2ca02c"),
+         ("agent cannot read\neither", 5, 20, "#d62728"), ("agent cannot read a same-size\nchunk of tool output (control)", 2, 21, "#9467bd")]
 
 
 def wilson(k, n, z=1.96):
@@ -16,7 +16,7 @@ def wilson(k, n, z=1.96):
     return c - h, c + h
 
 
-fig, ax = plt.subplots(figsize=(9, 3.9))
+fig, ax = plt.subplots(figsize=(9.5, 4.2))
 for i, (name, k, n, col) in enumerate(cells):
     p = k / n; lo, hi = wilson(k, n)
     ax.bar(i, p, 0.62, color=col, alpha=0.9)
@@ -25,7 +25,9 @@ for i, (name, k, n, col) in enumerate(cells):
 ax.set_xticks(range(len(cells))); ax.set_xticklabels([c[0] for c in cells], fontsize=8)
 ax.set_ylabel("shortcut rate (judge-labelled)")
 ax.set_ylim(0, 0.62)
-ax.set_title("After a failed check, block the model's attention to ... (Qwen3.5-9B, HF, tedium instruction)", fontsize=10)
+ax.set_title("Tedium instruction in the prompt. In every turn after a failed check, the agent's attention to one part of the context is blocked.", fontsize=9.5)
 ax.axhline(8 / 59, color="#7f7f7f", ls=":", lw=1); ax.axhline(2 / 53, color="#1f77b4", ls=":", lw=1)
+ax.text(5.42, 8 / 59 + 0.008, "no-instruction rate", fontsize=7, color="#7f7f7f", ha="right")
+ax.text(5.42, 2 / 53 + 0.008, "instruction-intact rate", fontsize=7, color="#1f77b4", ha="right")
 fig.tight_layout(); fig.savefig("writeup/figs/channels.png", dpi=160)
 print("wrote writeup/figs/channels.png")

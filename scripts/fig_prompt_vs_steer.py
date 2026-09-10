@@ -128,9 +128,9 @@ if pl.exists():
     # the vector actually used for steering: the base file (concept.npz) except disapproval_L17_refit
     used = {"tedium": "tedium", "desperate": "desperate", "shortcut": "shortcut", "completion_drive": "completion_drive",
             "disapproval": "disapproval_L17_refit"}
-    fig, axes = plt.subplots(1, 2, figsize=(11, 4))
-    poles = [("plus", "plant: plus pole", "#d62728"), ("minus", "plant: minus pole", "#1f77b4"),
-             ("instr", "instruction (treatment)", "#2ca02c"), ("neutral", "neutral line", "#7f7f7f")]
+    fig, axes = plt.subplots(1, 2, figsize=(11.5, 4.4))
+    poles = [("plus", "the concept's own sentence, plus pole (positive control)", "#d62728"), ("minus", "the concept's own sentence, minus pole", "#1f77b4"),
+             ("instr", "the instruction line", "#2ca02c"), ("neutral", "the neutral control line", "#7f7f7f")]
     w = 0.2
     for i, c in enumerate(FACTORS):
         stem = used[c]
@@ -145,15 +145,15 @@ if pl.exists():
                 if cs:
                     axes[1].bar(i + (j - 1.5) * w, np.mean(cs), w, color=col, label=lab if i == 0 else None,
                                 yerr=np.std(cs) / math.sqrt(len(cs)), capsize=2, error_kw={"lw": 0.8})
-    for ax, ttl, yl in ((axes[0], "Prompt end: shift along the fitted direction", "Δh · d̂  (residual units)"),
-                        (axes[1], f"Decision token, {len(pts)} points: cos(Δh, d)", "cosine")):
+    for ax, ttl, yl in ((axes[0], "Right after the prompt: how far the residual moves\nalong the factor's own direction when the line is added", "shift along the direction (units of d̂)"),
+                        (axes[1], f"At the decision token, 10 to 40 turns later ({len(pts)} points):\ncosine between the shift and the direction", "cos(Δh, d)")):
         ax.axhline(0, color="k", lw=0.8)
         ax.set_xticks(range(len(FACTORS)))
         ax.set_xticklabels([f.replace("_", "\n") for f in FACTORS], fontsize=8)
         ax.set_title(ttl, fontsize=10)
         ax.set_ylabel(yl)
-    axes[0].legend(fontsize=7.5)
-    fig.suptitle("Does the line move the residual along the direction it is compared with? (own vector per concept)", fontsize=10)
+    axes[0].legend(fontsize=7, loc="upper right")
+    fig.suptitle("Does adding one line to the prompt move the residual stream along the factor's fitted direction?", fontsize=10.5)
     fig.tight_layout()
     fig.savefig(figs / "geometry.png", dpi=160)
     print("wrote", figs / "geometry.png")

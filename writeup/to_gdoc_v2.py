@@ -26,9 +26,11 @@ def inline(t):
 out, lines, i = [], md.split("\n"), 0
 while i < len(lines):
     ln = lines[i]
-    m = re.match(r"^> \*\*\[(FIG \d): [^\]]+\]\*\*", ln)
+    m = re.match(r"^> \*\*\[(FIG (\d)): ([^\]]+)\]\*\*", ln)
     if m:
-        out.append(img(m.group(1))); i += 1; continue
+        out.append(img(m.group(1)))
+        out.append(f'<p style="margin:2pt 0 14pt;font-size:9.5pt;color:#333;line-height:1.4"><b>Figure {m.group(2)}.</b> {inline(m.group(3))}</p>')
+        i += 1; continue
     if ln.startswith("|") and i + 1 < len(lines) and set(lines[i + 1].replace("|", "").strip()) <= set("-: "):
         hdr = [c.strip() for c in ln.strip("|").split("|")]
         i += 2
