@@ -44,15 +44,22 @@ def apply_rejudge(rows, side):
     """Fill judge verdicts lost to Azure 429s from the rejudge sidecar (scripts/rejudge_phase.py)."""
     if not side.exists():
         return rows
-    m = {}
+    m, compacted = {}, set()
     for line in open(side):
         if line.strip():
             r = json.loads(line)
             if isinstance(r.get("judge"), dict) and r["judge"].get("is_shortcut") is not None:
                 m[r["id"]] = r["judge"]
+                if r.get("compacted"):
+                    compacted.add(r["id"])
+    filled = used_compacted = 0
     for r in rows:
         if not (isinstance(r.get("judge"), dict) and r["judge"].get("is_shortcut") is not None) and r["id"] in m:
             r["judge"] = m[r["id"]]
+            filled += 1
+            used_compacted += r["id"] in compacted
+    if filled:
+        print(f"NOTE: {filled} judge verdicts filled from the rejudge sidecar, {used_compacted} of them judged on a compacted transcript (oversized for the judge quota)")
     return rows
 
 
