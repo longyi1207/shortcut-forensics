@@ -39,6 +39,12 @@ while i < len(lines):
         tb = "".join("<tr>" + "".join(f'<td style="border:1px solid #ccc;padding:5px 8px">{inline(c)}</td>' for c in r) + "</tr>" for r in rows)
         out.append(f'<table style="border-collapse:collapse;font-size:9.5pt;margin:10pt 0;line-height:1.35">{("<tr>" + th + "</tr>")}{tb}</table>')
         continue
+    if ln.startswith("- "):
+        items = []
+        while i < len(lines) and lines[i].startswith("- "):
+            items.append(lines[i][2:].strip()); i += 1
+        out.append('<ul style="margin:6pt 0 6pt 18pt;padding:0">' + "".join(f'<li style="margin:4pt 0;line-height:1.5">{inline(t)}</li>' for t in items) + "</ul>")
+        continue
     if ln.startswith("# "):
         out.append(f'<h1 style="font-size:18pt;line-height:1.25;margin:20pt 0 8pt">{inline(ln[2:])}</h1>')
     elif ln.startswith("## "):
