@@ -46,8 +46,11 @@ all and keep fixing errors (commit attempts fall from 32% of rollouts to 0 to 21
 
 2. Steering on the five fitted directions moves behaviour for tedium only: ablation 9% vs a 20%
 baseline (p = 0.026), addition 53% (p = 0.001), while a random direction ablated the same way gives 29%
-(p = 0.003 against tedium ablation). The other four directions and their re-fits at other layers are
-null at n = 30 to 43.
+(p = 0.003 against tedium ablation), and replacing the direction by its ten strongest SAE features at
+the same layer gives the same drop (2/61 = 3%, p = 0.003). The ablation p alone would not survive
+correction over the ten steering tests; the claim rests on the addition, the random-direction contrast
+and the SAE replication. The other four directions and their re-fits at other layers are null at
+n = 30 to 43.
 
 3. The instruction does not act along the direction, even for tedium. At the position right after the
 prompt, the concept's own sentences move the residual along the direction (+0.85 to +2.4 in
@@ -108,6 +111,10 @@ it gives 1/12; projected out of an instructed run, 0/12. Neither sufficient nor 
 
 Against the mechanism I do report: the decisive masking cell is n = 20 with one uncorrected p = 0.014
 (0.086 after Bonferroni), on one instruction only. It is a lead with a control, not a finding.
+
+Against the choice of vector: the layer-19 tedium vector failed its plant gate and I kept it because it
+steers, after the gate-passing re-fits did not. That is a choice made on the outcome; the SAE replication
+at the same layer is the one independent support, and a pre-registered layer would have been better.
 
 ### Biggest limitations (could you have addressed them?)
 
