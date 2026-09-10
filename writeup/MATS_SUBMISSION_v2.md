@@ -18,8 +18,6 @@ Qwen3.5-9B · Singh et al. pre-commit environment · 80-turn rollouts · MATS 12
 - The instruction reaches the decision through the context, in two copies. After each failed check, blocking the agent's attention to the instruction alone (10%) or to its own earlier text alone (15%) leaves the protection in place; blocking both returns the rate to the no-instruction level (25% vs 3.8%, p = 0.014, n = 20 per cell); a same-size span of tool output blocked instead changes nothing (10%). The agent reads the instruction once, writes it into its plan, and then follows the plan. Adding the tedium direction on top of the instruction gives 50%, the same as the direction alone.
 - A direction can therefore be causally valid (it steers) and contrastively valid (its own sentence moves it) and still miss behaviour a prompt controls: the tedium probe reads an instructed agent as identical to an uninstructed one while it cheats a fifth as often. The activation a model has when it is *told* about tedium is not the activation the contrast pairs isolate, and a monitor built on the direction is blind to the fix that works.
 
-> **[FIG 2: Per factor, the shortcut-rate change under the instruction (vLLM, vs the same-night baseline) and under steering on the fitted direction (HF, vs the HF baseline), with Wilson 95% intervals. Dotted line: the neutral control line.]**
-
 ---
 
 # Main write-up
@@ -70,6 +68,8 @@ The neutral line is the important row: a same-length instruction with no concept
 | add disapproval (L17) | 43 | 9 | 20.9% | 1.00 |
 
 Tedium is the only direction that moves behaviour, and it moves it in both signs; the random-direction control separates from it cleanly (9.2% vs 28.6%, p = 0.003). The other four are null at n ≈ 30 to 43, which bounds them to effects smaller than tedium's rather than to zero; re-fits of shortcut (layers 14 to 31) and disapproval (layers 8, 12, 19) are null too. This is the pattern Braun et al. (2025) [5] predict when a behaviour is not represented by one coherent direction, and it is already a mismatch with Measurement 1: five instructions with large effects, one direction with an effect.
+
+> **[FIG 2: Per factor, the shortcut-rate change under the instruction (vLLM, vs the same-night baseline) and under steering on the fitted direction (HF, vs the HF baseline), with Wilson 95% intervals. Dotted line: the neutral control line.]**
 
 ## 5. Measurement 3: does the instruction move along the direction?
 
