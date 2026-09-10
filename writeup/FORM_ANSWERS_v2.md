@@ -121,20 +121,25 @@ at the same layer is the one independent support, and a pre-registered layer wou
 
 ### Biggest limitations (could you have addressed them?)
 
-One model, one task, one judge. The steering cells (n = 30 to 43) cannot rule out effects smaller than
-a 20% to 10% drop, so "null" means "smaller than tedium's", not zero. I could have traded the N = 90
-prompt cells for larger steering cells; I chose the prompt side because it is the half nobody had
-measured.
+The comparison is one model on one task, and a task that itself induces tedium, which is the one factor
+whose direction moves behaviour. With one task I cannot separate "instructions beat directions in
+general" from "only the factor the task engages has a working direction". A second environment from
+the Singh et al. suite would have separated them; I chose depth on one task over breadth.
 
-The instructions and the steers are not dose-matched, and the instructions are mine; a different
-wording might act differently, though the neutral control shows length and register alone do nothing.
+The four null factors were tested by removing their directions (plus addition for disapproval).
+Removal only shows an effect if the state is present at baseline, and a baseline agent may not be
+desperate, tempted or afraid of the user at all. The addition test that would settle this was run only
+for tedium. This is the limitation I would fix first with more GPU time, since it decides whether the
+nulls mean "not causal" or "never on".
 
-The judge: 113 of tonight's verdicts came from transcripts with tool outputs shortened to fit the
-judge's token quota. Which rows this hit was decided by judge-server luck, not by condition.
+Every instruction sat in the user message; system-prompt placement is untested. The plan-channel
+result is traced on one instruction at n = 20 per cell and does not survive correction; it motivates
+the hypothesis that instructions govern agents through their own plan text but does not establish it.
 
-The layer-19 tedium vector failed its plant gate while re-fits at other layers passed and do not
-steer; keeping the vector that steers is a selection on the outcome, supported independently only by
-the SAE decomposition at the same layer. A pre-registered layer would remove that degree of freedom.
+Method: one LLM judge with spot checks (30/30 here, 18/18 earlier); 113 verdicts from shortened
+transcripts; steering cells of n = 30 to 43 that would miss a drop from 20% to 10% half the time;
+two backends with different baselines, never compared across; the layer-19 tedium vector kept because
+it steers, with only the SAE decomposition as independent support.
 
 ### LLM use (which tools, what you checked, surprise-if-wrong per part)
 
