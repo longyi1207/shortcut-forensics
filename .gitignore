@@ -9,3 +9,10 @@ hf_cache/
 .azure_vm.json
 infra/.active/
 TIMELOG.local.md
+
+# bulky per-rollout artefacts live on disk (infra/pull_all.sh), not in git
+outputs/20260821-launch/transcripts/
+outputs/20260821-launch/activations/
+outputs/20260821-launch/diffs/
+outputs/20260821-launch/judge_raw/
+outputs/vm_logs/

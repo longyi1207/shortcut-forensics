@@ -174,5 +174,33 @@
     "concept": "tedium_L12_refit",
     "layer": 12,
     "alpha": 1.0
+  },
+  {
+    "name": "ablate_sae_shortcut_top1_L19",
+    "mode": "ablate",
+    "concept": "sae_shortcut_top1_L19",
+    "layer": 19,
+    "alpha": 1.0
+  },
+  {
+    "name": "ablate_sae_tedium_top1_L19",
+    "mode": "ablate",
+    "concept": "sae_tedium_top1_L19",
+    "layer": 19,
+    "alpha": 1.0
+  },
+  {
+    "name": "ablate_sae_disapproval_top1_L19",
+    "mode": "ablate",
+    "concept": "sae_disapproval_top1_L19",
+    "layer": 19,
+    "alpha": 1.0
+  },
+  {
+    "name": "add_pos_tedium",
+    "mode": "add",
+    "concept": "tedium",
+    "layer": 19,
+    "alpha": 1.0
   }
 ]
