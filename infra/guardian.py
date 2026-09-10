@@ -42,6 +42,7 @@ HF_CELLS = [
      {"SCFX_PC_CONDITION": "pc_add_rand19", "SCFX_PC_PROMPT": "0", "SCFX_PC_N": "16", "SCFX_PC_VECS": "randdir_tedium19",
       "SCFX_PC_MODE": "add", "SCFX_PC_LAYER": "19", "SCFX_PC_ALPHA": "1.0"}, ["scripts/prompt_channel.py"]),
 ]
+RESERVED_FILE = f"{LOGDIR}/reserved_gpus"  # whitespace-separated GPU indices the HF pool must leave alone
 BASE_ENV = {"HF_HOME": "/mnt/scfx_ly_cache", "PYTHONUNBUFFERED": "1", "PATH": os.environ.get("PATH", "")}
 state = {"pd_target": 60, "pt_target": 60, "unhealthy": {g: 0 for g in SERVERS}}
 
@@ -56,6 +57,13 @@ def health(port: int) -> bool:
         return urllib.request.urlopen(f"http://127.0.0.1:{port}/health", timeout=5).status == 200
     except Exception:
         return False
+
+
+def reserved() -> set:
+    try:
+        return {int(x) for x in open(RESERVED_FILE).read().split()}
+    except Exception:
+        return set()
 
 
 def procs():
@@ -151,8 +159,9 @@ def tick():
     for pid, cmd, env in ps:
         if ("prompt_channel.py" in cmd or "run_phase.py" in cmd) and env.get("CUDA_VISIBLE_DEVICES", "").isdigit():
             busy[int(env["CUDA_VISIBLE_DEVICES"])] = env.get("SCFX_WORKER_ID", "?")
+    held = reserved()
     for g in HF_GPUS:
-        if g in busy:
+        if g in busy or g in held:
             continue
         for name, phase, cond, target, env, args in HF_CELLS:
             have = c.get((phase, cond), 0)
@@ -166,7 +175,7 @@ def tick():
         "pd_target": state["pd_target"], "pt_target": state["pt_target"],
         "vllm": {v: c.get(("prompt_sweep_vllm", v), 0) for v in PD_VARIANTS + PT_VARIANTS},
         "hf": {cond: c.get((phase, cond), 0) for _, phase, cond, _, _, _ in HF_CELLS},
-        "hf_busy": {str(g): w for g, w in busy.items()},
+        "hf_busy": {str(g): w for g, w in busy.items()}, "reserved": sorted(held),
         "sweeps_running": sorted({env.get("SCFX_WORKER_ID", "?") for _, cmd, env in ps if "prompt_sweep_vllm.py" in cmd}),
     }
     json.dump(status, open(f"{LOGDIR}/status.json", "w"), indent=1)

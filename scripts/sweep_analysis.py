@@ -39,17 +39,40 @@ def wilson(k, n, z=1.96):
     return (c - h, c + h)
 
 
+
+def apply_rejudge(rows, side):
+    """Fill judge verdicts lost to Azure 429s from the rejudge sidecar (scripts/rejudge_phase.py)."""
+    if not side.exists():
+        return rows
+    m = {}
+    for line in open(side):
+        if line.strip():
+            r = json.loads(line)
+            if isinstance(r.get("judge"), dict) and r["judge"].get("is_shortcut") is not None:
+                m[r["id"]] = r["judge"]
+    for r in rows:
+        if not (isinstance(r.get("judge"), dict) and r["judge"].get("is_shortcut") is not None) and r["id"] in m:
+            r["judge"] = m[r["id"]]
+    return rows
+
+
 rows = []
 with open(args.path) as f:
     for line in f:
         if not line.strip():
             continue
         r = json.loads(line)
-        if r.get("phase") != args.phase or r.get("status") != "ok" or not r.get("judge"):
+        if r.get("phase") != args.phase or r.get("status") != "ok":
             continue
         if args.min_id_prefix and not any(r["id"].startswith(p) for p in args.min_id_prefix.split(",")):
             continue
         rows.append(r)
+from pathlib import Path as _P
+rows = apply_rejudge(rows, _P(args.path).parent / "rejudge.jsonl")
+unjudged = sum(1 for r in rows if not (isinstance(r.get("judge"), dict) and r["judge"].get("is_shortcut") is not None))
+if unjudged:
+    print(f"NOTE: {unjudged} ok rows still lack a judge verdict (run scripts/rejudge_phase.py {args.phase})")
+rows = [r for r in rows if isinstance(r.get("judge"), dict) and r["judge"].get("is_shortcut") is not None]
 
 by = defaultdict(list)
 for r in rows:

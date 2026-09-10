@@ -85,22 +85,31 @@ VLLM_URLS = [u.strip() for u in os.environ.get("SCFX_VLLM_URLS", VLLM_URL).split
 
 
 class MultiClient:
-    """Round-robin over several VLLMClient servers; each rollout is a serial chain
-    of requests, so per-request rotation spreads load evenly."""
+    """Dispatch each request to the server with the fewest requests in flight.
+    Round-robin is unstable here: a rollout is a serial chain of requests, so
+    once one server queues, every chain that hits it stalls there while the
+    others keep re-dispatching into it, and the load collapses onto one box."""
 
     def __init__(self, urls: list[str], model: str):
-        import itertools, threading
+        import threading
         self.clients = [VLLMClient(u, model) for u in urls]
-        self._it = itertools.cycle(self.clients)
+        self.inflight = [0] * len(self.clients)
         self._lock = threading.Lock()
 
     def complete(self, *a, **kw):
         with self._lock:
-            c = next(self._it)
-        return c.complete(*a, **kw)
+            i = min(range(len(self.clients)), key=lambda j: self.inflight[j])
+            self.inflight[i] += 1
+        try:
+            return self.clients[i].complete(*a, **kw)
+        finally:
+            with self._lock:
+                self.inflight[i] -= 1
 
     def health(self) -> bool:
         return all(c.health() for c in self.clients)
+
+
 N_TARGET = int(os.environ.get("SCFX_SWEEP_N", "30"))
 CONC = int(os.environ.get("SCFX_SWEEP_CONC", "12"))
 WORKER_ID = os.environ.get("SCFX_WORKER_ID", "")

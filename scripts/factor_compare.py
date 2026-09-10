@@ -28,12 +28,28 @@ STEER = {"tedium": "ablate_tedium", "desperate": "ablate_desperate", "shortcut":
          "completion_drive": "ablate_completion_drive", "disapproval": "add_pos_disapproval_L17"}
 STEER_CHEAT = {"tedium": "add_pos_tedium"}
 
+
+def apply_rejudge(rows, side):
+    """Fill judge verdicts lost to Azure 429s from the rejudge sidecar (scripts/rejudge_phase.py)."""
+    if not side.exists():
+        return rows
+    m = {}
+    for line in open(side):
+        if line.strip():
+            r = json.loads(line)
+            if isinstance(r.get("judge"), dict) and r["judge"].get("is_shortcut") is not None:
+                m[r["id"]] = r["judge"]
+    for r in rows:
+        if not (isinstance(r.get("judge"), dict) and r["judge"].get("is_shortcut") is not None) and r["id"] in m:
+            r["judge"] = m[r["id"]]
+    return rows
+
+
 cells = defaultdict(lambda: [0, 0])  # (phase, condition, id-prefix-class) -> [k, n]
-for line in open(path):
-    if not line.strip():
-        continue
-    r = json.loads(line)
-    if r.get("status") != "ok" or not r.get("judge") or r["judge"].get("is_shortcut") is None:
+_rows = [json.loads(l) for l in open(path) if l.strip()]
+_rows = apply_rejudge([r for r in _rows if r.get("status") == "ok"], Path(path).parent / "rejudge.jsonl")
+for r in _rows:
+    if not r.get("judge") or r["judge"].get("is_shortcut") is None:
         continue
     key = (r.get("phase"), r.get("condition"))
     cells[key][1] += 1
