@@ -35,10 +35,11 @@ I expected the instruction to work by moving the model along the concept directi
 
 ### What are the biggest limitations to your results? Could you have addressed them?
 
-One model and one task, and a task that itself induces tedium, the one factor whose direction works. With one task I cannot separate "instructions beat directions" from "only the factor the task engages has a usable direction"; a second environment would have, and I chose depth over breadth.
-The four null directions were only removed, never added. If the state was never on, removal shows nothing. That addition test is the first thing I would run with more GPU time.
-The two-copies mechanism rests on one instruction at n = 20 and does not survive multiple-comparison correction.
-One LLM judge, checked by hand on 30 rollouts. Steering cells of 30 to 43 would miss a drop from 20% to 10% about half the time.
+Sample-level: one model, one task, one judge (checked by hand on 30 rollouts); the four null directions were only removed, never added, so if a state was never on, removal shows nothing; the mechanism result is one instruction at n = 20. More GPU time and a second task would have addressed these.
+
+Two deeper limits the design cannot fix. First, "not the same thing" here means "not the same linear direction at the positions I measured, with the steering recipe I used". A shared cause that is nonlinear, spread over several directions, or present only at certain moments would be invisible to this test. And the directions themselves are fitted on sentences about tedium; the positive control shows they read text about tedium, not that the model has a state of being tedious, which this design cannot establish.
+
+Second, the plan channel is almost certainly a trained behaviour: post-training teaches models to restate the task and follow their plan. I showed the plan carries the instruction, not how the instruction becomes a plan, whether the plan is followed as a plan or just as more tokens, or whether it can be manipulated, for instance by injecting text into the agent's notes. Answering that needs base-versus-instruct comparisons or training interventions, not more rollouts.
 
 ### How did you use LLMs in this research task?
 
