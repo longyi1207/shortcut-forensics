@@ -39,41 +39,15 @@ you would trust is blind to the fix you deployed.
 
 ### What conclusions have you reached about this research problem?
 
-1. Every one of the five instructions cuts the shortcut rate from 31% to between 0% and 11% (n = 90
-each, all p ≤ 0.0005), and a same-length line with no concept content leaves it at 30% (150 vs 150,
-p = 1.0). The instruction does not make the agent commit honestly; it makes it not go for the commit at
-all and keep fixing errors (commit attempts fall from 32% of rollouts to 0 to 21%).
+1. A one-line instruction cuts the shortcut rate for every one of the five factors, from 31% to 0-11% (n = 90 each, all p ≤ 0.0005); a same-length line with no concept content does nothing (30%, n = 150).
 
-2. Steering on the five fitted directions moves behaviour for tedium only: ablation 9% vs a 20%
-baseline (p = 0.026), addition 53% (p = 0.001), while a random direction ablated the same way gives 29%
-(p = 0.003 against tedium ablation), and replacing the direction by its ten strongest SAE features at
-the same layer gives the same drop (2/61 = 3%, p = 0.003). The ablation p alone would not survive
-correction over the ten steering tests; the claim rests on the addition, the random-direction contrast
-and the SAE replication. The other four directions and their re-fits at other layers are null at
-n = 30 to 43.
+2. Steering the matching contrast directions moves behaviour for tedium only (ablation 9%, addition 53%, against a 20% baseline; a random direction gives 29%); the other four directions are null at n = 30 to 43.
 
-3. The instruction does not act along the direction, even for tedium. At the position right after the
-prompt, the concept's own sentences move the residual along the direction (+0.85 to +2.4 in
-unit-direction coordinates against null bands of ±0.2 to ±0.5) and the instruction does not (−0.25 to
-+0.38). At the decision token 10 to 40 turns later nothing moves along any direction (cosines within
-±0.04), while the instruction still changes what the agent does there. Two of the five directions are
-not readable even by their own concept sentences; the two readable ones still do not steer, so
-readability is necessary for steering and not sufficient.
+3. Even for tedium, the instruction does not act along the direction: its residual shift has zero projection on it, while the concept's own sentence moves along it; at the decision token nothing moves along any direction.
 
-4. The best-supported reading is that the instruction reaches the decision through the context, in two
-copies (tested on the tedium line only, n = 20 per cell, p = 0.014 uncorrected). At the decision the agent
-gives the instruction 0.5% of its attention, blocking that edge changes the next-token distribution by
-KL ≈ 5×10⁻⁴, and the instruction's mean residual footprint is neither sufficient (1/12) nor necessary
-(0/12). But blocking attention to the instruction and to the agent's own earlier text together, after
-each failed check, returns the rate from 3.8% to 25% (p = 0.014, n = 20), while blocking either alone
-does not (10%, 15%) and blocking a same-size span of tool output does not (10%). The agent reads the
-instruction once, writes it into its plan, then follows the plan. Adding the tedium direction on top
-of the instruction gives 50%, the same as the direction alone: the direction overrides that channel.
+4. The instruction reaches the decision through the context, in two copies, the instruction text and the agent's own plan: blocking attention to both restores the no-instruction rate (25% vs 3.8%), blocking either alone does not. Tested on one line at n = 20, so a lead rather than a finding.
 
-5. So a direction can be causally valid (it steers), contrastively valid (its own sentences move it)
-and still diagnostically useless: the tedium probe reads an instructed agent as identical to an
-uninstructed one while it cheats a fifth as often. Monitors need the third property, and contrast
-pairs do not deliver it for prompt-controlled behaviour.
+5. A direction can therefore steer, and read its own concept, and still miss behaviour a prompt controls. Contrast pairs do not deliver the diagnostic validity a monitor needs for prompt-controlled behaviour.
 
 ### Technical setup (models, datasets, prompts, metrics)
 
