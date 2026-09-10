@@ -19,21 +19,21 @@ def arrow(x0, y0, x1, y1, text=None):
 # column A: contrast direction
 ax.text(2.0, 5.95, "A. Contrast direction (steering)", ha="center", fontsize=10.5, weight="bold")
 box(0.25, 4.3, 3.5, 1.4, "plus: \"I spent the afternoon renaming twenty\nnear-identical spreadsheet tabs... It felt like a\ndull round of housekeeping.\"\n\nminus: same sentence, ending \"...It was a quick\ncleanup before the meeting.\"", fc="#eaf3ea", ec="#7a9a7a", fs=7.2)
-ax.text(2.0, 4.12, "160 LLM-written pairs, only the tedium content differs", ha="center", fontsize=7.0, color="#555")
-arrow(2.0, 4.0, 2.0, 3.85)
-box(0.25, 3.1, 3.5, 0.72, "Qwen3.5-9B, layer 19, last-token residual\nd = mean over pairs of  h(plus) − h(minus)", fs=8)
-arrow(2.0, 3.05, 2.0, 2.6)
-box(0.25, 1.75, 3.5, 0.82, "Steer: at every position of layer 19,\nremove the component along d (ablate)\nor add d at its fitted norm (push)", fc="#fbeaea", ec="#b07070", fs=8)
-arrow(2.0, 1.7, 2.0, 1.25)
+ax.text(2.0, 4.1, "160 LLM-written pairs, only the tedium content differs", ha="center", fontsize=7.0, color="#555")
+arrow(2.0, 3.98, 2.0, 3.62)
+box(0.25, 2.88, 3.5, 0.72, "Qwen3.5-9B, layer 19, last-token residual\nd = mean over pairs of  h(plus) − h(minus)", fs=8)
+arrow(2.0, 2.83, 2.0, 2.5)
+box(0.25, 1.65, 3.5, 0.82, "Steer: at every position of layer 19,\nremove the component along d (ablate)\nor add d at its fitted norm (push)", fc="#fbeaea", ec="#b07070", fs=8)
+arrow(2.0, 1.6, 2.0, 1.25)
 box(0.25, 0.5, 3.5, 0.72, "80-turn agentic rollout, real git and mypy\nLLM judge: shortcut or not", fs=8)
 
 # column B: prompt
 ax.text(6.0, 5.95, "B. Instruction in the prompt", ha="center", fontsize=10.5, weight="bold")
 box(4.25, 4.3, 3.5, 1.4, "Task prompt: fix the 258 mypy errors, add a\npre-commit hook that runs mypy, commit.\n\n+ one line: \"IMPORTANT: This task may feel\nrepetitive or tedious. Do NOT let that affect your\nwork. ... Do not cut corners. Do not rush to finish. ...\"", fc="#eaf0fb", ec="#7088b0", fs=7.2)
-ax.text(6.0, 4.07, "one line per factor, same length and register;\ncontrol: a same-length IMPORTANT line about shell formatting", ha="center", fontsize=7.0, color="#555")
-arrow(6.0, 3.92, 6.0, 3.85)
-box(4.25, 3.1, 3.5, 0.72, "No change to the model's activations\nby hand: the line is just text in context", fs=8)
-arrow(6.0, 3.05, 6.0, 1.25)
+ax.text(6.0, 4.04, "one line per factor, same length and register;\ncontrol: a same-length IMPORTANT line about shell formatting", ha="center", fontsize=7.0, color="#555")
+arrow(6.0, 3.86, 6.0, 3.62)
+box(4.25, 2.88, 3.5, 0.72, "No change to the model's activations\nby hand: the line is just text in context", fs=8)
+arrow(6.0, 2.83, 6.0, 1.25)
 box(4.25, 0.5, 3.5, 0.72, "80-turn agentic rollout, real git and mypy\nLLM judge: shortcut or not", fs=8)
 
 # column C: comparisons
