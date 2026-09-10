@@ -57,9 +57,11 @@ prompt, the concept's own sentences move the residual along the direction (+0.85
 unit-direction coordinates against null bands of ±0.2 to ±0.5) and the instruction does not (−0.25 to
 +0.38). At the decision token 10 to 40 turns later nothing moves along any direction (cosines within
 ±0.04), while the instruction still changes what the agent does there. Two of the five directions are
-not readable even by their own concept sentences, which matches their steering nulls.
+not readable even by their own concept sentences; the two readable ones still do not steer, so
+readability is necessary for steering and not sufficient.
 
-4. The instruction reaches the decision through the context, in two copies. At the decision the agent
+4. The best-supported reading is that the instruction reaches the decision through the context, in two
+copies (tested on the tedium line only, n = 20 per cell, p = 0.014 uncorrected). At the decision the agent
 gives the instruction 0.5% of its attention, blocking that edge changes the next-token distribution by
 KL ≈ 5×10⁻⁴, and the instruction's mean residual footprint is neither sufficient (1/12) nor necessary
 (0/12). But blocking attention to the instruction and to the agent's own earlier text together, after
