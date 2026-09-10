@@ -8,7 +8,7 @@ The setting is Singh, Kroiz, Rajamanoharan and Nanda's pre-commit environment (a
 
 ### Why is this question interesting / why did you choose it?
 
-Both interventions are in use, and the assumption that they are interchangeable has not been checked where it matters. Prompting is the mitigation people ship; contrast directions are what people fit when they want to monitor or steer a disposition; persona vectors are built on the premise that a prompt's effect projects onto the fitted direction. Recent work questions the equivalence from the steering side, but on persona and style benchmarks, single turn, judged by output quality. Nobody had put the two side by side on a long agentic task, per concept, with behavioural labels. The answer bears on how we should make a model follow behavioural instructions, and how we monitor for when it does not.
+Both interventions are in use, and the assumption that they are interchangeable has not been checked where it matters. Prompting is the mitigation people ship; contrast directions are what people fit when they want to monitor or steer a disposition; persona vectors (Chen et al. 2025, arXiv:2507.21509), contrast directions fitted for character traits, are built on the premise that a prompt's effect projects onto the fitted direction. Recent work questions the equivalence from the steering side, but on persona and style benchmarks, single turn, judged by output quality. Nobody had put the two side by side on a long agentic task, per concept, with behavioural labels. The answer bears on how we should make a model follow behavioural instructions, and how we monitor for when it does not.
 
 ### What conclusions have you reached about this research problem?
 
